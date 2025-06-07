@@ -47,14 +47,14 @@ export default function TradingRoom() {
   if (!user) return null;
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Navigation Header */}
-      <nav className="bg-white border-b border-gray-200 px-4 py-3 fixed w-full top-0 z-50">
+      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 fixed w-full top-0 z-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden text-gray-600 hover:text-gray-900"
+              className="lg:hidden text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -109,8 +109,8 @@ export default function TradingRoom() {
           <div className="max-w-7xl mx-auto">
             {/* Page Header */}
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Trading Room</h2>
-              <p className="text-gray-600 mt-1">
+              <h2 className="text-2xl font-bold text-black dark:text-white">Trading Room</h2>
+              <p className="text-black dark:text-white mt-1">
                 Post your forex needs and receive competitive rates from bidders
               </p>
             </div>
