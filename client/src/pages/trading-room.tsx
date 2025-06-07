@@ -9,6 +9,7 @@ import ActiveOffers from "@/components/active-offers";
 import MarketStats from "@/components/market-stats";
 import ConfirmationModal from "@/components/confirmation-modal";
 import DemoBanner from "@/components/demo-banner";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Bell } from "lucide-react";
 import { useState } from "react";
 
@@ -70,8 +71,10 @@ export default function TradingRoom() {
           </div>
           
           <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            
             {/* Notifications */}
-            <button className="relative text-gray-600 hover:text-gray-900">
+            <button className="relative text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100">
               <Bell className="w-5 h-5" />
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
             </button>
