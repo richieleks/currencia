@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChatMessage } from "@shared/schema";
-import { Send, TrendingUp, Clock } from "lucide-react";
+import { Send, TrendingUp, Clock, MessageSquare } from "lucide-react";
 
 interface ChatMessageWithUser extends ChatMessage {
   user: {
@@ -53,10 +53,12 @@ export default function ChatRoom() {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
       
       // Send WebSocket message for real-time updates
-      sendMessage({
-        type: "new_message",
-        userId: user?.id,
-      });
+      if (user?.id) {
+        sendMessage({
+          type: "new_message",
+          userId: user.id,
+        });
+      }
 
       toast({
         title: "Message sent",

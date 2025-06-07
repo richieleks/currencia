@@ -112,7 +112,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateExchangeRequestStatus(id: number, status: string, selectedOfferId?: number): Promise<void> {
+  async updateExchangeRequestStatus(id: number, status: "active" | "completed" | "cancelled", selectedOfferId?: number): Promise<void> {
     await db
       .update(exchangeRequests)
       .set({ 
@@ -145,7 +145,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async updateRateOfferStatus(id: number, status: string): Promise<void> {
+  async updateRateOfferStatus(id: number, status: "pending" | "accepted" | "rejected"): Promise<void> {
     await db
       .update(rateOffers)
       .set({ status })
