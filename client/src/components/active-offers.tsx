@@ -27,6 +27,8 @@ export default function ActiveOffers() {
   const { user } = useAuth();
   const [selectedRequest, setSelectedRequest] = useState<ExchangeRequest | null>(null);
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [isOffersViewerOpen, setIsOffersViewerOpen] = useState(false);
+  const [viewingRequestId, setViewingRequestId] = useState<number | null>(null);
 
   const { data: exchangeRequests = [], isLoading } = useQuery<ExchangeRequest[]>({
     queryKey: ["/api/exchange-requests"],
@@ -134,6 +136,20 @@ export default function ActiveOffers() {
                       <MessageSquare className="w-4 h-4" />
                     </Button>
                   </div>
+                ) : user?.id === request.user.id ? (
+                  <div className="text-center">
+                    <Button 
+                      size="sm"
+                      className="w-full bg-primary-500 hover:bg-primary-600"
+                      onClick={() => {
+                        setViewingRequestId(request.id);
+                        setSelectedRequest(request);
+                        setIsOffersViewerOpen(true);
+                      }}
+                    >
+                      View Offers
+                    </Button>
+                  </div>
                 ) : (
                   <div className="text-center">
                     <Button 
@@ -160,6 +176,22 @@ export default function ActiveOffers() {
           setSelectedRequest(null);
         }}
         exchangeRequest={selectedRequest}
+      />
+      
+      {/* Offers Viewer Modal */}
+      <OffersViewer 
+        isOpen={isOffersViewerOpen}
+        onClose={() => {
+          setIsOffersViewerOpen(false);
+          setViewingRequestId(null);
+          setSelectedRequest(null);
+        }}
+        exchangeRequestId={viewingRequestId}
+        exchangeRequestData={selectedRequest ? {
+          fromCurrency: selectedRequest.fromCurrency,
+          toCurrency: selectedRequest.toCurrency,
+          amount: selectedRequest.amount,
+        } : undefined}
       />
     </Card>
   );
