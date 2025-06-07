@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, TrendingUp } from "lucide-react";
 import { useState } from "react";
+import RateOfferModal from "./rate-offer-modal";
+import OffersViewer from "./offers-viewer";
 
 interface ExchangeRequest {
   id: number;
@@ -24,6 +26,7 @@ interface ExchangeRequest {
 export default function ActiveOffers() {
   const { user } = useAuth();
   const [selectedRequest, setSelectedRequest] = useState<ExchangeRequest | null>(null);
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
 
   const { data: exchangeRequests = [], isLoading } = useQuery<ExchangeRequest[]>({
     queryKey: ["/api/exchange-requests"],
@@ -116,7 +119,10 @@ export default function ActiveOffers() {
                     <Button 
                       size="sm"
                       className="flex-1 bg-success-500 hover:bg-success-600 text-white"
-                      onClick={() => setSelectedRequest(request)}
+                      onClick={() => {
+                        setSelectedRequest(request);
+                        setIsOfferModalOpen(true);
+                      }}
                     >
                       Make Offer
                     </Button>
@@ -145,6 +151,16 @@ export default function ActiveOffers() {
           </div>
         )}
       </CardContent>
+      
+      {/* Rate Offer Modal */}
+      <RateOfferModal 
+        isOpen={isOfferModalOpen}
+        onClose={() => {
+          setIsOfferModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        exchangeRequest={selectedRequest}
+      />
     </Card>
   );
 }

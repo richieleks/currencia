@@ -174,7 +174,7 @@ export default function ChatRoom() {
                         {message.user.role}
                       </Badge>
                       <span className="text-xs text-gray-500">
-                        {formatTime(message.createdAt || '')}
+                        {formatTime(message.createdAt ? message.createdAt.toString() : '')}
                       </span>
                     </div>
                     <div className={`rounded-lg p-3 ${
