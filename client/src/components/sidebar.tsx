@@ -33,7 +33,7 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
           <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg p-4 mb-6 text-white">
             <h3 className="text-sm font-medium opacity-90">Account Balance</h3>
             <p className="text-2xl font-bold">
-              ${parseFloat(user.balance || "0").toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              ${user.balance ? parseFloat(user.balance.toString()).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '10,000.00'}
             </p>
             <p className="text-xs opacity-75 mt-1">Available for trading</p>
           </div>
