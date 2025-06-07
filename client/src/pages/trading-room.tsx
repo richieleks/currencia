@@ -8,6 +8,7 @@ import QuickExchangeForm from "@/components/quick-exchange-form";
 import ActiveOffers from "@/components/active-offers";
 import MarketStats from "@/components/market-stats";
 import ConfirmationModal from "@/components/confirmation-modal";
+import DemoBanner from "@/components/demo-banner";
 import { Bell } from "lucide-react";
 import { useState } from "react";
 
@@ -92,6 +93,9 @@ export default function TradingRoom() {
           </div>
         </div>
       </nav>
+
+      {/* Demo Banner */}
+      <DemoBanner />
 
       <div className="flex pt-16">
         {/* Sidebar */}
