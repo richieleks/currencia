@@ -17,14 +17,14 @@ const exchangeRates = [
 export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
   return (
     <>
-      <aside className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 pt-16 transition-transform duration-300 ease-in-out z-40 ${
+      <aside className={`fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 pt-16 transition-transform duration-300 ease-in-out z-40 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0`}>
         <div className="p-4">
           {/* Mobile close button */}
           <button 
             onClick={onClose}
-            className="lg:hidden absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            className="lg:hidden absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
           >
             <X className="w-5 h-5" />
           </button>
@@ -40,19 +40,19 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
 
           {/* Navigation Menu */}
           <nav className="space-y-2">
-            <a href="#" className="flex items-center space-x-3 text-gray-700 p-3 rounded-lg bg-primary-50 border-l-4 border-primary-500">
+            <a href="#" className="flex items-center space-x-3 text-black dark:text-white p-3 rounded-lg bg-primary-50 dark:bg-primary-900 border-l-4 border-primary-500">
               <MessageSquare className="w-5 h-5" />
               <span className="font-medium">Trading Room</span>
             </a>
-            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 p-3 rounded-lg">
+            <a href="#" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
               <TrendingUp className="w-5 h-5" />
               <span>My Trades</span>
             </a>
-            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 p-3 rounded-lg">
+            <a href="#" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
               <History className="w-5 h-5" />
               <span>Transaction History</span>
             </a>
-            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 p-3 rounded-lg">
+            <a href="#" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
               <Settings className="w-5 h-5" />
               <span>Profile Settings</span>
             </a>
@@ -60,11 +60,11 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
 
           {/* Current Exchange Rates */}
           <div className="mt-8">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Live Rates</h4>
+            <h4 className="text-sm font-medium text-black dark:text-white mb-3">Live Rates</h4>
             <div className="space-y-2">
               {exchangeRates.map((rate) => (
-                <div key={rate.pair} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                  <span className="text-sm font-medium">{rate.pair}</span>
+                <div key={rate.pair} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                  <span className="text-sm font-medium text-black dark:text-white">{rate.pair}</span>
                   <span className={`text-sm ${
                     rate.trend === "up" ? "text-success-600" : "text-red-500"
                   }`}>

@@ -66,7 +66,7 @@ export default function TradingRoom() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                 </svg>
               </div>
-              <h1 className="text-xl font-semibold text-gray-900">ForexConnect</h1>
+              <h1 className="text-xl font-semibold text-black dark:text-white">ForexConnect</h1>
             </div>
           </div>
           
@@ -87,10 +87,10 @@ export default function TradingRoom() {
                 className="w-8 h-8 rounded-full object-cover"
               />
               <div className="hidden md:block">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-black dark:text-white">
                   {user.firstName || user.email || 'User'}
                 </p>
-                <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+                <p className="text-xs text-black dark:text-white capitalize">{user.role}</p>
               </div>
             </div>
           </div>
