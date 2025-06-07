@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* Custom colors matching the design */
+  --primary-50: hsl(207, 89%, 86%);
+  --primary-100: hsl(207, 89%, 82%);
+  --primary-500: hsl(207, 90%, 54%);
+  --primary-600: hsl(207, 90%, 44%);
+  --primary-700: hsl(220, 91%, 31%);
+  
+  --success-50: hsl(120, 60%, 92%);
+  --success-100: hsl(120, 60%, 87%);
+  --success-500: hsl(122, 39%, 49%);
+  --success-600: hsl(122, 39%, 59%);
+  
+  --warning-100: hsl(45, 93%, 85%);
+  --warning-500: hsl(35, 91%, 62%);
+  --warning-600: hsl(33, 100%, 69%);
+  --warning-800: hsl(33, 84%, 40%);
+  
+  --error-500: hsl(0, 70%, 50%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-primary-50 { color: hsl(207, 89%, 86%); }
+  .text-primary-100 { color: hsl(207, 89%, 82%); }
+  .text-primary-500 { color: hsl(207, 90%, 54%); }
+  .text-primary-600 { color: hsl(207, 90%, 44%); }
+  .text-primary-700 { color: hsl(220, 91%, 31%); }
+  .text-primary-800 { color: hsl(220, 91%, 21%); }
+  .text-primary-900 { color: hsl(220, 91%, 11%); }
+  
+  .bg-primary-50 { background-color: hsl(207, 89%, 86%); }
+  .bg-primary-100 { background-color: hsl(207, 89%, 82%); }
+  .bg-primary-500 { background-color: hsl(207, 90%, 54%); }
+  .bg-primary-600 { background-color: hsl(207, 90%, 44%); }
+  .bg-primary-700 { background-color: hsl(220, 91%, 31%); }
+  
+  .text-success-50 { color: hsl(120, 60%, 92%); }
+  .text-success-100 { color: hsl(120, 60%, 87%); }
+  .text-success-500 { color: hsl(122, 39%, 49%); }
+  .text-success-600 { color: hsl(122, 39%, 59%); }
+  .text-success-800 { color: hsl(122, 39%, 29%); }
+  
+  .bg-success-50 { background-color: hsl(120, 60%, 92%); }
+  .bg-success-100 { background-color: hsl(120, 60%, 87%); }
+  .bg-success-500 { background-color: hsl(122, 39%, 49%); }
+  .bg-success-600 { background-color: hsl(122, 39%, 59%); }
+  
+  .text-warning-500 { color: hsl(35, 91%, 62%); }
+  .text-warning-600 { color: hsl(33, 100%, 69%); }
+  .text-warning-800 { color: hsl(33, 84%, 40%); }
+  
+  .bg-warning-100 { background-color: hsl(45, 93%, 85%); }
+  .bg-warning-500 { background-color: hsl(35, 91%, 62%); }
+  .bg-warning-600 { background-color: hsl(33, 100%, 69%); }
+  
+  .text-red-500 { color: hsl(0, 70%, 50%); }
+  .bg-red-100 { background-color: hsl(0, 70%, 92%); }
+  .text-red-800 { color: hsl(0, 70%, 30%); }
+  
+  .border-primary-200 { border-color: hsl(207, 89%, 77%); }
+  .border-primary-500 { border-color: hsl(207, 90%, 54%); }
+  .border-success-200 { border-color: hsl(120, 60%, 82%); }
+}
+
+.chat-message:last-child {
+  margin-bottom: 0;
+}
+
+.rate-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .sidebar-hidden {
+    transform: translateX(-100%);
+  }
+}
