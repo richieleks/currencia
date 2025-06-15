@@ -33,6 +33,7 @@ export interface IStorage {
   // Rate offer operations
   createRateOffer(offer: InsertRateOffer): Promise<RateOffer>;
   getRateOffersByRequestId(requestId: number): Promise<(RateOffer & { bidder: User })[]>;
+  getBidderRateOffers(bidderId: string): Promise<(RateOffer & { exchangeRequest?: ExchangeRequest })[]>;
   updateRateOfferStatus(id: number, status: string): Promise<void>;
   
   // Chat operations
@@ -155,6 +156,20 @@ export class DatabaseStorage implements IStorage {
     return results.map(result => ({
       ...result.rate_offers,
       bidder: result.users,
+    }));
+  }
+
+  async getBidderRateOffers(bidderId: string): Promise<(RateOffer & { exchangeRequest?: ExchangeRequest })[]> {
+    const results = await db
+      .select()
+      .from(rateOffers)
+      .leftJoin(exchangeRequests, eq(rateOffers.exchangeRequestId, exchangeRequests.id))
+      .where(eq(rateOffers.bidderId, bidderId))
+      .orderBy(desc(rateOffers.createdAt));
+    
+    return results.map(result => ({
+      ...result.rate_offers,
+      exchangeRequest: result.exchange_requests || undefined,
     }));
   }
 

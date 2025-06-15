@@ -155,6 +155,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get bidder's own bids
+  app.get("/api/rate-offers/my-bids", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "bidder") {
+        return res.status(403).json({ message: "Access denied. Bidder role required." });
+      }
+
+      const bids = await storage.getBidderRateOffers(userId);
+      res.json(bids);
+    } catch (error) {
+      console.error("Error fetching bidder's bids:", error);
+      res.status(500).json({ message: "Failed to fetch bids" });
+    }
+  });
+
   // Accept rate offer
   app.post("/api/rate-offers/:id/accept", isAuthenticated, async (req: any, res) => {
     try {
