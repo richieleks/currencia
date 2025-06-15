@@ -75,6 +75,18 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async updateUserProfile(id: string, updates: Partial<UpsertUser>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
   // Exchange request operations
   async createExchangeRequest(request: InsertExchangeRequest): Promise<ExchangeRequest> {
     const [exchangeRequest] = await db
