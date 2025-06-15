@@ -34,6 +34,24 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["subscriber", "bidder"] }).notNull().default("subscriber"),
   balance: numeric("balance", { precision: 15, scale: 2 }).default("10000.00"),
+  
+  // Bidder profile fields
+  companyName: varchar("company_name"),
+  licenseNumber: varchar("license_number"),
+  yearsOfExperience: integer("years_of_experience"),
+  specializedCurrencies: text("specialized_currencies").array(),
+  minimumTransactionAmount: numeric("minimum_transaction_amount", { precision: 15, scale: 2 }),
+  maximumTransactionAmount: numeric("maximum_transaction_amount", { precision: 15, scale: 2 }),
+  operatingHours: varchar("operating_hours"),
+  responseTimeMinutes: integer("response_time_minutes").default(30),
+  commission: numeric("commission", { precision: 5, scale: 2 }),
+  isVerified: boolean("is_verified").default(false),
+  verificationDocuments: text("verification_documents").array(),
+  bio: text("bio"),
+  phoneNumber: varchar("phone_number"),
+  businessAddress: text("business_address"),
+  website: varchar("website"),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
