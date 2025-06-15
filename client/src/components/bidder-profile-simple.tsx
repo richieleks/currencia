@@ -12,9 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { User, CheckCircle, Building, Clock, DollarSign, Globe, Phone, MapPin, FileText, Star } from "lucide-react";
-import type { User as UserType } from "@shared/schema";
+import { Building, CheckCircle, DollarSign, Star, User } from "lucide-react";
 
 const bidderProfileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -22,7 +20,6 @@ const bidderProfileSchema = z.object({
   companyName: z.string().optional(),
   licenseNumber: z.string().optional(),
   yearsOfExperience: z.number().min(0).max(50).optional(),
-  specializedCurrencies: z.array(z.string()).optional(),
   minimumTransactionAmount: z.string().optional(),
   maximumTransactionAmount: z.string().optional(),
   operatingHours: z.string().optional(),
@@ -43,7 +40,7 @@ export default function BidderProfile() {
   const queryClient = useQueryClient();
   const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([]);
 
-  const { data: user, isLoading: userLoading } = useQuery<UserType>({
+  const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ["/api/auth/user"],
   });
 
@@ -55,7 +52,6 @@ export default function BidderProfile() {
       companyName: "",
       licenseNumber: "",
       yearsOfExperience: 0,
-      specializedCurrencies: [],
       minimumTransactionAmount: "",
       maximumTransactionAmount: "",
       operatingHours: "",
@@ -71,24 +67,24 @@ export default function BidderProfile() {
   // Update form values when user data loads
   useEffect(() => {
     if (user) {
+      const userData = user as any;
       form.reset({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        companyName: user.companyName || "",
-        licenseNumber: user.licenseNumber || "",
-        yearsOfExperience: user.yearsOfExperience || 0,
-        specializedCurrencies: user.specializedCurrencies || [],
-        minimumTransactionAmount: user.minimumTransactionAmount || "",
-        maximumTransactionAmount: user.maximumTransactionAmount || "",
-        operatingHours: user.operatingHours || "",
-        responseTimeMinutes: user.responseTimeMinutes || 30,
-        commission: user.commission || "",
-        bio: user.bio || "",
-        phoneNumber: user.phoneNumber || "",
-        businessAddress: user.businessAddress || "",
-        website: user.website || "",
+        firstName: userData.firstName || "",
+        lastName: userData.lastName || "",
+        companyName: userData.companyName || "",
+        licenseNumber: userData.licenseNumber || "",
+        yearsOfExperience: userData.yearsOfExperience || 0,
+        minimumTransactionAmount: userData.minimumTransactionAmount || "",
+        maximumTransactionAmount: userData.maximumTransactionAmount || "",
+        operatingHours: userData.operatingHours || "",
+        responseTimeMinutes: userData.responseTimeMinutes || 30,
+        commission: userData.commission || "",
+        bio: userData.bio || "",
+        phoneNumber: userData.phoneNumber || "",
+        businessAddress: userData.businessAddress || "",
+        website: userData.website || "",
       });
-      setSelectedCurrencies(user.specializedCurrencies || []);
+      setSelectedCurrencies(userData.specializedCurrencies || []);
     }
   }, [user, form]);
 
@@ -150,7 +146,9 @@ export default function BidderProfile() {
     );
   }
 
-  if (user?.role !== "bidder") {
+  const userData = user as any;
+
+  if (userData?.role !== "bidder") {
     return (
       <div className="container mx-auto p-6">
         <Card>
@@ -486,17 +484,17 @@ export default function BidderProfile() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
-                {user?.isVerified ? (
+                {userData?.isVerified ? (
                   <CheckCircle className="h-5 w-5 text-green-500" />
                 ) : (
                   <CheckCircle className="h-5 w-5 text-gray-300" />
                 )}
-                <span className={user?.isVerified ? "text-green-600" : "text-gray-500"}>
-                  {user?.isVerified ? "Verified Bidder" : "Unverified"}
+                <span className={userData?.isVerified ? "text-green-600" : "text-gray-500"}>
+                  {userData?.isVerified ? "Verified Bidder" : "Unverified"}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                {user?.isVerified 
+                {userData?.isVerified 
                   ? "Your profile has been verified by our team."
                   : "Complete your profile to apply for verification."
                 }
@@ -513,7 +511,7 @@ export default function BidderProfile() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${user?.balance || "0.00"}
+                ${userData?.balance || "0.00"}
               </div>
               <p className="text-sm text-muted-foreground">
                 Available for trading
@@ -528,19 +526,19 @@ export default function BidderProfile() {
             <CardContent className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Experience</span>
-                <span className="font-medium">{user?.yearsOfExperience || 0} years</span>
+                <span className="font-medium">{userData?.yearsOfExperience || 0} years</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Response Time</span>
-                <span className="font-medium">{user?.responseTimeMinutes || 30} min</span>
+                <span className="font-medium">{userData?.responseTimeMinutes || 30} min</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Commission</span>
-                <span className="font-medium">{user?.commission || "N/A"}%</span>
+                <span className="font-medium">{userData?.commission || "N/A"}%</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Specializations</span>
-                <span className="font-medium">{user?.specializedCurrencies?.length || 0} currencies</span>
+                <span className="font-medium">{userData?.specializedCurrencies?.length || 0} currencies</span>
               </div>
             </CardContent>
           </Card>

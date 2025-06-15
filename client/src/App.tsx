@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import TradingRoom from "@/pages/trading-room";
+import BidderProfilePage from "@/pages/bidder-profile";
 import RoleSelector from "@/components/role-selector";
 import { useState } from "react";
 
@@ -24,6 +25,7 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={TradingRoom} />
+          <Route path="/profile" component={BidderProfilePage} />
         </>
       )}
       <Route component={NotFound} />
