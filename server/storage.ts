@@ -22,6 +22,7 @@ export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUserProfile(id: string, updates: Partial<UpsertUser>): Promise<User>;
   
   // Exchange request operations
   createExchangeRequest(request: InsertExchangeRequest): Promise<ExchangeRequest>;
