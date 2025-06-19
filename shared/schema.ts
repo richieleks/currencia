@@ -34,6 +34,11 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["subscriber", "bidder"] }).notNull().default("subscriber"),
   balance: numeric("balance", { precision: 15, scale: 2 }).default("10000.00"),
+  ugxBalance: numeric("ugx_balance", { precision: 15, scale: 2 }).default("37000000.00"),
+  usdBalance: numeric("usd_balance", { precision: 15, scale: 2 }).default("10000.00"),
+  kesBalance: numeric("kes_balance", { precision: 15, scale: 2 }).default("1300000.00"),
+  eurBalance: numeric("eur_balance", { precision: 15, scale: 2 }).default("9200.00"),
+  gbpBalance: numeric("gbp_balance", { precision: 15, scale: 2 }).default("7800.00"),
   
   // Bidder profile fields
   companyName: varchar("company_name"),

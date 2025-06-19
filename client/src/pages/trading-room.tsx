@@ -9,6 +9,7 @@ import ActiveOffers from "@/components/active-offers";
 import MarketStats from "@/components/market-stats";
 import ConfirmationModal from "@/components/confirmation-modal";
 import DemoBanner from "@/components/demo-banner";
+import CurrencyBalanceDashboard from "@/components/currency-balance-dashboard";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Bell } from "lucide-react";
 import { useState } from "react";
@@ -114,6 +115,9 @@ export default function TradingRoom() {
                 Post your forex needs and receive competitive rates from bidders
               </p>
             </div>
+
+            {/* Currency Balance Dashboard */}
+            <CurrencyBalanceDashboard />
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               {/* Chat Section */}
