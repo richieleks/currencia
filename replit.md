@@ -118,6 +118,7 @@ Changelog:
 - June 19, 2025. Added desired rate field to exchange requests
 - June 19, 2025. Unified roles - both bidders and subscribers can create requests and offers
 - June 19, 2025. Enhanced offers viewer with accept/decline functionality and private messaging hooks
+- June 19, 2025. Updated branding from ForexConnect to Currencia, removed account balance from sidebar
 
 ## User Preferences
 
