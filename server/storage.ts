@@ -44,6 +44,7 @@ export interface IStorage {
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getUserTransactions(userId: string): Promise<Transaction[]>;
   updateUserBalance(userId: string, amount: string): Promise<void>;
+  updateUserCurrencyBalance(userId: string, currency: 'ugx' | 'usd' | 'kes' | 'eur' | 'gbp', amount: string): Promise<void>;
   
   // Market stats
   getMarketStats(): Promise<{
@@ -231,6 +232,24 @@ export class DatabaseStorage implements IStorage {
     await db
       .update(users)
       .set({ balance: amount })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserCurrencyBalance(userId: string, currency: 'ugx' | 'usd' | 'kes' | 'eur' | 'gbp', amount: string): Promise<void> {
+    const balanceField = {
+      ugx: 'ugxBalance',
+      usd: 'usdBalance',
+      kes: 'kesBalance',
+      eur: 'eurBalance',
+      gbp: 'gbpBalance'
+    }[currency];
+
+    const updateObj: any = {};
+    updateObj[balanceField] = amount;
+
+    await db
+      .update(users)
+      .set(updateObj)
       .where(eq(users.id, userId));
   }
 
