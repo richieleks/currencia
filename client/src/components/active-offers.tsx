@@ -36,14 +36,6 @@ export default function ActiveOffers() {
     refetchInterval: 10000, // Refetch every 10 seconds
   });
 
-  // Debug logging
-  console.log("Active Offers Debug:", { 
-    exchangeRequests, 
-    isLoading, 
-    error,
-    length: exchangeRequests?.length 
-  });
-
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
