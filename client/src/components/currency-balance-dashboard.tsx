@@ -69,8 +69,8 @@ export default function CurrencyBalanceDashboard() {
   };
 
   const getTotalPortfolioValue = () => {
-    // Convert all to USD for total calculation (using approximate rates)
-    const rates = { UGX: 0.00027, USD: 1, KES: 0.0077, EUR: 1.09, GBP: 1.27 };
+    // Convert all to UGX for total calculation (using approximate rates)
+    const rates = { UGX: 1, USD: 3700, KES: 28.5, EUR: 4033, GBP: 4700 };
     
     const total = currencies.reduce((sum, currency) => {
       const balance = parseFloat(currency.balance);
@@ -90,7 +90,7 @@ export default function CurrencyBalanceDashboard() {
         </div>
         <div className="text-right">
           <p className="text-sm text-gray-600 dark:text-gray-400">Total Portfolio Value</p>
-          <p className="text-lg font-bold text-black dark:text-white">${getTotalPortfolioValue()} USD</p>
+          <p className="text-lg font-bold text-black dark:text-white">UGX {getTotalPortfolioValue()}</p>
         </div>
       </div>
 
