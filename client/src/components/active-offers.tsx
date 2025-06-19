@@ -122,7 +122,21 @@ export default function ActiveOffers() {
                   by {request.user.firstName || 'User'}
                 </div>
                 
-                {user?.role === "bidder" ? (
+                {user?.id === request.user.id ? (
+                  <div className="text-center">
+                    <Button 
+                      size="sm"
+                      className="w-full bg-primary-500 hover:bg-primary-600"
+                      onClick={() => {
+                        setViewingRequestId(request.id);
+                        setSelectedRequest(request);
+                        setIsOffersViewerOpen(true);
+                      }}
+                    >
+                      View Offers
+                    </Button>
+                  </div>
+                ) : (
                   <div className="flex items-center space-x-2">
                     <Button 
                       size="sm"
@@ -140,31 +154,6 @@ export default function ActiveOffers() {
                       className="border-gray-300 hover:bg-gray-50"
                     >
                       <MessageSquare className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : user?.id === request.user.id ? (
-                  <div className="text-center">
-                    <Button 
-                      size="sm"
-                      className="w-full bg-primary-500 hover:bg-primary-600"
-                      onClick={() => {
-                        setViewingRequestId(request.id);
-                        setSelectedRequest(request);
-                        setIsOffersViewerOpen(true);
-                      }}
-                    >
-                      View Offers
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <Button 
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      disabled
-                    >
-                      Waiting for offers...
                     </Button>
                   </div>
                 )}

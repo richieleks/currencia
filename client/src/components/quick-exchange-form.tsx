@@ -106,8 +106,8 @@ export default function QuickExchangeForm() {
     createExchangeRequestMutation.mutate(data);
   };
 
-  // Only show form to subscribers
-  if (user?.role !== "subscriber") {
+  // Show form to all authenticated users
+  if (!user) {
     return (
       <Card>
         <CardHeader>
@@ -115,7 +115,7 @@ export default function QuickExchangeForm() {
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 text-center py-4">
-            Only subscribers can post exchange requests.
+            Please log in to post exchange requests.
           </p>
         </CardContent>
       </Card>

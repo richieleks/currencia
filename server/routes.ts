@@ -75,8 +75,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user || user.role !== "subscriber") {
-        return res.status(403).json({ message: "Only subscribers can create exchange requests" });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
       const requestData = insertExchangeRequestSchema.parse({
@@ -118,8 +118,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user || user.role !== "bidder") {
-        return res.status(403).json({ message: "Only bidders can create rate offers" });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
       const offerData = insertRateOfferSchema.parse({
@@ -162,8 +162,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user || user.role !== "bidder") {
-        return res.status(403).json({ message: "Access denied. Bidder role required." });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
       const bids = await storage.getBidderRateOffers(userId);
