@@ -153,17 +153,17 @@ export default function BiddingDashboard() {
     }
   };
 
-  if (user && user.role !== "bidder") {
+  if (!user) {
     return (
       <div className="container mx-auto p-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5" />
-              Bidding Access Required
+              Authentication Required
             </CardTitle>
             <CardDescription>
-              Switch to bidder role to access bidding opportunities and place offers on exchange requests.
+              Please log in to access bidding opportunities and place offers on exchange requests.
             </CardDescription>
           </CardHeader>
         </Card>
