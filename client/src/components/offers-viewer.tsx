@@ -83,6 +83,41 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
     },
   });
 
+  const declineOfferMutation = useMutation({
+    mutationFn: async (offerId: number) => {
+      await apiRequest("POST", `/api/rate-offers/${offerId}/decline`, {
+        exchangeRequestId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rate-offers", exchangeRequestId] });
+      
+      toast({
+        title: "Offer declined",
+        description: "The offer has been declined.",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      
+      toast({
+        title: "Error",
+        description: "Failed to decline offer. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -101,6 +136,10 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
   const handleAcceptOffer = (offerId: number) => {
     setSelectedOfferId(offerId);
     acceptOfferMutation.mutate(offerId);
+  };
+
+  const handleDeclineOffer = (offerId: number) => {
+    declineOfferMutation.mutate(offerId);
   };
 
   if (!exchangeRequestData) return null;
@@ -185,23 +224,57 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
                     </div>
 
                     {offer.status === 'pending' && (
-                      <Button 
-                        className="w-full bg-primary-500 hover:bg-primary-600"
-                        onClick={() => handleAcceptOffer(offer.id)}
-                        disabled={acceptOfferMutation.isPending && selectedOfferId === offer.id}
-                      >
-                        {acceptOfferMutation.isPending && selectedOfferId === offer.id ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                            Accepting...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Accept This Offer
-                          </>
-                        )}
-                      </Button>
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button 
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => handleAcceptOffer(offer.id)}
+                            disabled={acceptOfferMutation.isPending && selectedOfferId === offer.id}
+                          >
+                            {acceptOfferMutation.isPending && selectedOfferId === offer.id ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                                Accepting...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Accept
+                              </>
+                            )}
+                          </Button>
+                          
+                          <Button 
+                            variant="outline"
+                            className="border-red-300 text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeclineOffer(offer.id)}
+                            disabled={declineOfferMutation.isPending}
+                          >
+                            {declineOfferMutation.isPending ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2" />
+                                Declining...
+                              </>
+                            ) : (
+                              'Decline'
+                            )}
+                          </Button>
+                        </div>
+                        
+                        <Button 
+                          variant="outline"
+                          className="w-full text-blue-600 border-blue-300 hover:bg-blue-50"
+                          onClick={() => {
+                            // Private message functionality will be implemented
+                            toast({
+                              title: "Message Bidder",
+                              description: "Private messaging with bidders will be available soon.",
+                            });
+                          }}
+                        >
+                          Message Bidder
+                        </Button>
+                      </div>
                     )}
 
                     {offer.status === 'accepted' && (
@@ -209,6 +282,14 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
                         <CheckCircle className="w-5 h-5 text-success-600 mx-auto mb-1" />
                         <p className="text-sm font-medium text-success-900">Offer Accepted</p>
                         <p className="text-xs text-success-700">Exchange completed successfully</p>
+                      </div>
+                    )}
+
+                    {offer.status === 'rejected' && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                        <div className="w-5 h-5 text-red-600 mx-auto mb-1">✕</div>
+                        <p className="text-sm font-medium text-red-900">Offer Declined</p>
+                        <p className="text-xs text-red-700">This offer was not accepted</p>
                       </div>
                     )}
                   </CardContent>
