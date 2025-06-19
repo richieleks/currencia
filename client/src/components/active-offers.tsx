@@ -31,9 +31,17 @@ export default function ActiveOffers() {
   const [isOffersViewerOpen, setIsOffersViewerOpen] = useState(false);
   const [viewingRequestId, setViewingRequestId] = useState<number | null>(null);
 
-  const { data: exchangeRequests = [], isLoading } = useQuery<ExchangeRequest[]>({
+  const { data: exchangeRequests = [], isLoading, error } = useQuery<ExchangeRequest[]>({
     queryKey: ["/api/exchange-requests"],
     refetchInterval: 10000, // Refetch every 10 seconds
+  });
+
+  // Debug logging
+  console.log("Active Offers Debug:", { 
+    exchangeRequests, 
+    isLoading, 
+    error,
+    length: exchangeRequests?.length 
   });
 
   const formatTime = (dateString: string) => {
