@@ -243,6 +243,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Decline rate offer
+  app.post("/api/rate-offers/:id/decline", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const offerId = parseInt(req.params.id);
+      
+      // Get the rate offer and exchange request
+      const offers = await storage.getRateOffersByRequestId(req.body.exchangeRequestId);
+      const offer = offers.find((o: any) => o.id === offerId);
+      
+      if (!offer) {
+        return res.status(404).json({ message: "Rate offer not found" });
+      }
+
+      const exchangeRequest = await storage.getExchangeRequestById(offer.exchangeRequestId);
+      
+      if (!exchangeRequest || exchangeRequest.userId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      // Update offer status to rejected
+      await storage.updateRateOfferStatus(offerId, "rejected");
+      
+      res.json({ message: "Rate offer declined successfully" });
+    } catch (error) {
+      console.error("Error declining rate offer:", error);
+      res.status(500).json({ message: "Failed to decline rate offer" });
+    }
+  });
+
   // Chat routes
   app.get("/api/chat/messages", isAuthenticated, async (req, res) => {
     try {

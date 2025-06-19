@@ -47,10 +47,10 @@ ForexConnect is a modern web application that connects individuals and businesse
 - **Live Market Stats**: Real-time statistics on active requests and online bidders
 
 ### Trading Workflow
-1. **Request Creation**: Users specify currency pair, amount, and priority
-2. **Bidding Process**: Verified traders submit competitive rate offers
-3. **Offer Selection**: Request creators can view and accept the best offers
-4. **Transaction Completion**: Automated balance updates and transaction records
+1. **Request Creation**: Users specify currency pair, amount, desired rate (optional), and priority
+2. **Bidding Process**: Any user can submit competitive rate offers on active requests
+3. **Offer Management**: Request creators can view all offers, accept or decline individual offers, and message bidders privately
+4. **Transaction Completion**: Automated balance updates and transaction records upon acceptance
 
 ## Data Flow
 
@@ -114,6 +114,10 @@ ForexConnect is a modern web application that connects individuals and businesse
 
 Changelog:
 - June 19, 2025. Initial setup
+- June 19, 2025. Added currency balance dashboard with UGX, USD, KES, EUR, GBP
+- June 19, 2025. Added desired rate field to exchange requests
+- June 19, 2025. Unified roles - both bidders and subscribers can create requests and offers
+- June 19, 2025. Enhanced offers viewer with accept/decline functionality and private messaging hooks
 
 ## User Preferences
 
