@@ -180,19 +180,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const offerId = parseInt(req.params.id);
       
+      console.log("Accept offer request:", { userId, offerId, body: req.body });
+      
       // Get the rate offer and exchange request
       const offers = await storage.getRateOffersByRequestId(req.body.exchangeRequestId);
+      console.log("Found offers:", offers);
       const offer = offers.find((o: any) => o.id === offerId);
+      console.log("Matching offer:", offer);
       
       if (!offer) {
+        console.log("Offer not found for ID:", offerId, "in offers:", offers);
         return res.status(404).json({ message: "Rate offer not found" });
       }
 
       const exchangeRequest = await storage.getExchangeRequestById(offer.exchangeRequestId);
+      console.log("Exchange request:", exchangeRequest);
+      console.log("Auth check:", { exchangeRequestUserId: exchangeRequest?.userId, currentUserId: userId });
       
       if (!exchangeRequest || exchangeRequest.userId !== userId) {
+        console.log("Authorization failed - user cannot accept this offer");
         return res.status(403).json({ message: "Unauthorized" });
       }
+
+      console.log("Authorization passed, proceeding with offer acceptance");
 
       // Update offer status
       await storage.updateRateOfferStatus(offerId, "accepted");

@@ -62,7 +62,9 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
       
       onClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error("Accept offer error:", error);
+      
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -77,7 +79,7 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
       
       toast({
         title: "Error",
-        description: "Failed to accept offer. Please try again.",
+        description: error.message || "Failed to accept offer. Please try again.",
         variant: "destructive",
       });
     },
@@ -134,6 +136,7 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
   };
 
   const handleAcceptOffer = (offerId: number) => {
+    console.log("Attempting to accept offer:", { offerId, exchangeRequestId });
     setSelectedOfferId(offerId);
     acceptOfferMutation.mutate(offerId);
   };
