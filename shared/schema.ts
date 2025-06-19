@@ -67,6 +67,7 @@ export const exchangeRequests = pgTable("exchange_requests", {
   fromCurrency: varchar("from_currency", { length: 3 }).notNull(),
   toCurrency: varchar("to_currency", { length: 3 }).notNull(),
   amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+  desiredRate: numeric("desired_rate", { precision: 10, scale: 6 }),
   priority: varchar("priority", { enum: ["standard", "urgent", "express"] }).default("standard"),
   status: varchar("status", { enum: ["active", "completed", "cancelled"] }).default("active"),
   selectedOfferId: integer("selected_offer_id"),

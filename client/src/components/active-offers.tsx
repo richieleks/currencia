@@ -13,6 +13,7 @@ interface ExchangeRequest {
   fromCurrency: string;
   toCurrency: string;
   amount: string;
+  desiredRate?: string;
   priority: string;
   status: string;
   createdAt: string;
@@ -108,10 +109,15 @@ export default function ActiveOffers() {
                     {request.priority}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
+                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
                   <span>Amount: {parseFloat(request.amount).toLocaleString()} {request.fromCurrency}</span>
                   <span>{formatTime(request.createdAt)}</span>
                 </div>
+                {request.desiredRate && (
+                  <div className="text-sm text-blue-600 mb-2">
+                    Desired Rate: {parseFloat(request.desiredRate).toFixed(6)}
+                  </div>
+                )}
                 <div className="text-xs text-gray-500 mb-3">
                   by {request.user.firstName || 'User'}
                 </div>

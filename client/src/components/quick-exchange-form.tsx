@@ -14,13 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
 const currencies = [
+  { value: "UGX", label: "UGX - Ugandan Shilling" },
   { value: "USD", label: "USD - US Dollar" },
+  { value: "KES", label: "KES - Kenyan Shilling" },
   { value: "EUR", label: "EUR - Euro" },
   { value: "GBP", label: "GBP - British Pound" },
-  { value: "JPY", label: "JPY - Japanese Yen" },
-  { value: "AUD", label: "AUD - Australian Dollar" },
-  { value: "CAD", label: "CAD - Canadian Dollar" },
-  { value: "CHF", label: "CHF - Swiss Franc" },
 ];
 
 const priorities = [
@@ -33,6 +31,7 @@ const exchangeFormSchema = z.object({
   fromCurrency: z.string().min(1, "Please select source currency"),
   toCurrency: z.string().min(1, "Please select target currency"),
   amount: z.string().min(1, "Please enter amount").transform((val) => parseFloat(val)),
+  desiredRate: z.string().optional().transform((val) => val ? parseFloat(val) : undefined),
   priority: z.string().min(1, "Please select priority"),
 }).refine((data) => data.fromCurrency !== data.toCurrency, {
   message: "Source and target currencies must be different",
@@ -40,6 +39,9 @@ const exchangeFormSchema = z.object({
 }).refine((data) => data.amount > 0, {
   message: "Amount must be greater than 0",
   path: ["amount"],
+}).refine((data) => !data.desiredRate || data.desiredRate > 0, {
+  message: "Rate must be greater than 0",
+  path: ["desiredRate"],
 });
 
 type ExchangeFormData = z.infer<typeof exchangeFormSchema>;
@@ -55,6 +57,7 @@ export default function QuickExchangeForm() {
       fromCurrency: "",
       toCurrency: "",
       amount: 0,
+      desiredRate: undefined,
       priority: "standard",
     },
   });
@@ -65,6 +68,7 @@ export default function QuickExchangeForm() {
         fromCurrency: data.fromCurrency,
         toCurrency: data.toCurrency,
         amount: data.amount.toString(),
+        desiredRate: data.desiredRate?.toString(),
         priority: data.priority,
       });
     },
@@ -187,6 +191,25 @@ export default function QuickExchangeForm() {
                       type="number"
                       step="0.01"
                       placeholder="0.00"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="desiredRate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Desired Rate (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.000001"
+                      placeholder="Enter desired exchange rate"
                       {...field}
                       onChange={(e) => field.onChange(e.target.value)}
                     />

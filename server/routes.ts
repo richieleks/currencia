@@ -87,10 +87,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const exchangeRequest = await storage.createExchangeRequest(requestData);
       
       // Create chat message for the request
+      const rateInfo = requestData.desiredRate ? ` at rate ${requestData.desiredRate}` : '';
       await storage.createChatMessage({
         userId,
         messageType: "request",
-        content: `Exchange request: ${requestData.amount} ${requestData.fromCurrency} to ${requestData.toCurrency}`,
+        content: `Exchange request: ${requestData.amount} ${requestData.fromCurrency} to ${requestData.toCurrency}${rateInfo}`,
         exchangeRequestId: exchangeRequest.id,
       });
 

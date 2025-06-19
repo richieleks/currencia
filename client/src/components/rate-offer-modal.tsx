@@ -17,6 +17,7 @@ interface ExchangeRequest {
   fromCurrency: string;
   toCurrency: string;
   amount: string;
+  desiredRate?: string;
   priority: string;
   status: string;
   createdAt: string;
