@@ -123,6 +123,7 @@ Changelog:
 - June 20, 2025. Implemented currency portfolio management with 18 supported currencies
 - June 20, 2025. Added side menu to My Trading Activity page with filters and stats
 - June 20, 2025. Enhanced chat system with bid accept/reject actions and real-time notifications
+- June 20, 2025. Updated trading activity page to display volume per currency like dashboard
 
 ## User Preferences
 

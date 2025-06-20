@@ -218,10 +218,24 @@ export default function TradesHistory({ activeFilter = "all" }: TradesHistoryPro
     );
   }
 
-  const totalVolume = filteredTrades.reduce((sum, trade) => {
-    const amount = parseFloat(trade.finalAmount || trade.amount || '0');
-    return sum + (isNaN(amount) ? 0 : amount);
-  }, 0);
+  // Calculate volume per currency
+  const volumeByCurrency = filteredTrades.reduce((acc, trade) => {
+    const fromCurrency = trade.fromCurrency.toUpperCase();
+    const toCurrency = trade.toCurrency.toUpperCase();
+    const fromAmount = parseFloat(trade.amount || '0');
+    const toAmount = parseFloat(trade.finalAmount || trade.totalAmount || '0');
+    
+    if (!isNaN(fromAmount)) {
+      acc[fromCurrency] = (acc[fromCurrency] || 0) + fromAmount;
+    }
+    if (!isNaN(toAmount) && fromCurrency !== toCurrency) {
+      acc[toCurrency] = (acc[toCurrency] || 0) + toAmount;
+    }
+    
+    return acc;
+  }, {} as Record<string, number>);
+
+  const totalVolume = Object.values(volumeByCurrency).reduce((sum, amount) => sum + amount, 0);
 
   const successfulTrades = filteredTrades.filter(trade => 
     trade.status === 'completed' || trade.status === 'accepted'
@@ -252,16 +266,31 @@ export default function TradesHistory({ activeFilter = "all" }: TradesHistoryPro
             <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                notation: 'compact',
-              }).format(totalVolume)}
+            <div className="space-y-2">
+              {Object.entries(volumeByCurrency)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 3)
+                .map(([currency, amount]) => (
+                  <div key={currency} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">
+                        {currencyFlags[currency] || '💱'}
+                      </span>
+                      <span className="text-sm font-medium">{currency}</span>
+                    </div>
+                    <span className="text-sm font-bold">
+                      {new Intl.NumberFormat('en-US', {
+                        notation: 'compact',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 1,
+                      }).format(amount)}
+                    </span>
+                  </div>
+                ))}
+              {Object.keys(volumeByCurrency).length === 0 && (
+                <p className="text-xs text-muted-foreground">No volume data</p>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Total exchange value
-            </p>
           </CardContent>
         </Card>
 

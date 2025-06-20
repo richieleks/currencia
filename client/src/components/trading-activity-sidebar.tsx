@@ -55,10 +55,25 @@ export default function TradingActivitySidebar({ activeFilter, onFilterChange }:
     return tradeDate.getMonth() === now.getMonth() && tradeDate.getFullYear() === now.getFullYear();
   }).length;
 
-  const totalVolume = allTrades.reduce((sum, trade) => {
-    const amount = parseFloat(trade.finalAmount || trade.totalAmount || trade.amount || '0');
-    return sum + (isNaN(amount) ? 0 : amount);
-  }, 0);
+  // Calculate volume per currency
+  const volumeByCurrency = allTrades.reduce((acc, trade) => {
+    const fromCurrency = trade.fromCurrency?.toUpperCase() || '';
+    const toCurrency = trade.toCurrency?.toUpperCase() || '';
+    const fromAmount = parseFloat(trade.amount || '0');
+    const toAmount = parseFloat(trade.finalAmount || trade.totalAmount || '0');
+    
+    if (!isNaN(fromAmount) && fromCurrency) {
+      acc[fromCurrency] = (acc[fromCurrency] || 0) + fromAmount;
+    }
+    if (!isNaN(toAmount) && toCurrency && fromCurrency !== toCurrency) {
+      acc[toCurrency] = (acc[toCurrency] || 0) + toAmount;
+    }
+    
+    return acc;
+  }, {} as Record<string, number>);
+
+  const totalVolume = Object.values(volumeByCurrency).reduce((sum, amount) => sum + amount, 0);
+  const topCurrency = Object.entries(volumeByCurrency).sort(([,a], [,b]) => b - a)[0];
 
   const quickStats = [
     {
@@ -81,7 +96,7 @@ export default function TradingActivitySidebar({ activeFilter, onFilterChange }:
     },
     {
       title: "Total Volume",
-      value: `$${totalVolume.toLocaleString()}`,
+      value: topCurrency ? `${topCurrency[1].toLocaleString()} ${topCurrency[0]}` : "No data",
       icon: BarChart3,
       color: "text-orange-600"
     }
@@ -211,6 +226,48 @@ export default function TradingActivitySidebar({ activeFilter, onFilterChange }:
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Volume by Currency */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Volume by Currency</CardTitle>
+          <CardDescription className="text-xs">
+            Trading volume breakdown
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {Object.keys(volumeByCurrency).length > 0 ? (
+            <div className="space-y-2">
+              {Object.entries(volumeByCurrency)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 4)
+                .map(([currency, amount]) => (
+                  <div key={currency} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">
+                        {currency === 'UGX' ? '🇺🇬' : 
+                         currency === 'USD' ? '🇺🇸' :
+                         currency === 'KES' ? '🇰🇪' :
+                         currency === 'EUR' ? '🇪🇺' :
+                         currency === 'GBP' ? '🇬🇧' : '💱'}
+                      </span>
+                      <span className="font-medium">{currency}</span>
+                    </div>
+                    <span className="text-muted-foreground">
+                      {new Intl.NumberFormat('en-US', {
+                        notation: 'compact',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 1,
+                      }).format(amount)}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">No volume data</p>
+          )}
         </CardContent>
       </Card>
 
