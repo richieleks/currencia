@@ -202,14 +202,15 @@ export default function ChatRoom() {
   const NotificationMessage = ({ message, currentUserId }: BidActionProps) => {
     const isForUser = message.targetUserId === currentUserId;
     
-    if (!isForUser && message.targetUserId) return null;
+    // Show notifications if they're for the current user or if they're global (no target)
+    if (message.targetUserId && !isForUser) return null;
     
     return (
-      <div className={`mb-4 ${isForUser ? 'bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3' : ''}`}>
+      <div className={`mb-4 ${isForUser ? 'bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3' : 'bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg p-3'}`}>
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
-            <div className="h-8 w-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-              <Bell className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <div className="h-8 w-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+              <Bell className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
           <div className="flex-1 min-w-0">
@@ -223,8 +224,13 @@ export default function ChatRoom() {
               <span className="text-xs text-gray-500">
                 {format(new Date(message.createdAt), "HH:mm")}
               </span>
+              {isForUser && (
+                <Badge variant="outline" className="text-xs">
+                  For You
+                </Badge>
+              )}
             </div>
-            <div className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+            <div className="mt-1 text-sm text-gray-900 dark:text-gray-100 font-medium">
               {message.content}
             </div>
           </div>
