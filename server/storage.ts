@@ -40,6 +40,8 @@ export interface IStorage {
   // Chat operations
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage & { user: User }>;
   getChatMessages(): Promise<(ChatMessage & { user: User })[]>;
+  createBidActionMessage(userId: string, action: "accept" | "reject", rateOfferId: number, exchangeRequestId: number, targetUserId: string): Promise<ChatMessage & { user: User }>;
+  createNotificationMessage(userId: string, content: string, targetUserId?: string): Promise<ChatMessage & { user: User }>;
   
   // Transaction operations
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
@@ -219,6 +221,52 @@ export class DatabaseStorage implements IStorage {
       ...result.chat_messages,
       user: result.users,
     })).reverse();
+  }
+
+  async createBidActionMessage(userId: string, action: "accept" | "reject", rateOfferId: number, exchangeRequestId: number, targetUserId: string): Promise<ChatMessage & { user: User }> {
+    const actionText = action === "accept" ? "accepted" : "rejected";
+    const content = `${actionText} a bid on exchange request #${exchangeRequestId}`;
+    
+    const [chatMessage] = await db
+      .insert(chatMessages)
+      .values({
+        userId,
+        messageType: "bid_action",
+        content,
+        exchangeRequestId,
+        rateOfferId,
+        actionType: action,
+        targetUserId,
+      })
+      .returning();
+    
+    const user = await this.getUser(userId);
+    if (!user) throw new Error("User not found");
+    
+    return {
+      ...chatMessage,
+      user,
+    };
+  }
+
+  async createNotificationMessage(userId: string, content: string, targetUserId?: string): Promise<ChatMessage & { user: User }> {
+    const [chatMessage] = await db
+      .insert(chatMessages)
+      .values({
+        userId,
+        messageType: "notification",
+        content,
+        targetUserId,
+      })
+      .returning();
+    
+    const user = await this.getUser(userId);
+    if (!user) throw new Error("User not found");
+    
+    return {
+      ...chatMessage,
+      user,
+    };
   }
 
   // Transaction operations

@@ -276,6 +276,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update offer status to rejected
       await storage.updateRateOfferStatus(offerId, "rejected");
       
+      // Create bid action message in chat
+      await storage.createBidActionMessage(userId, "reject", offerId, offer.exchangeRequestId, offer.bidderId);
+      
+      // Create notification for the bidder
+      const currentUser = await storage.getUser(userId);
+      const userName = currentUser?.firstName || "Someone";
+      await storage.createNotificationMessage(
+        "system",
+        `${userName} declined your bid on ${exchangeRequest.fromCurrency}/${exchangeRequest.toCurrency} exchange`,
+        offer.bidderId
+      );
+      
       res.json({ message: "Rate offer declined successfully" });
     } catch (error) {
       console.error("Error declining rate offer:", error);
