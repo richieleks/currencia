@@ -10,7 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChatMessage } from "@shared/schema";
-import { Send, TrendingUp, Clock, MessageSquare } from "lucide-react";
+import { Send, TrendingUp, Clock, MessageSquare, CheckCircle, XCircle, Bell } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { format } from "date-fns";
 
 interface ChatMessageWithUser extends ChatMessage {
   user: {
@@ -20,6 +22,16 @@ interface ChatMessageWithUser extends ChatMessage {
     role: string;
     profileImageUrl: string | null;
   };
+}
+
+interface BidActionProps {
+  message: ChatMessageWithUser;
+  currentUserId: string;
+}
+
+interface BidActionProps {
+  message: ChatMessageWithUser;
+  currentUserId: string;
 }
 
 export default function ChatRoom() {
@@ -113,6 +125,112 @@ export default function ChatRoom() {
     if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
     
     return date.toLocaleDateString();
+  };
+
+  const getMessageTypeColor = (messageType: string) => {
+    switch (messageType) {
+      case "request":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100";
+      case "offer":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100";
+      case "bid_action":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100";
+      case "notification":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100";
+    }
+  };
+
+  const getMessageIcon = (messageType: string, actionType?: string) => {
+    switch (messageType) {
+      case "bid_action":
+        return actionType === "accept" ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />;
+      case "notification":
+        return <Bell className="h-4 w-4" />;
+      case "request":
+        return <MessageSquare className="h-4 w-4" />;
+      case "offer":
+        return <Send className="h-4 w-4" />;
+      default:
+        return <MessageSquare className="h-4 w-4" />;
+    }
+  };
+
+  const BidActionMessage = ({ message, currentUserId }: BidActionProps) => {
+    const isTargetUser = message.targetUserId === currentUserId;
+    const actionText = message.actionType === "accept" ? "accepted" : "rejected";
+    const actionColor = message.actionType === "accept" ? "text-green-600" : "text-red-600";
+    
+    return (
+      <div className={`mb-4 ${isTargetUser ? 'bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3' : ''}`}>
+        <div className="flex items-start space-x-3">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="text-xs">
+              {message.user.firstName?.charAt(0) || message.user.email?.charAt(0) || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {message.user.firstName || message.user.email}
+              </span>
+              <Badge variant="secondary" className={getMessageTypeColor(message.messageType)}>
+                <div className="flex items-center gap-1">
+                  {getMessageIcon(message.messageType, message.actionType)}
+                  <span className="capitalize">{actionText}</span>
+                </div>
+              </Badge>
+              <span className="text-xs text-gray-500">
+                {format(new Date(message.createdAt), "HH:mm")}
+              </span>
+            </div>
+            <div className={`mt-1 text-sm ${actionColor} font-medium`}>
+              {message.content}
+              {isTargetUser && (
+                <span className="ml-2 text-xs text-gray-500">
+                  (This affects your bid)
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const NotificationMessage = ({ message, currentUserId }: BidActionProps) => {
+    const isForUser = message.targetUserId === currentUserId;
+    
+    if (!isForUser && message.targetUserId) return null;
+    
+    return (
+      <div className={`mb-4 ${isForUser ? 'bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3' : ''}`}>
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <div className="h-8 w-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+              <Bell className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary" className={getMessageTypeColor(message.messageType)}>
+                <div className="flex items-center gap-1">
+                  {getMessageIcon(message.messageType)}
+                  <span>Notification</span>
+                </div>
+              </Badge>
+              <span className="text-xs text-gray-500">
+                {format(new Date(message.createdAt), "HH:mm")}
+              </span>
+            </div>
+            <div className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {message.content}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (isLoading) {

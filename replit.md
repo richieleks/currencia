@@ -122,6 +122,7 @@ Changelog:
 - June 20, 2025. Added comprehensive trades and transaction history feature
 - June 20, 2025. Implemented currency portfolio management with 18 supported currencies
 - June 20, 2025. Added side menu to My Trading Activity page with filters and stats
+- June 20, 2025. Enhanced chat system with bid accept/reject actions and real-time notifications
 
 ## User Preferences
 
