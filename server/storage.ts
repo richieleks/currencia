@@ -52,6 +52,7 @@ export interface IStorage {
   }>;
   updateUserBalance(userId: string, amount: string): Promise<void>;
   updateUserCurrencyBalance(userId: string, currency: 'ugx' | 'usd' | 'kes' | 'eur' | 'gbp', amount: string): Promise<void>;
+  transferBetweenAccounts(userId: string, currency: 'ugx' | 'usd' | 'kes' | 'eur' | 'gbp', amount: string, direction: 'operational-to-wallet' | 'wallet-to-operational'): Promise<void>;
   
   // Portfolio management
   updateUserActiveCurrencies(userId: string, currencies: string[]): Promise<User>;
