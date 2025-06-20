@@ -119,6 +119,9 @@ Changelog:
 - June 19, 2025. Unified roles - both bidders and subscribers can create requests and offers
 - June 19, 2025. Enhanced offers viewer with accept/decline functionality and private messaging hooks
 - June 19, 2025. Updated branding from ForexConnect to Currencia, removed account balance from sidebar
+- June 20, 2025. Added comprehensive trades and transaction history feature
+- June 20, 2025. Implemented currency portfolio management with 18 supported currencies
+- June 20, 2025. Added side menu to My Trading Activity page with filters and stats
 
 ## User Preferences
 
