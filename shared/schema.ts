@@ -40,6 +40,9 @@ export const users = pgTable("users", {
   eurBalance: numeric("eur_balance", { precision: 15, scale: 2 }).default("9200.00"),
   gbpBalance: numeric("gbp_balance", { precision: 15, scale: 2 }).default("7800.00"),
   
+  // Portfolio management
+  activeCurrencies: text("active_currencies").array().default(["UGX", "USD", "KES", "EUR", "GBP"]),
+  
   // Bidder profile fields
   companyName: varchar("company_name"),
   licenseNumber: varchar("license_number"),
