@@ -124,6 +124,7 @@ Changelog:
 - June 20, 2025. Added side menu to My Trading Activity page with filters and stats
 - June 20, 2025. Enhanced chat system with bid accept/reject actions and real-time notifications
 - June 20, 2025. Updated trading activity page to display volume per currency like dashboard
+- June 20, 2025. Added settings page with money transfer functionality between operational and wallet accounts
 
 ## User Preferences
 
