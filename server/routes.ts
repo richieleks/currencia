@@ -283,10 +283,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUser = await storage.getUser(userId);
       const userName = currentUser?.firstName || "Someone";
       await storage.createNotificationMessage(
-        "system",
+        userId,
         `${userName} declined your bid on ${exchangeRequest.fromCurrency}/${exchangeRequest.toCurrency} exchange`,
         offer.bidderId
       );
+      
+      // Broadcast the notification via WebSocket
+      const clients = wss.clients;
+      clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'new_message',
+            targetUserId: offer.bidderId
+          }));
+        }
+      });
       
       res.json({ message: "Rate offer declined successfully" });
     } catch (error) {
