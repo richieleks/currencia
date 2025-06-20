@@ -11,8 +11,10 @@ import ConfirmationModal from "@/components/confirmation-modal";
 import DemoBanner from "@/components/demo-banner";
 import CurrencyBalanceDashboard from "@/components/currency-balance-dashboard";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Bell } from "lucide-react";
+import NotificationsDropdown from "@/components/notifications-dropdown";
+import { Bell, Menu, LogOut } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function TradingRoom() {
   const { toast } = useToast();
