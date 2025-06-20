@@ -357,6 +357,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Transfer funds between accounts
+  app.post("/api/user/transfer", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { currency, amount, direction } = req.body;
+
+      if (!currency || !amount || !direction) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const validCurrencies = ['ugx', 'usd', 'kes', 'eur', 'gbp'];
+      if (!validCurrencies.includes(currency.toLowerCase())) {
+        return res.status(400).json({ message: "Invalid currency" });
+      }
+
+      const validDirections = ['operational-to-wallet', 'wallet-to-operational'];
+      if (!validDirections.includes(direction)) {
+        return res.status(400).json({ message: "Invalid transfer direction" });
+      }
+
+      await storage.transferBetweenAccounts(
+        userId,
+        currency.toLowerCase(),
+        amount,
+        direction
+      );
+
+      res.json({ message: "Transfer completed successfully" });
+    } catch (error: any) {
+      console.error("Error transferring funds:", error);
+      res.status(400).json({ message: error.message || "Failed to transfer funds" });
+    }
+  });
+
   // Portfolio management routes
   app.post("/api/user/portfolio/add", isAuthenticated, async (req: any, res) => {
     try {

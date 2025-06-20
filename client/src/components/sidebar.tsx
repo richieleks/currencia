@@ -46,10 +46,10 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
                 <span>Bidder Profile</span>
               </Link>
             )}
-            <a href="#" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
+            <Link href="/settings" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
               <Settings className="w-5 h-5" />
               <span>Settings</span>
-            </a>
+            </Link>
           </nav>
 
           {/* Current Exchange Rates */}
