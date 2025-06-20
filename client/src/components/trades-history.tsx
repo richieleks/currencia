@@ -98,7 +98,11 @@ const currencyFlags: Record<string, string> = {
   GBP: "🇬🇧",
 };
 
-export default function TradesHistory() {
+interface TradesHistoryProps {
+  activeFilter?: string;
+}
+
+export default function TradesHistory({ activeFilter = "all" }: TradesHistoryProps) {
   const [activeTab, setActiveTab] = useState("trades");
 
   const { data: transactions, isLoading: transactionsLoading } = useQuery<Transaction[]>({
@@ -161,6 +165,30 @@ export default function TradesHistory() {
     }))
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+  // Apply filters based on activeFilter
+  const filteredTrades = allTrades.filter(trade => {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "completed") return trade.status === "completed" || trade.status === "accepted";
+    if (activeFilter === "requests") return trade.type === "request";
+    if (activeFilter === "offers") return trade.type === "offer";
+    if (activeFilter === "this-month") {
+      const tradeDate = new Date(trade.createdAt);
+      const now = new Date();
+      return tradeDate.getMonth() === now.getMonth() && tradeDate.getFullYear() === now.getFullYear();
+    }
+    return true;
+  });
+
+  const filteredTransactions = transactions?.filter(transaction => {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "this-month") {
+      const transactionDate = new Date(transaction.createdAt);
+      const now = new Date();
+      return transactionDate.getMonth() === now.getMonth() && transactionDate.getFullYear() === now.getFullYear();
+    }
+    return true;
+  }) || [];
+
   if (transactionsLoading || tradesLoading) {
     return (
       <div className="space-y-4">
@@ -190,16 +218,16 @@ export default function TradesHistory() {
     );
   }
 
-  const totalVolume = allTrades.reduce((sum, trade) => {
+  const totalVolume = filteredTrades.reduce((sum, trade) => {
     const amount = parseFloat(trade.finalAmount || trade.amount || '0');
     return sum + (isNaN(amount) ? 0 : amount);
   }, 0);
 
-  const successfulTrades = allTrades.filter(trade => 
+  const successfulTrades = filteredTrades.filter(trade => 
     trade.status === 'completed' || trade.status === 'accepted'
   ).length;
 
-  const totalTransactions = transactions?.length || 0;
+  const totalTransactions = filteredTransactions.length;
 
   return (
     <div className="space-y-6">
@@ -267,7 +295,7 @@ export default function TradesHistory() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {allTrades.length === 0 ? (
+              {filteredTrades.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No completed trades yet</p>
@@ -275,7 +303,7 @@ export default function TradesHistory() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {allTrades.map((trade, index) => (
+                  {filteredTrades.map((trade, index) => (
                     <div key={`${trade.type}-${trade.id}-${index}`} className="border rounded-lg p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -355,7 +383,7 @@ export default function TradesHistory() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {!transactions || transactions.length === 0 ? (
+              {!filteredTransactions || filteredTransactions.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No transactions yet</p>
@@ -363,7 +391,7 @@ export default function TradesHistory() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {transactions.map((transaction) => (
+                  {filteredTransactions.map((transaction) => (
                     <div key={transaction.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
