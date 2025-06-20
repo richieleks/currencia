@@ -322,21 +322,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User transactions
-  app.get("/api/transactions", isAuthenticated, async (req: any, res) => {
+  // User trades and transactions
+  app.get("/api/user/transactions", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const transactions = await storage.getUserTransactions(userId);
       res.json(transactions);
     } catch (error) {
-      console.error("Error fetching transactions:", error);
-      res.status(500).json({ message: "Failed to fetch transactions" });
+      console.error("Error fetching user transactions:", error);
+      res.status(500).json({ message: "Failed to fetch user transactions" });
     }
   });
 
-  const httpServer = createServer(app);
+  app.get("/api/user/trades", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const trades = await storage.getUserTrades(userId);
+      res.json(trades);
+    } catch (error) {
+      console.error("Error fetching user trades:", error);
+      res.status(500).json({ message: "Failed to fetch user trades" });
+    }
+  });
 
-  // WebSocket server for real-time chat
+  // WebSocket setup
+  const httpServer = createServer(app);
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
   wss.on('connection', (ws: WebSocket) => {

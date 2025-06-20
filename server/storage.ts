@@ -17,6 +17,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -42,7 +43,11 @@ export interface IStorage {
   
   // Transaction operations
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
-  getUserTransactions(userId: string): Promise<Transaction[]>;
+  getUserTransactions(userId: string): Promise<(Transaction & { exchangeRequest?: ExchangeRequest })[]>;
+  getUserTrades(userId: string): Promise<{
+    completedRequests: (ExchangeRequest & { user: User, acceptedOffer?: RateOffer & { bidder: User } })[];
+    completedOffers: (RateOffer & { bidder: User, exchangeRequest: ExchangeRequest & { user: User } })[];
+  }>;
   updateUserBalance(userId: string, amount: string): Promise<void>;
   updateUserCurrencyBalance(userId: string, currency: 'ugx' | 'usd' | 'kes' | 'eur' | 'gbp', amount: string): Promise<void>;
   
@@ -220,12 +225,89 @@ export class DatabaseStorage implements IStorage {
     return newTransaction;
   }
 
-  async getUserTransactions(userId: string): Promise<Transaction[]> {
-    return await db
+  async getUserTransactions(userId: string): Promise<(Transaction & { exchangeRequest?: ExchangeRequest })[]> {
+    const results = await db
       .select()
       .from(transactions)
+      .leftJoin(exchangeRequests, eq(transactions.exchangeRequestId, exchangeRequests.id))
       .where(eq(transactions.userId, userId))
       .orderBy(desc(transactions.createdAt));
+    
+    return results.map(result => ({
+      ...result.transactions,
+      exchangeRequest: result.exchange_requests || undefined,
+    }));
+  }
+
+  async getUserTrades(userId: string): Promise<{
+    completedRequests: (ExchangeRequest & { user: User, acceptedOffer?: RateOffer & { bidder: User } })[];
+    completedOffers: (RateOffer & { bidder: User, exchangeRequest: ExchangeRequest & { user: User } })[];
+  }> {
+    // Get completed exchange requests where user is the requester
+    const bidderUsers = alias(users, 'bidder_users');
+    const completedRequestsQuery = db
+      .select({
+        exchange_requests: exchangeRequests,
+        users: users,
+        rate_offers: rateOffers,
+        bidder_users: bidderUsers,
+      })
+      .from(exchangeRequests)
+      .innerJoin(users, eq(exchangeRequests.userId, users.id))
+      .leftJoin(rateOffers, eq(exchangeRequests.selectedOfferId, rateOffers.id))
+      .leftJoin(bidderUsers, eq(rateOffers.bidderId, bidderUsers.id))
+      .where(
+        and(
+          eq(exchangeRequests.userId, userId),
+          eq(exchangeRequests.status, "completed")
+        )
+      )
+      .orderBy(desc(exchangeRequests.createdAt));
+
+    // Get completed rate offers where user is the bidder
+    const requesterUsers = alias(users, 'requester_users');
+    const completedOffersQuery = db
+      .select({
+        rate_offers: rateOffers,
+        users: users,
+        exchange_requests: exchangeRequests,
+        requester_users: requesterUsers,
+      })
+      .from(rateOffers)
+      .innerJoin(users, eq(rateOffers.bidderId, users.id))
+      .innerJoin(exchangeRequests, eq(rateOffers.exchangeRequestId, exchangeRequests.id))
+      .innerJoin(requesterUsers, eq(exchangeRequests.userId, requesterUsers.id))
+      .where(
+        and(
+          eq(rateOffers.bidderId, userId),
+          eq(rateOffers.status, "accepted")
+        )
+      )
+      .orderBy(desc(rateOffers.createdAt));
+
+    const [completedRequests, completedOffers] = await Promise.all([
+      completedRequestsQuery,
+      completedOffersQuery
+    ]);
+
+    return {
+      completedRequests: completedRequests.map(result => ({
+        ...result.exchange_requests,
+        user: result.users,
+        acceptedOffer: result.rate_offers ? {
+          ...result.rate_offers,
+          bidder: result.bidder_users!
+        } : undefined,
+      })),
+      completedOffers: completedOffers.map(result => ({
+        ...result.rate_offers,
+        bidder: result.users,
+        exchangeRequest: {
+          ...result.exchange_requests,
+          user: result.requester_users!
+        },
+      })),
+    };
   }
 
   async updateUserBalance(userId: string, amount: string): Promise<void> {
