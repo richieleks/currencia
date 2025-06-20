@@ -51,6 +51,11 @@ export interface IStorage {
   updateUserBalance(userId: string, amount: string): Promise<void>;
   updateUserCurrencyBalance(userId: string, currency: 'ugx' | 'usd' | 'kes' | 'eur' | 'gbp', amount: string): Promise<void>;
   
+  // Portfolio management
+  updateUserActiveCurrencies(userId: string, currencies: string[]): Promise<User>;
+  addCurrencyToPortfolio(userId: string, currency: string): Promise<User>;
+  removeCurrencyFromPortfolio(userId: string, currency: string): Promise<User>;
+  
   // Market stats
   getMarketStats(): Promise<{
     activeRequests: number;
@@ -333,6 +338,36 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set(updateObj)
       .where(eq(users.id, userId));
+  }
+
+  // Portfolio management methods
+  async updateUserActiveCurrencies(userId: string, currencies: string[]): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ activeCurrencies: currencies })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async addCurrencyToPortfolio(userId: string, currency: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    
+    const activeCurrencies = user.activeCurrencies || [];
+    if (!activeCurrencies.includes(currency.toUpperCase())) {
+      activeCurrencies.push(currency.toUpperCase());
+      return await this.updateUserActiveCurrencies(userId, activeCurrencies);
+    }
+    return user;
+  }
+
+  async removeCurrencyFromPortfolio(userId: string, currency: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    
+    const activeCurrencies = (user.activeCurrencies || []).filter(c => c !== currency.toUpperCase());
+    return await this.updateUserActiveCurrencies(userId, activeCurrencies);
   }
 
   // Market stats

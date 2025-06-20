@@ -345,6 +345,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Portfolio management routes
+  app.post("/api/user/portfolio/add", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { currency } = req.body;
+      
+      if (!currency) {
+        return res.status(400).json({ message: "Currency is required" });
+      }
+      
+      const user = await storage.addCurrencyToPortfolio(userId, currency);
+      res.json(user);
+    } catch (error) {
+      console.error("Error adding currency to portfolio:", error);
+      res.status(500).json({ message: "Failed to add currency to portfolio" });
+    }
+  });
+
+  app.post("/api/user/portfolio/remove", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { currency } = req.body;
+      
+      if (!currency) {
+        return res.status(400).json({ message: "Currency is required" });
+      }
+      
+      const user = await storage.removeCurrencyFromPortfolio(userId, currency);
+      res.json(user);
+    } catch (error) {
+      console.error("Error removing currency from portfolio:", error);
+      res.status(500).json({ message: "Failed to remove currency from portfolio" });
+    }
+  });
+
   // WebSocket setup
   const httpServer = createServer(app);
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });

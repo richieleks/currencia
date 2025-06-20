@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, TrendingDown, Wallet, Settings } from "lucide-react";
+import PortfolioManager from "./portfolio-manager";
 
 interface CurrencyData {
   code: string;
@@ -12,53 +15,52 @@ interface CurrencyData {
   flag: string;
 }
 
+const ALL_CURRENCIES = {
+  UGX: { name: "Ugandan Shilling", flag: "🇺🇬", balanceField: "ugxBalance" },
+  USD: { name: "US Dollar", flag: "🇺🇸", balanceField: "usdBalance" },
+  KES: { name: "Kenyan Shilling", flag: "🇰🇪", balanceField: "kesBalance" },
+  EUR: { name: "Euro", flag: "🇪🇺", balanceField: "eurBalance" },
+  GBP: { name: "British Pound", flag: "🇬🇧", balanceField: "gbpBalance" },
+  JPY: { name: "Japanese Yen", flag: "🇯🇵", balanceField: "balance" },
+  CAD: { name: "Canadian Dollar", flag: "🇨🇦", balanceField: "balance" },
+  AUD: { name: "Australian Dollar", flag: "🇦🇺", balanceField: "balance" },
+  CHF: { name: "Swiss Franc", flag: "🇨🇭", balanceField: "balance" },
+  CNY: { name: "Chinese Yuan", flag: "🇨🇳", balanceField: "balance" },
+  INR: { name: "Indian Rupee", flag: "🇮🇳", balanceField: "balance" },
+  ZAR: { name: "South African Rand", flag: "🇿🇦", balanceField: "balance" },
+  NGN: { name: "Nigerian Naira", flag: "🇳🇬", balanceField: "balance" },
+  EGP: { name: "Egyptian Pound", flag: "🇪🇬", balanceField: "balance" },
+  MAD: { name: "Moroccan Dirham", flag: "🇲🇦", balanceField: "balance" },
+  TZS: { name: "Tanzanian Shilling", flag: "🇹🇿", balanceField: "balance" },
+  GHS: { name: "Ghanaian Cedi", flag: "🇬🇭", balanceField: "balance" },
+  RWF: { name: "Rwandan Franc", flag: "🇷🇼", balanceField: "balance" },
+};
+
 export default function CurrencyBalanceDashboard() {
   const { user } = useAuth();
+  const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
 
   if (!user) return null;
 
-  const currencies: CurrencyData[] = [
-    {
-      code: "UGX",
-      name: "Ugandan Shilling",
-      balance: user.ugxBalance || "0.00",
-      trend: "up",
-      change: "+2.5%",
-      flag: "🇺🇬"
-    },
-    {
-      code: "USD",
-      name: "US Dollar",
-      balance: user.usdBalance || "0.00",
-      trend: "neutral",
-      change: "0.0%",
-      flag: "🇺🇸"
-    },
-    {
-      code: "KES",
-      name: "Kenyan Shilling",
-      balance: user.kesBalance || "0.00",
-      trend: "down",
-      change: "-1.2%",
-      flag: "🇰🇪"
-    },
-    {
-      code: "EUR",
-      name: "Euro",
-      balance: user.eurBalance || "0.00",
-      trend: "up",
-      change: "+0.8%",
-      flag: "🇪🇺"
-    },
-    {
-      code: "GBP",
-      name: "British Pound",
-      balance: user.gbpBalance || "0.00",
-      trend: "up",
-      change: "+1.4%",
-      flag: "🇬🇧"
-    }
-  ];
+  const activeCurrencies = user.activeCurrencies || ["UGX", "USD", "KES", "EUR", "GBP"];
+  
+  const currencies: CurrencyData[] = activeCurrencies
+    .map(code => {
+      const currencyInfo = ALL_CURRENCIES[code as keyof typeof ALL_CURRENCIES];
+      if (!currencyInfo) return null;
+      
+      const balanceValue = user[currencyInfo.balanceField as keyof typeof user] as string || "0.00";
+      
+      return {
+        code,
+        name: currencyInfo.name,
+        balance: balanceValue,
+        trend: "up" as const,
+        change: "+2.5%",
+        flag: currencyInfo.flag
+      };
+    })
+    .filter(Boolean) as CurrencyData[];
 
   const formatBalance = (balance: string) => {
     const num = parseFloat(balance);
@@ -82,17 +84,29 @@ export default function CurrencyBalanceDashboard() {
   };
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <Wallet className="w-5 h-5 text-primary-600" />
-          <h2 className="text-xl font-semibold text-black dark:text-white">Currency Portfolio</h2>
+    <>
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <Wallet className="w-5 h-5 text-primary-600" />
+            <h2 className="text-xl font-semibold text-black dark:text-white">Currency Portfolio</h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total Portfolio Value</p>
+              <p className="text-lg font-bold text-black dark:text-white">UGX {getTotalPortfolioValue()}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPortfolioOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Manage
+            </Button>
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Total Portfolio Value</p>
-          <p className="text-lg font-bold text-black dark:text-white">UGX {getTotalPortfolioValue()}</p>
-        </div>
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {currencies.map((currency) => (
@@ -135,6 +149,12 @@ export default function CurrencyBalanceDashboard() {
           </Card>
         ))}
       </div>
-    </div>
+      </div>
+      
+      <PortfolioManager 
+        isOpen={isPortfolioOpen} 
+        onClose={() => setIsPortfolioOpen(false)} 
+      />
+    </>
   );
 }
