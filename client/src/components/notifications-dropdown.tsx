@@ -45,6 +45,10 @@ export default function NotificationsDropdown() {
   useWebSocket("/ws", (message) => {
     if (message.type === "new_message") {
       refetch();
+      // Update unread count for targeted notifications
+      if (message.targetUserId === user?.id) {
+        setUnreadCount(prev => prev + 1);
+      }
     }
   });
 
@@ -54,15 +58,20 @@ export default function NotificationsDropdown() {
     (msg.targetUserId === user?.id || !msg.targetUserId)
   ).slice(0, 20); // Show latest 20 notifications
 
-  // Update unread count
+  // Update unread count and reset when dropdown opens
   useEffect(() => {
-    const recentNotifications = notifications.filter(notification => {
-      const notificationTime = new Date(notification.createdAt);
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      return notificationTime > oneHourAgo;
-    });
-    setUnreadCount(recentNotifications.length);
-  }, [notifications]);
+    if (isOpen) {
+      setUnreadCount(0);
+    } else {
+      const recentNotifications = notifications.filter(notification => {
+        const notificationTime = new Date(notification.createdAt);
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        return notificationTime > oneHourAgo && 
+               (notification.targetUserId === user?.id || !notification.targetUserId);
+      });
+      setUnreadCount(recentNotifications.length);
+    }
+  }, [notifications, isOpen, user?.id]);
 
   const getNotificationIcon = (messageType: string, actionType?: string) => {
     switch (messageType) {
