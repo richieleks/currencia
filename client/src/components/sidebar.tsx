@@ -1,6 +1,6 @@
 import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, History, Settings, MessageSquare, X, UserCog } from "lucide-react";
+import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home } from "lucide-react";
 import { Link } from "wouter";
 
 interface SidebarProps {
@@ -36,14 +36,10 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
               <MessageSquare className="w-5 h-5" />
               <span className="font-medium">Trading Room</span>
             </Link>
-            <a href="#" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
-              <TrendingUp className="w-5 h-5" />
-              <span>My Trades</span>
-            </a>
-            <a href="#" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
+            <Link href="/trades" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
               <History className="w-5 h-5" />
-              <span>Transaction History</span>
-            </a>
+              <span>My Trades</span>
+            </Link>
             {user.role === "bidder" && (
               <Link href="/profile" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
                 <UserCog className="w-5 h-5" />
