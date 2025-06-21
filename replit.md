@@ -129,6 +129,7 @@ Changelog:
 - June 21, 2025. Updated branding from ForexConnect to Currencia across all components
 - June 21, 2025. Changed terminology from "forex traders" to "forex bureau" throughout the platform
 - June 21, 2025. Merged subscriber and bidder roles into unified "trader" role - all users can now both request and provide exchange services
+- June 21, 2025. Added comprehensive sidebar and navigation system across all pages with responsive design and centralized layout component
 
 ## User Preferences
 
