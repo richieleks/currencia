@@ -1,8 +1,3 @@
-import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import Sidebar from "@/components/sidebar";
 import ChatRoom from "@/components/chat-room";
 import QuickExchangeForm from "@/components/quick-exchange-form";
 import ActiveOffers from "@/components/active-offers";
@@ -10,144 +5,40 @@ import MarketStats from "@/components/market-stats";
 import ConfirmationModal from "@/components/confirmation-modal";
 import DemoBanner from "@/components/demo-banner";
 import CurrencyBalanceDashboard from "@/components/currency-balance-dashboard";
-import { ThemeToggle } from "@/components/theme-toggle";
-import NotificationsDropdown from "@/components/notifications-dropdown";
-import { Bell, Menu, LogOut } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 
 export default function TradingRoom() {
-  const { toast } = useToast();
-  const { isAuthenticated, isLoading, user } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) return null;
-
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
-      {/* Navigation Header */}
-      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 fixed w-full top-0 z-50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                </svg>
-              </div>
-              <h1 className="text-xl font-semibold text-black dark:text-white">Currencia</h1>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            
-            {/* Notifications */}
-            <button className="relative text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100">
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
-            </button>
-            
-            {/* User Profile */}
-            <div className="flex items-center space-x-3">
-              <img 
-                src={user.profileImageUrl || `https://ui-avatars.com/api/?name=${user.firstName || 'User'}&background=1565C0&color=fff`}
-                alt="User Profile" 
-                className="w-8 h-8 rounded-full object-cover"
-              />
-              <div className="hidden md:block">
-                <p className="text-sm font-medium text-black dark:text-white">
-                  {user.firstName || user.email || 'User'}
-                </p>
-                <p className="text-xs text-black dark:text-white capitalize">{user.role}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <div>
       {/* Demo Banner */}
       <DemoBanner />
 
-      <div className="flex pt-16">
-        {/* Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} user={user} />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Currency Balance Dashboard */}
+        <CurrencyBalanceDashboard />
 
-        {/* Main Content */}
-        <main className="flex-1 lg:ml-64 p-6">
-          <div className="max-w-7xl mx-auto">
-            {/* Page Header */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-black dark:text-white">Trading Room</h2>
-              <p className="text-black dark:text-white mt-1">
-                Post your forex needs and receive competitive rates from bidders
-              </p>
-            </div>
-
-            {/* Currency Balance Dashboard */}
-            <CurrencyBalanceDashboard />
-
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              {/* Chat Section */}
-              <div className="xl:col-span-2">
-                <ChatRoom />
-              </div>
-
-              {/* Right Sidebar */}
-              <div className="space-y-6">
-                <QuickExchangeForm />
-                <ActiveOffers />
-                <MarketStats />
-              </div>
-            </div>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Chat Section */}
+          <div className="xl:col-span-2">
+            <ChatRoom />
           </div>
-        </main>
+
+          {/* Sidebar Section */}
+          <div className="space-y-6">
+            {/* Quick Exchange Form */}
+            <QuickExchangeForm />
+            
+            {/* Market Stats */}
+            <MarketStats />
+            
+            {/* Active Offers */}
+            <ActiveOffers />
+          </div>
+        </div>
       </div>
 
       {/* Confirmation Modal */}
       <ConfirmationModal />
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   );
 }

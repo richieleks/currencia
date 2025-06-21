@@ -12,6 +12,7 @@ import BidderProfilePage from "@/pages/bidder-profile";
 import TradesHistoryPage from "@/pages/trades-history";
 import SettingsPage from "@/pages/settings";
 import RoleSelector from "@/components/role-selector";
+import Layout from "@/components/layout";
 import { useState } from "react";
 
 function Router() {
@@ -25,12 +26,12 @@ function Router() {
       ) : !user?.role && !roleSelected ? (
         <Route path="/" component={() => <RoleSelector onRoleSelected={() => setRoleSelected(true)} />} />
       ) : (
-        <>
+        <Layout user={user!}>
           <Route path="/" component={TradingRoom} />
           <Route path="/profile" component={BidderProfilePage} />
           <Route path="/trades" component={TradesHistoryPage} />
           <Route path="/settings" component={SettingsPage} />
-        </>
+        </Layout>
       )}
       <Route component={NotFound} />
     </Switch>
