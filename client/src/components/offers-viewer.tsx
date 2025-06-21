@@ -39,8 +39,7 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
 
   const { data: offers = [], isLoading } = useQuery<RateOffer[]>({
-    queryKey: ["/api/rate-offers", exchangeRequestId],
-    queryFn: () => apiRequest(`/api/rate-offers?exchangeRequestId=${exchangeRequestId}`),
+    queryKey: [`/api/rate-offers/${exchangeRequestId}`],
     enabled: !!exchangeRequestId && isOpen,
     refetchInterval: 5000,
   });
