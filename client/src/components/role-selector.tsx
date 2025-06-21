@@ -105,7 +105,7 @@ export default function RoleSelector({ onRoleSelected }: RoleSelectorProps) {
                 <li>• Professional trader network</li>
               </ul>
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500">Ideal for forex traders and financial institutions offering exchange services</p>
+                <p className="text-xs text-gray-500">Ideal for forex bureau and financial institutions offering exchange services</p>
               </div>
             </CardContent>
           </Card>

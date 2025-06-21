@@ -32,7 +32,7 @@ export default function Landing() {
             Professional Currency Exchange Platform
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Connect with verified forex traders in real-time. Post your exchange needs and receive competitive rates through our secure bidding system.
+            Connect with verified forex bureau in real-time. Post your exchange needs and receive competitive rates through our secure bidding system.
           </p>
           <Button 
             size="lg"
@@ -96,7 +96,7 @@ export default function Landing() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Connect with a network of professional forex traders and financial institutions.
+                Connect with a network of professional forex bureau and financial institutions.
               </CardDescription>
             </CardContent>
           </Card>
