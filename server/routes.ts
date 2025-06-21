@@ -25,31 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/auth/user/role', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { role } = req.body;
-      
-      if (!role || !["subscriber", "bidder"].includes(role)) {
-        return res.status(400).json({ message: "Invalid role" });
-      }
 
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const updatedUser = await storage.upsertUser({
-        ...user,
-        role,
-      });
-
-      res.json(updatedUser);
-    } catch (error) {
-      console.error("Error updating user role:", error);
-      res.status(500).json({ message: "Failed to update user role" });
-    }
-  });
 
   app.patch('/api/auth/user/profile', isAuthenticated, async (req: any, res) => {
     try {
