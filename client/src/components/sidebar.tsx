@@ -40,12 +40,10 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
               <History className="w-5 h-5" />
               <span>My Trades</span>
             </Link>
-            {user.role === "bidder" && (
-              <Link href="/profile" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
-                <UserCog className="w-5 h-5" />
-                <span>Bidder Profile</span>
-              </Link>
-            )}
+            <Link href="/profile" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
+              <UserCog className="w-5 h-5" />
+              <span>Trader Profile</span>
+            </Link>
             <Link href="/settings" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
               <Settings className="w-5 h-5" />
               <span>Settings</span>

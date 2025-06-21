@@ -148,33 +148,17 @@ export default function BidderProfile() {
 
   const userData = user as any;
 
-  if (userData?.role !== "bidder") {
-    return (
-      <div className="container mx-auto p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Access Restricted
-            </CardTitle>
-            <CardDescription>
-              This page is only accessible to bidders. Please switch to bidder role to manage your profile.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
+  // All traders can now access profile management
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <Building className="h-8 w-8" />
-          Bidder Profile
+          Trader Profile
         </h1>
         <p className="text-muted-foreground mt-2">
-          Complete your professional profile to build trust with subscribers and showcase your expertise.
+          Complete your professional profile to build trust with other traders and showcase your expertise.
         </p>
       </div>
 

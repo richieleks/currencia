@@ -271,8 +271,8 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
                           onClick={() => {
                             // Private message functionality will be implemented
                             toast({
-                              title: "Message Bidder",
-                              description: "Private messaging with bidders will be available soon.",
+                              title: "Message Trader",
+                              description: "Private messaging with traders will be available soon.",
                             });
                           }}
                         >

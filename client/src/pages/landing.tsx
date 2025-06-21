@@ -112,21 +112,13 @@ export default function Landing() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex justify-center">
                 <Button 
                   size="lg"
                   onClick={() => window.location.href = '/api/login'}
                   className="bg-primary-500 hover:bg-primary-600"
                 >
-                  Sign In as Subscriber
-                </Button>
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  onClick={() => window.location.href = '/api/login'}
-                  className="border-primary-500 text-primary-500 hover:bg-primary-50"
-                >
-                  Join as Bidder
+                  Start Trading Now
                 </Button>
               </div>
               <p className="text-sm text-gray-500">

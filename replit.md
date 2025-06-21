@@ -30,7 +30,7 @@ Currencia is a modern web application that connects individuals and businesses n
 
 ### Authentication System
 - **Replit Auth Integration**: Seamless OAuth-based authentication
-- **Role-based Access**: Users can be either "subscribers" (exchange requesters) or "bidders" (service providers)
+- **Unified Role System**: All users have a single "trader" role with access to both requesting and providing exchange services
 - **Session Management**: Secure session storage in PostgreSQL using connect-pg-simple
 
 ### Database Schema
@@ -128,6 +128,7 @@ Changelog:
 - June 20, 2025. Created notifications dropdown with real-time updates and unread indicators
 - June 21, 2025. Updated branding from ForexConnect to Currencia across all components
 - June 21, 2025. Changed terminology from "forex traders" to "forex bureau" throughout the platform
+- June 21, 2025. Merged subscriber and bidder roles into unified "trader" role - all users can now both request and provide exchange services
 
 ## User Preferences
 

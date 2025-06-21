@@ -32,7 +32,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role", { enum: ["subscriber", "bidder"] }).notNull().default("subscriber"),
+  role: varchar("role", { enum: ["trader"] }).notNull().default("trader"),
   balance: numeric("balance", { precision: 15, scale: 2 }).default("10000.00"),
   ugxBalance: numeric("ugx_balance", { precision: 15, scale: 2 }).default("37000000.00"),
   usdBalance: numeric("usd_balance", { precision: 15, scale: 2 }).default("10000.00"),

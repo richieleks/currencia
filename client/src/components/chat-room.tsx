@@ -345,32 +345,28 @@ export default function ChatRoom() {
                 />
                 <span className="text-sm font-medium text-gray-700">General</span>
               </label>
-              {user?.role === 'subscriber' && (
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input 
-                    type="radio" 
-                    name="messageType" 
-                    value="request"
-                    checked={messageType === "request"}
-                    onChange={(e) => setMessageType(e.target.value as "request" | "offer" | "general")}
-                    className="text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Exchange Request</span>
-                </label>
-              )}
-              {user?.role === 'bidder' && (
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input 
-                    type="radio" 
-                    name="messageType" 
-                    value="offer"
-                    checked={messageType === "offer"}
-                    onChange={(e) => setMessageType(e.target.value as "request" | "offer" | "general")}
-                    className="text-success-600 focus:ring-success-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Rate Offer</span>
-                </label>
-              )}
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="messageType" 
+                  value="request"
+                  checked={messageType === "request"}
+                  onChange={(e) => setMessageType(e.target.value as "request" | "offer" | "general")}
+                  className="text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Exchange Request</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="messageType" 
+                  value="offer"
+                  checked={messageType === "offer"}
+                  onChange={(e) => setMessageType(e.target.value as "request" | "offer" | "general")}
+                  className="text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Rate Offer</span>
+              </label>
             </div>
             <div className="flex space-x-3">
               <Input
