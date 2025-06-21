@@ -131,6 +131,7 @@ Changelog:
 - June 21, 2025. Merged subscriber and bidder roles into unified "trader" role - all users can now both request and provide exchange services
 - June 21, 2025. Added comprehensive sidebar and navigation system across all pages with responsive design and centralized layout component
 - June 21, 2025. Removed navigation from My Trading Activity page per user request - now uses standalone header design
+- June 21, 2025. Removed navigation section from trading activity sidebar and fixed rate offers API query error
 
 ## User Preferences
 
