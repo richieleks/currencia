@@ -120,28 +120,7 @@ export default function TradingActivitySidebar({ activeFilter, onFilterChange }:
 
   return (
     <div className="w-80 bg-background border-r border-border p-6 space-y-6">
-      {/* Navigation */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-          Navigation
-        </h3>
-        <div className="space-y-1">
-          <Link href="/" className="flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors">
-            <Home className="h-4 w-4" />
-            Trading Room
-          </Link>
-          <div className="flex items-center gap-3 px-3 py-2 text-sm rounded-md bg-muted font-medium">
-            <BarChart3 className="h-4 w-4" />
-            Trading Activity
-          </div>
-          <Link href="/profile" className="flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors">
-            <TrendingUp className="h-4 w-4" />
-            Profile
-          </Link>
-        </div>
-      </div>
-
-      <Separator />
+      
 
       {/* Quick Stats */}
       <Card>
