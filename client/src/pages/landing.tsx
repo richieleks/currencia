@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Shield, Clock, Users } from "lucide-react";
+import RateComparisonSlider from "@/components/rate-comparison-slider";
 
 export default function Landing() {
   return (
@@ -40,6 +41,13 @@ export default function Landing() {
           >
             Start Trading Now
           </Button>
+        </div>
+
+        {/* Live Exchange Rates */}
+        <div className="mt-16 flex justify-center">
+          <div className="w-full max-w-sm">
+            <RateComparisonSlider />
+          </div>
         </div>
 
         {/* Features */}

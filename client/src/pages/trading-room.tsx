@@ -5,6 +5,7 @@ import MarketStats from "@/components/market-stats";
 import ConfirmationModal from "@/components/confirmation-modal";
 import DemoBanner from "@/components/demo-banner";
 import CurrencyBalanceDashboard from "@/components/currency-balance-dashboard";
+import RateComparisonSlider from "@/components/rate-comparison-slider";
 
 export default function TradingRoom() {
   return (
@@ -27,6 +28,9 @@ export default function TradingRoom() {
           <div className="space-y-6">
             {/* Quick Exchange Form */}
             <QuickExchangeForm />
+            
+            {/* Rate Comparison Slider */}
+            <RateComparisonSlider />
             
             {/* Market Stats */}
             <MarketStats />
