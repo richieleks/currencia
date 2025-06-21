@@ -4,9 +4,9 @@ import { TrendingUp, Shield, Clock, Users } from "lucide-react";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
+      <nav className="border-b border-gray-200 bg-gradient-to-br from-primary-50 to-white backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-[#111827]">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
