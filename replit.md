@@ -1,8 +1,8 @@
-# ForexConnect - Currency Exchange Platform
+# Currencia - Currency Exchange Platform
 
 ## Overview
 
-ForexConnect is a modern web application that connects individuals and businesses needing currency exchange with verified forex traders through a competitive bidding system. The platform operates as a real-time marketplace where users can post exchange requests and receive offers from licensed bidders.
+Currencia is a modern web application that connects individuals and businesses needing currency exchange with verified forex traders through a competitive bidding system. The platform operates as a real-time marketplace where users can post exchange requests and receive offers from licensed bidders.
 
 ## System Architecture
 
@@ -126,6 +126,7 @@ Changelog:
 - June 20, 2025. Updated trading activity page to display volume per currency like dashboard
 - June 20, 2025. Added settings page with money transfer functionality between operational and wallet accounts
 - June 20, 2025. Created notifications dropdown with real-time updates and unread indicators
+- June 21, 2025. Updated branding from ForexConnect to Currencia across all components
 
 ## User Preferences
 
