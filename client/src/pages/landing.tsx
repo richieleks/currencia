@@ -13,7 +13,7 @@ export default function Landing() {
               <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
                 <TrendingUp className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">ForexConnect</span>
+              <span className="text-xl font-bold text-gray-900">Currencia</span>
             </div>
             <Button 
               onClick={() => window.location.href = '/api/login'}
@@ -108,7 +108,7 @@ export default function Landing() {
             <CardHeader>
               <CardTitle className="text-2xl">Ready to Start Trading?</CardTitle>
               <CardDescription className="text-lg">
-                Join thousands of traders who trust ForexConnect for their currency exchange needs.
+                Join thousands of traders who trust Currencia for their currency exchange needs.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
