@@ -31,9 +31,7 @@ export default function Landing() {
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Professional Currency Exchange Platform
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Connect with verified forex bureau in real-time. Post your exchange needs and receive competitive rates through our secure bidding system.
-          </p>
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">Connect with verified forex bureaus in real-time. Post your exchange needs and receive competitive rates through our secure bidding system.</p>
           <Button 
             size="lg"
             onClick={() => window.location.href = '/api/login'}
