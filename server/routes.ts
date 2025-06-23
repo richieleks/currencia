@@ -11,7 +11,12 @@ import {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  try {
+    await setupAuth(app);
+  } catch (error) {
+    console.error("Auth setup failed:", error);
+    throw error;
+  }
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
