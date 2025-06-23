@@ -1,6 +1,6 @@
 import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home } from "lucide-react";
+import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home, Shield } from "lucide-react";
 import { Link } from "wouter";
 
 interface SidebarProps {
@@ -44,6 +44,12 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
               <UserCog className="w-5 h-5" />
               <span>Trader Profile</span>
             </Link>
+            {user.role === "admin" && (
+              <Link href="/admin" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
+                <Shield className="w-5 h-5" />
+                <span>Admin Panel</span>
+              </Link>
+            )}
             <Link href="/settings" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
               <Settings className="w-5 h-5" />
               <span>Settings</span>

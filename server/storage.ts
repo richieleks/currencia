@@ -66,6 +66,28 @@ export interface IStorage {
     avgResponseTime: string;
     todayVolume: string;
   }>;
+  
+  // Admin operations
+  getAllUsers(): Promise<User[]>;
+  getUserActivity(userId: string): Promise<{
+    totalRequests: number;
+    totalOffers: number;
+    completedTransactions: number;
+    averageRating: number;
+    lastActive: string;
+  }>;
+  getSystemStats(): Promise<{
+    totalUsers: number;
+    totalTraders: number;
+    totalAdmins: number;
+    totalTransactions: number;
+    totalVolume: string;
+    activeRequests: number;
+    pendingOffers: number;
+  }>;
+  updateUserRole(userId: string, role: "trader" | "admin"): Promise<User>;
+  suspendUser(userId: string): Promise<void>;
+  unsuspendUser(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -465,6 +487,135 @@ export class DatabaseStorage implements IStorage {
       avgResponseTime: "2.3 min",
       todayVolume: `$${parseFloat(volumeResult?.volume || "0").toLocaleString()}`,
     };
+  }
+
+  // Admin operations
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getUserActivity(userId: string): Promise<{
+    totalRequests: number;
+    totalOffers: number;
+    completedTransactions: number;
+    averageRating: number;
+    lastActive: string;
+  }> {
+    const [requestsResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(exchangeRequests)
+      .where(eq(exchangeRequests.userId, userId));
+
+    const [offersResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(rateOffers)
+      .where(eq(rateOffers.bidderId, userId));
+
+    const [transactionsResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(transactions)
+      .where(or(
+        eq(transactions.requesterId, userId),
+        eq(transactions.bidderId, userId)
+      ));
+
+    const [lastActivityResult] = await db
+      .select({ lastActive: chatMessages.createdAt })
+      .from(chatMessages)
+      .where(eq(chatMessages.userId, userId))
+      .orderBy(desc(chatMessages.createdAt))
+      .limit(1);
+
+    return {
+      totalRequests: requestsResult?.count || 0,
+      totalOffers: offersResult?.count || 0,
+      completedTransactions: transactionsResult?.count || 0,
+      averageRating: 4.5,
+      lastActive: lastActivityResult?.lastActive?.toISOString() || new Date().toISOString(),
+    };
+  }
+
+  async getSystemStats(): Promise<{
+    totalUsers: number;
+    totalTraders: number;
+    totalAdmins: number;
+    totalTransactions: number;
+    totalVolume: string;
+    activeRequests: number;
+    pendingOffers: number;
+  }> {
+    const [totalUsersResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users);
+
+    const [totalTradersResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(eq(users.role, "trader"));
+
+    const [totalAdminsResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(eq(users.role, "admin"));
+
+    const [totalTransactionsResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(transactions);
+
+    const [totalVolumeResult] = await db
+      .select({ 
+        total: sql<number>`sum(cast(amount as decimal))` 
+      })
+      .from(transactions);
+
+    const [activeRequestsResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(exchangeRequests)
+      .where(eq(exchangeRequests.status, "active"));
+
+    const [pendingOffersResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(rateOffers)
+      .where(eq(rateOffers.status, "pending"));
+
+    return {
+      totalUsers: totalUsersResult?.count || 0,
+      totalTraders: totalTradersResult?.count || 0,
+      totalAdmins: totalAdminsResult?.count || 0,
+      totalTransactions: totalTransactionsResult?.count || 0,
+      totalVolume: `$${(totalVolumeResult?.total || 0).toLocaleString()}`,
+      activeRequests: activeRequestsResult?.count || 0,
+      pendingOffers: pendingOffersResult?.count || 0,
+    };
+  }
+
+  async updateUserRole(userId: string, role: "trader" | "admin"): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async suspendUser(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        role: "suspended" as any,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async unsuspendUser(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        role: "trader",
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
   }
 }
 
