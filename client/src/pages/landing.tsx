@@ -43,12 +43,7 @@ export default function Landing() {
           </Button>
         </div>
 
-        {/* Live Exchange Rates */}
-        <div className="mt-16 flex justify-center">
-          <div className="w-full max-w-sm">
-            <RateComparisonSlider />
-          </div>
-        </div>
+        
 
         {/* Features */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-20">
