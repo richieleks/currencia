@@ -21,7 +21,9 @@ function Router() {
   const [roleSelected, setRoleSelected] = useState(false);
 
   // Debug logging
-  console.log("Auth state:", { isAuthenticated, isLoading, user: user ? { id: user.id, role: user.role } : null, roleSelected });
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Auth state:", { isAuthenticated, isLoading, user: user ? { id: user.id, role: user.role } : null, roleSelected });
+  }
 
   return (
     <Switch>
