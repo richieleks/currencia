@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowRight, CheckCircle, Info } from "lucide-react";
 
 const currencies = [
   { value: "UGX", label: "UGX - Ugandan Shilling" },
@@ -50,6 +52,8 @@ export default function QuickExchangeForm() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingData, setPendingData] = useState<ExchangeFormData | null>(null);
 
   const form = useForm<ExchangeFormData>({
     resolver: zodResolver(exchangeFormSchema),
@@ -103,7 +107,21 @@ export default function QuickExchangeForm() {
   });
 
   const onSubmit = (data: ExchangeFormData) => {
-    createExchangeRequestMutation.mutate(data);
+    setPendingData(data);
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    if (pendingData) {
+      createExchangeRequestMutation.mutate(pendingData);
+      setShowConfirmation(false);
+      setPendingData(null);
+    }
+  };
+
+  const handleCancelSubmit = () => {
+    setShowConfirmation(false);
+    setPendingData(null);
   };
 
   // Show form to all authenticated users
@@ -123,6 +141,7 @@ export default function QuickExchangeForm() {
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>Quick Exchange Request</CardTitle>
@@ -260,5 +279,102 @@ export default function QuickExchangeForm() {
         </Form>
       </CardContent>
     </Card>
+
+    {/* Confirmation Dialog */}
+    <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <Info className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <DialogTitle>Confirm Exchange Request</DialogTitle>
+              <DialogDescription>
+                Please review your exchange request details
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+        
+        {pendingData && (
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Exchange:</span>
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium">{pendingData.fromCurrency}</span>
+                  <ArrowRight className="w-4 h-4 text-gray-400" />
+                  <span className="font-medium">{pendingData.toCurrency}</span>
+                </div>
+              </div>
+              
+              <div className="flex justify-between">
+                <span className="text-gray-600">Amount:</span>
+                <span className="font-medium">
+                  {pendingData.amount.toLocaleString()} {pendingData.fromCurrency}
+                </span>
+              </div>
+              
+              {pendingData.desiredRate && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Desired Rate:</span>
+                  <span className="font-medium">{pendingData.desiredRate}</span>
+                </div>
+              )}
+              
+              <div className="flex justify-between">
+                <span className="text-gray-600">Priority:</span>
+                <span className="font-medium capitalize">{pendingData.priority}</span>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start space-x-2">
+                <Info className="w-4 h-4 text-blue-600 mt-0.5" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-medium mb-1">Important Notes:</p>
+                  <ul className="space-y-1 text-xs">
+                    <li>• Your request will be visible to all traders</li>
+                    <li>• You'll receive rate offers from interested bidders</li>
+                    <li>• You can accept the best offer that meets your needs</li>
+                    <li>• Cancel anytime before accepting an offer</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex space-x-3">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={handleCancelSubmit}
+                disabled={createExchangeRequestMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1 bg-primary-500 hover:bg-primary-600"
+                onClick={handleConfirmSubmit}
+                disabled={createExchangeRequestMutation.isPending}
+              >
+                {createExchangeRequestMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Posting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Confirm & Post
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
