@@ -23,7 +23,7 @@ export default function DemoBanner() {
               <div>
                 <h3 className="font-semibold text-blue-900 dark:text-blue-100">Live Trading Demo</h3>
                 <p className="text-sm text-blue-700 dark:text-blue-200">
-                  Experience the complete forex marketplace workflow
+                  Experience the complete forex marketplace workflow • Auto-hide in {timeRemaining}s
                 </p>
               </div>
             </div>
