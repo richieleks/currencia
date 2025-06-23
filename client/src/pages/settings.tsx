@@ -248,7 +248,7 @@ export default function SettingsPage() {
                               <span className="font-medium">{currency.code}</span>
                             </div>
                             <Badge variant="outline">
-                              {totalBalance.toLocaleString()} {currency.code}
+                              {formatAmount(totalBalance, currency.code)}
                             </Badge>
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-sm">
@@ -256,14 +256,14 @@ export default function SettingsPage() {
                               <CreditCard className="h-4 w-4 text-blue-600" />
                               <div>
                                 <div className="text-xs text-muted-foreground">Operational</div>
-                                <div className="font-medium">{operationalBalance.toLocaleString()}</div>
+                                <div className="font-medium">{formatAmount(operationalBalance)}</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-950 rounded">
                               <Wallet className="h-4 w-4 text-green-600" />
                               <div>
                                 <div className="text-xs text-muted-foreground">Wallet</div>
-                                <div className="font-medium">{walletBalance.toLocaleString()}</div>
+                                <div className="font-medium">{formatAmount(walletBalance)}</div>
                               </div>
                             </div>
                           </div>

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CheckCircle, Clock, User, TrendingUp } from "lucide-react";
+import { formatCurrency, formatRate } from "@/lib/utils";
 
 interface RateOffer {
   id: number;
