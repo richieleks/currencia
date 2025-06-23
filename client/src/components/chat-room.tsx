@@ -23,6 +23,7 @@ import { formatCurrency, formatRate } from "@/lib/utils";
 interface ChatMessageWithUser extends ChatMessage {
   user: {
     id: string;
+    companyName?: string | null;
     firstName: string | null;
     lastName: string | null;
     role: string;
@@ -44,6 +45,7 @@ interface ExchangeRequestData {
   priority: string;
   user: {
     id: string;
+    companyName?: string | null;
     firstName: string | null;
   };
 }

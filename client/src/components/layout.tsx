@@ -84,13 +84,13 @@ export default function Layout({ children, user }: LayoutProps) {
               <div className="flex items-center space-x-3">
                 <div className="hidden sm:block text-right">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {user.firstName} {user.lastName}
+                    {user.companyName || `${user.firstName} ${user.lastName}`}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user.role}</p>
                 </div>
                 <div className="w-8 h-8 bg-primary-100 dark:bg-primary-800 rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium text-primary-600 dark:text-primary-300">
-                    {user.firstName?.charAt(0) || user.email?.charAt(0) || 'U'}
+                    {user.companyName?.charAt(0) || user.firstName?.charAt(0) || user.email?.charAt(0) || 'U'}
                   </span>
                 </div>
               </div>

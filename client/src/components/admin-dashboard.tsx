@@ -139,7 +139,8 @@ export default function AdminDashboard() {
 
   // Filter users based on search and role
   const filteredUsers = users?.filter(user => {
-    const matchesSearch = user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = user.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role === roleFilter;

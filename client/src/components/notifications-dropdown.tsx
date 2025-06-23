@@ -23,6 +23,7 @@ interface NotificationWithUser {
   createdAt: string;
   user: {
     id: string;
+    companyName?: string | null;
     firstName: string | null;
     lastName: string | null;
     role: string;
