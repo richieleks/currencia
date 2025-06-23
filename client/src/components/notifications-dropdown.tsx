@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -37,45 +37,50 @@ export default function NotificationsDropdown() {
   const [shouldShake, setShouldShake] = useState(false);
   const [lastNotificationCount, setLastNotificationCount] = useState(0);
   const bellRef = useRef<HTMLButtonElement>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Fetch notifications (using chat messages with notification types)
-  const { data: messages = [], refetch } = useQuery<NotificationWithUser[]>({
+  // Get notifications (filtered for current user)
+  const { data: notifications = [] } = useQuery({
     queryKey: ["/api/chat/messages"],
-    refetchInterval: 30000, // Refetch every 30 seconds
+    select: (data: NotificationWithUser[]) => {
+      const currentTime = new Date();
+      const thirtyMinutesAgo = new Date(currentTime.getTime() - 30 * 60 * 1000);
+      
+      return data
+        .filter(msg => 
+          (msg.messageType === "notification" || msg.messageType === "bid_action") && 
+          new Date(msg.createdAt) > thirtyMinutesAgo &&
+          (!msg.targetUserId || msg.targetUserId === user?.id)
+        )
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    },
+    enabled: !!user,
+    refetchInterval: 5000,
   });
 
-  // WebSocket for real-time updates
-  useWebSocket("/ws", (message) => {
-    if (message.type === "new_message") {
-      refetch();
-      // Update unread count for targeted notifications
-      if (message.targetUserId === user?.id) {
-        setUnreadCount(prev => prev + 1);
-      }
+  // Listen for real-time notifications via WebSocket
+  useWebSocket((message) => {
+    if (message.type === 'notification' && user) {
+      // Trigger shake animation for new notifications
+      setShouldShake(true);
+      setTimeout(() => setShouldShake(false), 1000);
     }
   });
 
-  // Filter notifications for current user
-  const notifications = messages.filter(msg => 
-    (msg.messageType === "notification" || msg.messageType === "bid_action") &&
-    (msg.targetUserId === user?.id || !msg.targetUserId)
-  ).slice(0, 20); // Show latest 20 notifications
+  // Count unread notifications (those from the last 5 minutes)
+  const unreadCount = notifications.filter(notification => {
+    const notificationTime = new Date(notification.createdAt);
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    return notificationTime > fiveMinutesAgo;
+  }).length;
 
-  // Update unread count and reset when dropdown opens
+  // Trigger shake animation when notification count increases
   useEffect(() => {
-    if (isOpen) {
-      setUnreadCount(0);
-    } else {
-      const recentNotifications = notifications.filter(notification => {
-        const notificationTime = new Date(notification.createdAt);
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-        return notificationTime > oneHourAgo && 
-               (notification.targetUserId === user?.id || !notification.targetUserId);
-      });
-      setUnreadCount(recentNotifications.length);
+    if (unreadCount > lastNotificationCount && lastNotificationCount > 0) {
+      setShouldShake(true);
+      setTimeout(() => setShouldShake(false), 1000);
     }
-  }, [notifications, isOpen, user?.id]);
+    setLastNotificationCount(unreadCount);
+  }, [unreadCount, lastNotificationCount]);
 
   const getNotificationIcon = (messageType: string, actionType?: string) => {
     switch (messageType) {
