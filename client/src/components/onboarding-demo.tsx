@@ -158,6 +158,28 @@ export default function OnboardingDemo({ isOpen, onClose, onComplete }: Onboardi
     }
   }, [highlightElement]);
 
+  // Auto-close demo after 30 seconds
+  useEffect(() => {
+    let countdown: NodeJS.Timeout;
+    if (isOpen) {
+      countdown = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            onClose();
+            return 30;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      setTimeRemaining(30);
+    }
+
+    return () => {
+      if (countdown) clearInterval(countdown);
+    };
+  }, [isOpen, onClose]);
+
   const nextStep = () => {
     if (currentStep < demoSteps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -291,20 +313,7 @@ export default function OnboardingDemo({ isOpen, onClose, onComplete }: Onboardi
         </DialogContent>
       </Dialog>
 
-      <style jsx global>{`
-        .demo-highlight {
-          animation: demo-pulse 2s infinite;
-        }
-        
-        @keyframes demo-pulse {
-          0%, 100% {
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3) !important;
-          }
-          50% {
-            box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.3), 0 0 30px rgba(59, 130, 246, 0.5) !important;
-          }
-        }
-      `}</style>
+
     </>
   );
 }
