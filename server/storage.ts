@@ -42,6 +42,10 @@ export interface IStorage {
   getChatMessages(): Promise<(ChatMessage & { user: User })[]>;
   createBidActionMessage(userId: string, action: "accept" | "reject", rateOfferId: number, exchangeRequestId: number, targetUserId: string): Promise<ChatMessage & { user: User }>;
   createNotificationMessage(userId: string, content: string, targetUserId?: string): Promise<ChatMessage & { user: User }>;
+  createPrivateMessage(userId: string, targetUserId: string, content: string, exchangeRequestId?: number, rateOfferId?: number): Promise<ChatMessage & { user: User }>;
+  getPrivateMessages(userId: string, targetUserId: string): Promise<(ChatMessage & { user: User })[]>;
+  getConversations(userId: string): Promise<{ targetUser: User; lastMessage: ChatMessage & { user: User }; unreadCount: number }[]>;
+  markMessagesAsRead(userId: string, conversationId: string): Promise<void>;
   
   // Transaction operations
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
@@ -290,6 +294,129 @@ export class DatabaseStorage implements IStorage {
       ...chatMessage,
       user,
     };
+  }
+
+  async createPrivateMessage(userId: string, targetUserId: string, content: string, exchangeRequestId?: number, rateOfferId?: number): Promise<ChatMessage & { user: User }> {
+    // Create conversation ID based on sorted user IDs to ensure consistency
+    const conversationId = [userId, targetUserId].sort().join('-');
+    
+    const message = await this.createChatMessage({
+      userId,
+      messageType: "private",
+      content,
+      targetUserId,
+      conversationId,
+      exchangeRequestId,
+      rateOfferId,
+    });
+    
+    return message;
+  }
+
+  async getPrivateMessages(userId: string, targetUserId: string): Promise<(ChatMessage & { user: User })[]> {
+    const conversationId = [userId, targetUserId].sort().join('-');
+    
+    const results = await db
+      .select()
+      .from(chatMessages)
+      .innerJoin(users, eq(chatMessages.userId, users.id))
+      .where(
+        and(
+          eq(chatMessages.messageType, "private"),
+          eq(chatMessages.conversationId, conversationId)
+        )
+      )
+      .orderBy(chatMessages.createdAt);
+    
+    return results.map(result => ({
+      ...result.chat_messages,
+      user: result.users,
+    }));
+  }
+
+  async getConversations(userId: string): Promise<{ targetUser: User; lastMessage: ChatMessage & { user: User }; unreadCount: number }[]> {
+    // Get all conversations for the user
+    const conversations = await db
+      .select({
+        conversationId: chatMessages.conversationId,
+        targetUserId: chatMessages.targetUserId,
+        otherUserId: chatMessages.userId,
+      })
+      .from(chatMessages)
+      .where(
+        and(
+          eq(chatMessages.messageType, "private"),
+          or(
+            eq(chatMessages.userId, userId),
+            eq(chatMessages.targetUserId, userId)
+          )
+        )
+      )
+      .groupBy(chatMessages.conversationId, chatMessages.targetUserId, chatMessages.userId);
+
+    const results = [];
+    
+    for (const conv of conversations) {
+      const targetUserId = conv.targetUserId === userId ? conv.otherUserId : conv.targetUserId;
+      if (!targetUserId) continue;
+      
+      // Get target user
+      const targetUser = await this.getUser(targetUserId);
+      if (!targetUser) continue;
+      
+      // Get last message
+      const lastMessageResult = await db
+        .select()
+        .from(chatMessages)
+        .innerJoin(users, eq(chatMessages.userId, users.id))
+        .where(eq(chatMessages.conversationId, conv.conversationId))
+        .orderBy(desc(chatMessages.createdAt))
+        .limit(1);
+      
+      if (lastMessageResult.length === 0) continue;
+      
+      const lastMessage = {
+        ...lastMessageResult[0].chat_messages,
+        user: lastMessageResult[0].users,
+      };
+      
+      // Get unread count
+      const unreadResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(chatMessages)
+        .where(
+          and(
+            eq(chatMessages.conversationId, conv.conversationId),
+            eq(chatMessages.targetUserId, userId),
+            eq(chatMessages.isRead, false)
+          )
+        );
+      
+      const unreadCount = unreadResult[0]?.count || 0;
+      
+      results.push({
+        targetUser,
+        lastMessage,
+        unreadCount,
+      });
+    }
+    
+    return results.sort((a, b) => 
+      new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime()
+    );
+  }
+
+  async markMessagesAsRead(userId: string, conversationId: string): Promise<void> {
+    await db
+      .update(chatMessages)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(chatMessages.conversationId, conversationId),
+          eq(chatMessages.targetUserId, userId),
+          eq(chatMessages.isRead, false)
+        )
+      );
   }
 
   // Transaction operations

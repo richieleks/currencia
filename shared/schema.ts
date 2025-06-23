@@ -90,12 +90,14 @@ export const rateOffers = pgTable("rate_offers", {
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
-  messageType: varchar("message_type", { enum: ["request", "offer", "general", "bid_action", "notification"] }).notNull(),
+  messageType: varchar("message_type", { enum: ["request", "offer", "general", "bid_action", "notification", "private"] }).notNull(),
   content: text("content").notNull(),
   exchangeRequestId: integer("exchange_request_id").references(() => exchangeRequests.id),
   rateOfferId: integer("rate_offer_id").references(() => rateOffers.id),
   actionType: varchar("action_type", { enum: ["accept", "reject"] }),
   targetUserId: varchar("target_user_id").references(() => users.id),
+  conversationId: varchar("conversation_id"),
+  isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

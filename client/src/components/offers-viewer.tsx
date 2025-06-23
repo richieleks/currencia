@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Clock, User, TrendingUp } from "lucide-react";
+import { CheckCircle, Clock, User, TrendingUp, MessageSquare } from "lucide-react";
 import { formatCurrency, formatRate } from "@/lib/utils";
+import PrivateMessages from "./private-messages";
 
 interface RateOffer {
   id: number;
@@ -38,6 +39,9 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
+  const [privateMessagesOpen, setPrivateMessagesOpen] = useState(false);
+  const [selectedBidderId, setSelectedBidderId] = useState<string>("");
+  const [initialMessageContent, setInitialMessageContent] = useState("");
 
   const { data: offers = [], isLoading } = useQuery<RateOffer[]>({
     queryKey: [`/api/rate-offers/${exchangeRequestId}`],
@@ -144,6 +148,12 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
 
   const handleDeclineOffer = (offerId: number) => {
     declineOfferMutation.mutate(offerId);
+  };
+
+  const handleMessageBidder = (offer: RateOffer) => {
+    setSelectedBidderId(offer.bidder.id);
+    setInitialMessageContent(`Hi! I'd like to discuss your offer of ${formatRate(offer.rate)} for ${formatCurrency(offer.totalAmount)} ${exchangeRequestData?.fromCurrency || ''}.`);
+    setPrivateMessagesOpen(true);
   };
 
   if (!exchangeRequestData) return null;
@@ -268,14 +278,9 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
                         <Button 
                           variant="outline"
                           className="w-full text-blue-600 border-blue-300 hover:bg-blue-50"
-                          onClick={() => {
-                            // Private message functionality will be implemented
-                            toast({
-                              title: "Message Trader",
-                              description: "Private messaging with traders will be available soon.",
-                            });
-                          }}
+                          onClick={() => handleMessageBidder(offer)}
                         >
+                          <MessageSquare className="h-4 w-4 mr-2" />
                           Message Bidder
                         </Button>
                       </div>
@@ -309,6 +314,13 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
           </Button>
         </div>
       </DialogContent>
+
+      <PrivateMessages
+        isOpen={privateMessagesOpen}
+        onClose={() => setPrivateMessagesOpen(false)}
+        initialTargetUserId={selectedBidderId}
+        initialContent={initialMessageContent}
+      />
     </Dialog>
   );
 }
