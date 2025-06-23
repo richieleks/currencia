@@ -304,6 +304,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Private messaging routes
+  app.post("/api/private-messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { targetUserId, content, exchangeRequestId, rateOfferId } = req.body;
+      
+      if (!targetUserId || !content) {
+        return res.status(400).json({ message: "Target user ID and content are required" });
+      }
+      
+      const message = await storage.createPrivateMessage(userId, targetUserId, content, exchangeRequestId, rateOfferId);
+      res.json(message);
+    } catch (error) {
+      console.error("Error creating private message:", error);
+      res.status(500).json({ message: "Failed to create private message" });
+    }
+  });
+
+  app.get("/api/private-messages/:targetUserId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { targetUserId } = req.params;
+      
+      const messages = await storage.getPrivateMessages(userId, targetUserId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching private messages:", error);
+      res.status(500).json({ message: "Failed to fetch private messages" });
+    }
+  });
+
+  app.get("/api/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversations = await storage.getConversations(userId);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  app.post("/api/conversations/:conversationId/mark-read", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { conversationId } = req.params;
+      
+      await storage.markMessagesAsRead(userId, conversationId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+      res.status(500).json({ message: "Failed to mark messages as read" });
+    }
+  });
+
   app.post("/api/chat/messages", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
