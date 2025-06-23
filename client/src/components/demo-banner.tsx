@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, Play, Users } from "lucide-react";
+import OnboardingDemo from "./onboarding-demo";
 
 export default function DemoBanner() {
   const [isVisible, setIsVisible] = useState(true);
+  const [showDemo, setShowDemo] = useState(false);
 
   if (!isVisible) return null;
 
