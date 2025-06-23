@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,24 @@ import OnboardingDemo from "./onboarding-demo";
 export default function DemoBanner() {
   const [isVisible, setIsVisible] = useState(true);
   const [showDemo, setShowDemo] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(30);
+
+  // Auto-hide banner after 30 seconds
+  useEffect(() => {
+    if (isVisible) {
+      const countdown = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            setIsVisible(false);
+            return 30;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(countdown);
+    }
+  }, [isVisible]);
 
   if (!isVisible) return null;
 
