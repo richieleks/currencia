@@ -226,7 +226,7 @@ export default function OnboardingDemo({ isOpen, onClose, onComplete }: Onboardi
                 <div>
                   <DialogTitle className="text-lg">{currentStepData.title}</DialogTitle>
                   <DialogDescription className="text-sm">
-                    Step {currentStep + 1} of {demoSteps.length}
+                    Step {currentStep + 1} of {demoSteps.length} • Auto-close in {timeRemaining}s
                   </DialogDescription>
                 </div>
               </div>
