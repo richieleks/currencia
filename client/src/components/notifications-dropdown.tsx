@@ -34,6 +34,9 @@ interface NotificationWithUser {
 export default function NotificationsDropdown() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [shouldShake, setShouldShake] = useState(false);
+  const [lastNotificationCount, setLastNotificationCount] = useState(0);
+  const bellRef = useRef<HTMLButtonElement>(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Fetch notifications (using chat messages with notification types)
@@ -121,24 +124,30 @@ export default function NotificationsDropdown() {
   if (!user) return null;
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
-          {unreadCount > 0 ? (
-            <BellDot className="h-5 w-5" />
-          ) : (
-            <Bell className="h-5 w-5" />
-          )}
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </Badge>
-          )}
-        </Button>
-      </PopoverTrigger>
+    <>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button 
+            ref={bellRef}
+            variant="ghost" 
+            size="sm" 
+            className={`relative ${shouldShake ? 'animate-shake' : ''}`}
+          >
+            {unreadCount > 0 ? (
+              <BellDot className="h-5 w-5" />
+            ) : (
+              <Bell className="h-5 w-5" />
+            )}
+            {unreadCount > 0 && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs animate-pulse"
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Badge>
+            )}
+          </Button>
+        </PopoverTrigger>
       <PopoverContent className="w-96 p-0" align="end">
         <Card className="border-0 shadow-lg">
           <CardHeader className="pb-3">
@@ -224,5 +233,18 @@ export default function NotificationsDropdown() {
         </Card>
       </PopoverContent>
     </Popover>
+
+    {/* CSS for shake animation */}
+    <style jsx>{`
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+        20%, 40%, 60%, 80% { transform: translateX(2px); }
+      }
+      .animate-shake {
+        animation: shake 0.5s ease-in-out;
+      }
+    `}</style>
+  </>
   );
 }
