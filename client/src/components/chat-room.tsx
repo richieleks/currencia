@@ -9,10 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { ChatMessage } from "@shared/schema";
-import { Send, TrendingUp, Clock, MessageSquare, CheckCircle, XCircle, Bell } from "lucide-react";
+import { Send, TrendingUp, Clock, MessageSquare, CheckCircle, XCircle, Bell, ArrowRight, Zap } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 interface ChatMessageWithUser extends ChatMessage {
   user: {
@@ -29,10 +34,27 @@ interface BidActionProps {
   currentUserId: string;
 }
 
-interface BidActionProps {
-  message: ChatMessageWithUser;
-  currentUserId: string;
+interface ExchangeRequestData {
+  id: number;
+  fromCurrency: string;
+  toCurrency: string;
+  amount: string;
+  desiredRate?: string;
+  priority: string;
+  user: {
+    id: string;
+    firstName: string | null;
+  };
 }
+
+const quickOfferSchema = z.object({
+  rate: z.string().min(1, "Rate is required").transform((val) => parseFloat(val)),
+}).refine((data) => data.rate > 0, {
+  message: "Rate must be greater than 0",
+  path: ["rate"],
+});
+
+type QuickOfferData = z.infer<typeof quickOfferSchema>;
 
 export default function ChatRoom() {
   const { user } = useAuth();
@@ -40,12 +62,28 @@ export default function ChatRoom() {
   const queryClient = useQueryClient();
   const [messageText, setMessageText] = useState("");
   const [messageType, setMessageType] = useState<"request" | "offer" | "general">("general");
+  const [showQuickOffer, setShowQuickOffer] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<ExchangeRequestData | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch chat messages
   const { data: messages = [], isLoading } = useQuery<ChatMessageWithUser[]>({
     queryKey: ["/api/chat/messages"],
     refetchInterval: 5000, // Refetch every 5 seconds as fallback
+  });
+
+  // Fetch active exchange requests
+  const { data: exchangeRequests = [] } = useQuery<(ExchangeRequestData & { user: any })[]>({
+    queryKey: ["/api/exchange-requests"],
+    refetchInterval: 10000,
+  });
+
+  // Quick offer form
+  const quickOfferForm = useForm<QuickOfferData>({
+    resolver: zodResolver(quickOfferSchema),
+    defaultValues: {
+      rate: 0,
+    },
   });
 
   // WebSocket for real-time updates
@@ -321,6 +359,31 @@ export default function ChatRoom() {
                         </div>
                       )}
                       <p className="text-gray-700">{message.content}</p>
+                      
+                      {/* Quick Response for Exchange Requests */}
+                      {message.messageType === 'request' && user?.id !== message.userId && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          {(() => {
+                            const requestData = parseExchangeRequestFromMessage(message.content);
+                            return requestData ? (
+                              <div className="flex items-center justify-between">
+                                <div className="text-sm text-gray-600">
+                                  <span className="font-medium">Quick Response:</span>
+                                  <span className="ml-2">Submit your rate offer</span>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleQuickOffer(requestData)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <Zap className="w-3 h-3 mr-1" />
+                                  Make Offer
+                                </Button>
+                              </div>
+                            ) : null;
+                          })()}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
