@@ -16,7 +16,7 @@ export default function RoleSelector({ onRoleSelected }: RoleSelectorProps) {
 
   const updateRoleMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("PATCH", "/api/auth/user/profile", { role: "trader" });
+      await apiRequest("/api/auth/user/profile", "PATCH", { role: "trader" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -24,9 +24,13 @@ export default function RoleSelector({ onRoleSelected }: RoleSelectorProps) {
         title: "Account setup complete",
         description: "Welcome to Currencia! You can now start trading.",
       });
-      onRoleSelected();
+      // Wait a moment for the query to refresh, then proceed
+      setTimeout(() => {
+        onRoleSelected();
+      }, 500);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Role update error:", error);
       toast({
         title: "Error",
         description: "Failed to set up account. Please try again.",
@@ -86,14 +90,33 @@ export default function RoleSelector({ onRoleSelected }: RoleSelectorProps) {
           </div>
         )}
 
-        {updateRoleMutation.isError && (
+        {updateRoleMutation.isSuccess && (
           <div className="text-center">
+            <div className="inline-flex items-center gap-2 text-green-600 mb-4">
+              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs">✓</span>
+              </div>
+              Account setup complete!
+            </div>
             <Button 
               size="lg"
               className="bg-primary-500 hover:bg-primary-600 px-8"
               onClick={handleContinue}
             >
               Continue to Platform
+            </Button>
+          </div>
+        )}
+
+        {updateRoleMutation.isError && (
+          <div className="text-center">
+            <div className="text-red-600 mb-4">Setup failed. Please try again.</div>
+            <Button 
+              size="lg"
+              className="bg-primary-500 hover:bg-primary-600 px-8"
+              onClick={() => updateRoleMutation.mutate()}
+            >
+              Retry Setup
             </Button>
           </div>
         )}
