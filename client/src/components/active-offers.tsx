@@ -20,6 +20,7 @@ interface ExchangeRequest {
   createdAt: string;
   user: {
     id: string;
+    companyName?: string | null;
     firstName: string | null;
     role: string;
   };

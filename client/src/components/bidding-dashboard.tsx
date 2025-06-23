@@ -38,6 +38,7 @@ interface ExchangeRequest {
   createdAt: string;
   user: {
     id: string;
+    companyName?: string | null;
     firstName: string | null;
     role: string;
   };
@@ -51,6 +52,7 @@ interface RateOffer {
   createdAt: string;
   bidder: {
     id: string;
+    companyName?: string | null;
     firstName: string | null;
     role: string;
   };

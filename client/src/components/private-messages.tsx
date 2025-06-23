@@ -18,6 +18,7 @@ import { format } from "date-fns";
 interface PrivateMessageWithUser extends ChatMessage {
   user: {
     id: string;
+    companyName?: string | null;
     firstName: string | null;
     lastName: string | null;
     role: string;
@@ -28,6 +29,7 @@ interface PrivateMessageWithUser extends ChatMessage {
 interface Conversation {
   targetUser: {
     id: string;
+    companyName?: string | null;
     firstName: string | null;
     lastName: string | null;
     role: string;
