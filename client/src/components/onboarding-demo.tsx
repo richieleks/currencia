@@ -230,9 +230,7 @@ export default function OnboardingDemo({ isOpen, onClose, onComplete }: Onboardi
                   </DialogDescription>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleSkip}>
-                <X className="h-4 w-4" />
-              </Button>
+              
             </div>
           </DialogHeader>
 
