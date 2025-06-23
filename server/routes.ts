@@ -155,11 +155,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const offerId = parseInt(req.params.id);
+      const { exchangeRequestId, termsAccepted } = req.body;
       
-      console.log("Accept offer request:", { userId, offerId, body: req.body });
+      // Validate terms acceptance
+      if (!termsAccepted) {
+        return res.status(400).json({ message: "Terms and conditions must be accepted" });
+      }
+      
+      console.log("Accept offer request:", { userId, offerId, exchangeRequestId, termsAccepted });
       
       // Get the rate offer and exchange request
-      const offers = await storage.getRateOffersByRequestId(req.body.exchangeRequestId);
+      const offers = await storage.getRateOffersByRequestId(exchangeRequestId);
       console.log("Found offers:", offers);
       const offer = offers.find((o: any) => o.id === offerId);
       console.log("Matching offer:", offer);

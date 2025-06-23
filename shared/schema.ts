@@ -106,6 +106,8 @@ export const transactions = pgTable("transactions", {
   amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
   description: text("description").notNull(),
   exchangeRequestId: integer("exchange_request_id").references(() => exchangeRequests.id),
+  termsAccepted: boolean("terms_accepted").notNull().default(false),
+  termsAcceptedAt: timestamp("terms_accepted_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

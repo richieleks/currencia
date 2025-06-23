@@ -5,7 +5,10 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertTriangle, Shield, FileText } from "lucide-react";
 
 interface ConfirmationModalProps {
   isOpen?: boolean;
@@ -28,13 +31,17 @@ export default function ConfirmationModal({
 }: ConfirmationModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const acceptOfferMutation = useMutation({
     mutationFn: async () => {
       if (!transaction) throw new Error("No transaction data");
+      if (!termsAccepted) throw new Error("Terms and conditions must be accepted");
       
-      await apiRequest("POST", `/api/rate-offers/${transaction.id}/accept`, {
+      await apiRequest(`/api/rate-offers/${transaction.id}/accept`, "POST", {
         exchangeRequestId: transaction.exchangeRequestId,
+        termsAccepted: true,
       });
     },
     onSuccess: () => {
@@ -110,11 +117,58 @@ export default function ConfirmationModal({
               {parseFloat(transaction.totalAmount).toLocaleString()} {transaction.toCurrency}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Fee:</span>
-            <span className="font-medium">$25.00</span>
-          </div>
         </div>
+
+        {/* Terms and Conditions Section */}
+        <Card className="border-2 border-blue-200 bg-blue-50">
+          <CardContent className="p-4">
+            <div className="flex items-start space-x-3">
+              <Shield className="w-5 h-5 text-blue-600 mt-1" />
+              <div className="flex-1">
+                <h4 className="font-semibold text-blue-900 mb-2">Terms and Conditions</h4>
+                <p className="text-sm text-blue-800 mb-3">
+                  By accepting this rate offer, you agree to our trading terms and conditions.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowTerms(!showTerms)}
+                  className="text-blue-600 border-blue-300 hover:bg-blue-100"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  {showTerms ? "Hide" : "View"} Terms
+                </Button>
+              </div>
+            </div>
+
+            {showTerms && (
+              <div className="mt-4 p-3 bg-white rounded border text-sm text-gray-700 max-h-40 overflow-y-auto">
+                <h5 className="font-semibold mb-2">Currency Exchange Terms</h5>
+                <ul className="space-y-1 text-xs">
+                  <li>• All exchange rates are final once accepted</li>
+                  <li>• Transactions are processed immediately and cannot be reversed</li>
+                  <li>• You confirm that you have the authority to make this exchange</li>
+                  <li>• Exchange rates may include applicable fees and commissions</li>
+                  <li>• All transactions are subject to anti-money laundering regulations</li>
+                  <li>• Disputes must be reported within 24 hours of transaction completion</li>
+                  <li>• You acknowledge the risks associated with currency exchange</li>
+                  <li>• Personal information may be shared with regulatory authorities if required</li>
+                </ul>
+              </div>
+            )}
+
+            <div className="flex items-center space-x-2 mt-4">
+              <Checkbox
+                id="terms-acceptance"
+                checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+              />
+              <Label htmlFor="terms-acceptance" className="text-sm text-gray-700">
+                I have read and agree to the terms and conditions
+              </Label>
+            </div>
+          </CardContent>
+        </Card>
         
         <div className="flex space-x-3">
           <Button 
@@ -128,7 +182,7 @@ export default function ConfirmationModal({
           <Button 
             className="flex-1 bg-primary-500 hover:bg-primary-600"
             onClick={handleConfirm}
-            disabled={acceptOfferMutation.isPending}
+            disabled={acceptOfferMutation.isPending || !termsAccepted}
           >
             {acceptOfferMutation.isPending ? (
               <>
