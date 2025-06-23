@@ -150,6 +150,69 @@ export default function ChatRoom() {
     });
   };
 
+  const handleQuickOffer = (request: ExchangeRequestData) => {
+    if (request.user.id === user?.id) {
+      toast({
+        title: "Cannot Bid",
+        description: "You cannot submit offers on your own exchange requests.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSelectedRequest(request);
+    setShowQuickOffer(true);
+  };
+
+  const onQuickOfferSubmit = (data: QuickOfferData) => {
+    if (!selectedRequest) return;
+    quickOfferMutation.mutate({
+      ...data,
+      exchangeRequestId: selectedRequest.id,
+    });
+  };
+
+  // Parse exchange request data from message content
+  const parseExchangeRequestFromMessage = (content: string): ExchangeRequestData | null => {
+    try {
+      // Look for exchange request pattern in message content
+      const lines = content.split('\n');
+      let fromCurrency = "", toCurrency = "", amount = "", desiredRate = "", priority = "";
+      
+      for (const line of lines) {
+        if (line.includes('Exchange:')) {
+          const match = line.match(/(\w+)\s*→\s*(\w+)/);
+          if (match) {
+            fromCurrency = match[1];
+            toCurrency = match[2];
+          }
+        }
+        if (line.includes('Amount:')) {
+          const match = line.match(/Amount:\s*([\d,]+(?:\.\d+)?)\s*(\w+)/);
+          if (match) amount = match[1].replace(/,/g, '');
+        }
+        if (line.includes('Desired Rate:') && !line.includes('N/A')) {
+          const match = line.match(/Desired Rate:\s*([\d.]+)/);
+          if (match) desiredRate = match[1];
+        }
+        if (line.includes('Priority:') && !line.includes('N/A')) {
+          const match = line.match(/Priority:\s*(\w+)/);
+          if (match) priority = match[1];
+        }
+      }
+
+      // Find matching exchange request from API data
+      const matchingRequest = exchangeRequests.find(req => 
+        req.fromCurrency === fromCurrency && 
+        req.toCurrency === toCurrency &&
+        req.amount === amount
+      );
+
+      return matchingRequest || null;
+    } catch {
+      return null;
+    }
+  };
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
