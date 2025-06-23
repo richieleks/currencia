@@ -7,6 +7,7 @@ import { MessageSquare, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import RateOfferModal from "./rate-offer-modal";
 import OffersViewer from "./offers-viewer";
+import { formatCurrency, formatRate } from "@/lib/utils";
 
 interface ExchangeRequest {
   id: number;
@@ -110,12 +111,12 @@ export default function ActiveOffers() {
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                  <span>Amount: {parseFloat(request.amount).toLocaleString()} {request.fromCurrency}</span>
+                  <span>Amount: {formatCurrency(request.amount, request.fromCurrency)}</span>
                   <span>{formatTime(request.createdAt)}</span>
                 </div>
                 {request.desiredRate && (
                   <div className="text-sm text-blue-600 mb-2">
-                    Desired Rate: {parseFloat(request.desiredRate).toFixed(6)}
+                    Desired Rate: {formatRate(request.desiredRate)}
                   </div>
                 )}
                 <div className="text-xs text-gray-500 mb-3">

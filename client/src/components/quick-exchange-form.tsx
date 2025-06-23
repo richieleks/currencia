@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowRight, CheckCircle, Info } from "lucide-react";
+import { formatCurrency, formatRate } from "@/lib/utils";
 
 const currencies = [
   { value: "UGX", label: "UGX - Ugandan Shilling" },
@@ -312,14 +313,14 @@ export default function QuickExchangeForm() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Amount:</span>
                 <span className="font-medium">
-                  {pendingData.amount.toLocaleString()} {pendingData.fromCurrency}
+                  {formatCurrency(pendingData.amount, pendingData.fromCurrency)}
                 </span>
               </div>
               
               {pendingData.desiredRate && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Desired Rate:</span>
-                  <span className="font-medium">{pendingData.desiredRate}</span>
+                  <span className="font-medium">{formatRate(pendingData.desiredRate)}</span>
                 </div>
               )}
               

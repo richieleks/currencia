@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { formatRate as utilFormatRate } from "@/lib/utils";
 
 interface CurrencyRate {
   code: string;
