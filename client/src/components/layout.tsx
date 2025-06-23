@@ -6,6 +6,7 @@ import { Link, useLocation } from "wouter";
 import Sidebar from "@/components/sidebar";
 import NotificationsDropdown from "@/components/notifications-dropdown";
 import { ThemeToggle } from "@/components/theme-toggle";
+import DemoButton from "@/components/demo-button";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -59,10 +60,23 @@ export default function Layout({ children, user }: LayoutProps) {
               <h1 className="hidden lg:block text-lg font-medium text-gray-900 dark:text-white">
                 {getPageTitle()}
               </h1>
+              
+              {/* Add demo data attributes for tutorial - invisible markers */}
+              <div 
+                data-demo="messages-button" 
+                className="absolute opacity-0 pointer-events-none" 
+                style={{ left: '200px', top: '10px', width: '80px', height: '40px' }}
+              />
+              <div 
+                data-demo="portfolio-button" 
+                className="absolute opacity-0 pointer-events-none" 
+                style={{ left: '300px', top: '10px', width: '80px', height: '40px' }}
+              />
             </div>
 
             {/* Right side - User actions */}
             <div className="flex items-center space-x-4">
+              <DemoButton className="hidden sm:flex" />
               <NotificationsDropdown />
               <ThemeToggle />
               

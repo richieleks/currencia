@@ -34,6 +34,15 @@ export default function DemoBanner() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setShowDemo(true)}
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100 text-xs"
+              >
+                <Play className="w-3 h-3 mr-1" />
+                Tutorial
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsVisible(false)}
                 className="text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100"
               >
@@ -47,6 +56,12 @@ export default function DemoBanner() {
           </div>
         </CardContent>
       </Card>
+
+      <OnboardingDemo
+        isOpen={showDemo}
+        onClose={() => setShowDemo(false)}
+        onComplete={() => setShowDemo(false)}
+      />
     </div>
   );
 }
