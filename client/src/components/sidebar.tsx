@@ -54,6 +54,10 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
               <Settings className="w-5 h-5" />
               <span>Settings</span>
             </Link>
+
+            {/* Demo data attributes for onboarding */}
+            <div data-demo="messages-button" className="hidden" />
+            <div data-demo="portfolio-button" className="hidden" />
           </nav>
 
           {/* Current Exchange Rates */}
