@@ -101,6 +101,7 @@ export default function OnboardingDemo({ isOpen, onClose, onComplete }: Onboardi
   const [currentStep, setCurrentStep] = useState(0);
   const [highlightElement, setHighlightElement] = useState<HTMLElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(30);
 
   const currentStepData = demoSteps[currentStep];
 
