@@ -26,7 +26,11 @@ interface ExchangeRequest {
   };
 }
 
-export default function ActiveOffers() {
+interface ActiveOffersProps {
+  onRequestSelect?: (request: ExchangeRequest) => void;
+}
+
+export default function ActiveOffers({ onRequestSelect }: ActiveOffersProps) {
   const { user } = useAuth();
   const [selectedRequest, setSelectedRequest] = useState<ExchangeRequest | null>(null);
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
