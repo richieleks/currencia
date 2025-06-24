@@ -1,57 +1,70 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
-interface UseWebSocketOptions {
-  onMessage?: (data: any) => void;
-  onConnect?: () => void;
-  onDisconnect?: () => void;
-  reconnectInterval?: number;
-}
-
-export function useWebSocket(path: string, onMessage?: (data: any) => void) {
+export function useWebSocket(onMessage?: (data: any) => void) {
   const ws = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttempts = useRef(0);
+  const maxReconnectAttempts = 5;
+  const queryClient = useQueryClient();
 
-  const connect = useCallback(() => {
+  const connect = () => {
     try {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.host}${path}`;
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
       
       ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => {
-        console.log("WebSocket connected");
+        console.log('WebSocket connected');
+        reconnectAttempts.current = 0;
       };
 
       ws.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          
+          // Handle different notification types
+          if (data.type === 'notification') {
+            // Invalidate queries to refresh data
+            queryClient.invalidateQueries({ queryKey: ['/api/chat/messages'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/exchange-requests'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/market-stats'] });
+            
+            // Specific handling for rate offers
+            if (data.data?.type === 'rate_offer') {
+              queryClient.invalidateQueries({ 
+                queryKey: ['/api/rate-offers', data.data.exchangeRequest?.id] 
+              });
+            }
+          }
+          
           onMessage?.(data);
         } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
+          console.error('Failed to parse WebSocket message:', error);
         }
       };
 
       ws.current.onclose = () => {
-        console.log("WebSocket disconnected");
-        // Attempt to reconnect after 3 seconds
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
-        }, 3000);
+        console.log('WebSocket disconnected');
+        
+        // Attempt to reconnect
+        if (reconnectAttempts.current < maxReconnectAttempts) {
+          const delay = Math.pow(2, reconnectAttempts.current) * 1000; // Exponential backoff
+          reconnectTimeoutRef.current = setTimeout(() => {
+            reconnectAttempts.current++;
+            connect();
+          }, delay);
+        }
       };
 
       ws.current.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        console.log('WebSocket error:', error);
       };
     } catch (error) {
-      console.error("Error connecting to WebSocket:", error);
+      console.error('Failed to create WebSocket connection:', error);
     }
-  }, [path, onMessage]);
-
-  const sendMessage = useCallback((data: any) => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify(data));
-    }
-  }, []);
+  };
 
   useEffect(() => {
     connect();
@@ -60,11 +73,9 @@ export function useWebSocket(path: string, onMessage?: (data: any) => void) {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
-      if (ws.current) {
-        ws.current.close();
-      }
+      ws.current?.close();
     };
-  }, [connect]);
+  }, []);
 
-  return { sendMessage };
+  return ws.current;
 }
