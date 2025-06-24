@@ -1,0 +1,56 @@
+index-BvFXwFC8.js:318  Error connecting to WebSocket: SyntaxError: Failed to construct 'WebSocket': The URL 'wss://currencia-app.replit.appp=>{p.type==="notification"&&e&&(s(!0),setTimeout(()=>s(!1),1e3))}' is invalid.
+    at index-BvFXwFC8.js:318:64767
+    at index-BvFXwFC8.js:318:65332
+    at Su (index-BvFXwFC8.js:40:24263)
+    at Xi (index-BvFXwFC8.js:40:42318)
+    at XC (index-BvFXwFC8.js:40:41166)
+    at Vs (index-BvFXwFC8.js:40:40215)
+    at Ug (index-BvFXwFC8.js:40:36825)
+    at As (index-BvFXwFC8.js:38:3274)
+    at index-BvFXwFC8.js:40:34207
+(anonymous) @ index-BvFXwFC8.js:318
+index-BvFXwFC8.js:40  ReferenceError: setTimeRemaining is not defined
+    at index-BvFXwFC8.js:363:53547
+    at Su (index-BvFXwFC8.js:40:24263)
+    at Xi (index-BvFXwFC8.js:40:42318)
+    at XC (index-BvFXwFC8.js:40:41166)
+    at Vs (index-BvFXwFC8.js:40:40215)
+    at Ug (index-BvFXwFC8.js:40:36825)
+    at As (index-BvFXwFC8.js:38:3274)
+    at index-BvFXwFC8.js:40:34207
+zf @ index-BvFXwFC8.js:40
+index-BvFXwFC8.js:40  ReferenceError: setTimeRemaining is not defined
+    at index-BvFXwFC8.js:363:53547
+    at Su (index-BvFXwFC8.js:40:24263)
+    at Xi (index-BvFXwFC8.js:40:42318)
+    at XC (index-BvFXwFC8.js:40:41166)
+    at Vs (index-BvFXwFC8.js:40:40215)
+    at Ug (index-BvFXwFC8.js:40:36825)
+    at As (index-BvFXwFC8.js:38:3274)
+    at index-BvFXwFC8.js:40:34207
+zf @ index-BvFXwFC8.js:40
+index-BvFXwFC8.js:40  ReferenceError: setTimeRemaining is not defined
+    at index-BvFXwFC8.js:363:53547
+    at Su (index-BvFXwFC8.js:40:24263)
+    at Xi (index-BvFXwFC8.js:40:42318)
+    at XC (index-BvFXwFC8.js:40:41166)
+    at Vs (index-BvFXwFC8.js:40:40215)
+    at Ug (index-BvFXwFC8.js:40:36825)
+    at As (index-BvFXwFC8.js:38:3274)
+    at index-BvFXwFC8.js:40:34207
+zf @ index-BvFXwFC8.js:40
+index-BvFXwFC8.js:38  Uncaught ReferenceError: setTimeRemaining is not defined
+    at index-BvFXwFC8.js:363:53547
+    at Su (index-BvFXwFC8.js:40:24263)
+    at Xi (index-BvFXwFC8.js:40:42318)
+    at XC (index-BvFXwFC8.js:40:41166)
+    at Vs (index-BvFXwFC8.js:40:40215)
+    at Ug (index-BvFXwFC8.js:40:36825)
+    at As (index-BvFXwFC8.js:38:3274)
+    at index-BvFXwFC8.js:40:34207
+index-BvFXwFC8.js:318  WebSocket connection to 'wss://currencia-app.replit.app/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ index-BvFXwFC8.js:318
+index-BvFXwFC8.js:318  WebSocket error: Event
+n.current.onerror @ index-BvFXwFC8.js:318
+index-BvFXwFC8.js:318 WebSocket disconnected
+index-BvFXwFC8.js:318 WebSocket connected
