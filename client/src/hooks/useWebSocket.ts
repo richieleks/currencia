@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 export function useWebSocket(onMessage?: (data: any) => void) {
@@ -8,7 +8,7 @@ export function useWebSocket(onMessage?: (data: any) => void) {
   const maxReconnectAttempts = 5;
   const queryClient = useQueryClient();
 
-  const connect = () => {
+  const connect = useCallback(() => {
     try {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -64,7 +64,13 @@ export function useWebSocket(onMessage?: (data: any) => void) {
     } catch (error) {
       console.error('Failed to create WebSocket connection:', error);
     }
-  };
+  }, [onMessage]);
+
+  const sendMessage = useCallback((data: any) => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify(data));
+    }
+  }, []);
 
   useEffect(() => {
     connect();
@@ -75,7 +81,7 @@ export function useWebSocket(onMessage?: (data: any) => void) {
       }
       ws.current?.close();
     };
-  }, []);
+  }, [connect]);
 
-  return ws.current;
+  return { sendMessage };
 }
