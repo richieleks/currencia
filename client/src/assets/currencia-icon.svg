@@ -1,0 +1,24 @@
+<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main circle -->
+  <circle cx="30" cy="30" r="28" fill="#1565C0" stroke="#0D47A1" stroke-width="2"/>
+  
+  <!-- Inner exchange pattern -->
+  <g transform="translate(30, 30)">
+    <!-- Curved exchange arrows -->
+    <path d="M-15 -8 Q-8 -15 0 -8 Q8 -15 15 -8" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M15 8 Q8 15 0 8 Q-8 15 -15 8" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    
+    <!-- Arrow heads -->
+    <path d="M12 -10 L15 -8 L12 -6" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M-12 10 L-15 8 L-12 6" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Central currency symbols -->
+    <circle cx="0" cy="0" r="8" fill="white" opacity="0.2"/>
+    <text x="-3" y="-1" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">$</text>
+    <text x="-2" y="8" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white" opacity="0.8">€£¥</text>
+  </g>
+  
+  <!-- Outer accent rings -->
+  <circle cx="30" cy="30" r="26" stroke="white" stroke-width="1" fill="none" opacity="0.3"/>
+  <circle cx="30" cy="30" r="24" stroke="white" stroke-width="0.5" fill="none" opacity="0.2"/>
+</svg>
