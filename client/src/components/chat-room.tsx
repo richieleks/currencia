@@ -370,153 +370,215 @@ export default function ChatRoom() {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {/* Chat Messages Area */}
-        <div className="h-96 overflow-y-auto p-4 space-y-4">
+        {/* Facebook-like Chat Messages Area */}
+        <div className="h-96 overflow-y-auto p-4 space-y-2 bg-gray-50">
           {messages.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>No messages yet. Start the conversation!</p>
             </div>
           ) : (
-            messages.map((message) => (
-              <div key={message.id} className="chat-message">
-                <div className="flex items-start space-x-3">
-                  <img 
-                    src={message.user.profileImageUrl || `https://ui-avatars.com/api/?name=${message.user.firstName || 'User'}&background=1565C0&color=fff`}
-                    alt={message.user.firstName || 'User'}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-medium text-gray-900">
-                        {message.user.firstName || 'User'}
-                      </span>
-                      <Badge 
-                        variant={message.user.role === 'subscriber' ? 'default' : 'secondary'}
-                        className={`text-xs ${
-                          message.user.role === 'subscriber' 
-                            ? 'bg-primary-100 text-primary-800' 
-                            : 'bg-success-100 text-success-800'
-                        }`}
-                      >
-                        {message.user.role}
-                      </Badge>
-                      <span className="text-xs text-gray-500">
-                        {formatTime(message.createdAt ? message.createdAt.toString() : '')}
-                      </span>
+            messages.map((message, index) => {
+              const isOwnMessage = message.userId === user?.id;
+              const showAvatar = index === messages.length - 1 || 
+                messages[index + 1]?.userId !== message.userId;
+              const isFirstInGroup = index === 0 || 
+                messages[index - 1]?.userId !== message.userId;
+              
+              return (
+                <div 
+                  key={message.id} 
+                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${
+                    isFirstInGroup ? 'mt-4' : 'mt-1'
+                  }`}
+                >
+                  {/* Avatar for others' messages */}
+                  {!isOwnMessage && (
+                    <div className="flex-shrink-0 mr-2">
+                      {showAvatar ? (
+                        <img 
+                          src={message.user.profileImageUrl || `https://ui-avatars.com/api/?name=${message.user.companyName || message.user.firstName || 'User'}&background=1565C0&color=fff`}
+                          alt={message.user.companyName || message.user.firstName || 'User'}
+                          className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-8 h-8" />
+                      )}
                     </div>
-                    <div className={`rounded-lg p-3 ${
-                      message.messageType === 'request' 
-                        ? 'bg-primary-50 border border-primary-200'
+                  )}
+                  
+                  <div className={`max-w-xs lg:max-w-md ${isOwnMessage ? 'ml-auto' : ''}`}>
+                    {/* Sender name for first message in group */}
+                    {!isOwnMessage && isFirstInGroup && (
+                      <div className="mb-1 ml-3">
+                        <span className="text-xs font-semibold text-gray-700">
+                          {message.user.companyName || message.user.firstName || 'User'}
+                        </span>
+                        <Badge 
+                          variant="outline"
+                          className="ml-2 text-xs py-0 px-1 border-gray-300 text-gray-600"
+                        >
+                          {message.user.role}
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {/* Message bubble */}
+                    <div className={`relative px-4 py-2 rounded-2xl shadow-sm ${
+                      isOwnMessage 
+                        ? 'bg-blue-500 text-white rounded-br-md' 
+                        : message.messageType === 'request'
+                        ? 'bg-green-100 text-green-900 border border-green-200 rounded-bl-md'
                         : message.messageType === 'offer'
-                        ? 'bg-white border border-gray-200'
-                        : 'bg-gray-50 border border-gray-200'
+                        ? 'bg-orange-100 text-orange-900 border border-orange-200 rounded-bl-md'
+                        : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md'
                     }`}>
-                      {message.messageType === 'request' && (
-                        <div className="flex items-center space-x-2 mb-2">
-                          <TrendingUp className="w-4 h-4 text-primary-600" />
-                          <span className="font-medium text-primary-900">Exchange Request</span>
+                      {/* Message type indicator for special messages */}
+                      {!isOwnMessage && message.messageType === 'request' && (
+                        <div className="flex items-center mb-1">
+                          <TrendingUp className="w-3 h-3 mr-1 text-green-600" />
+                          <span className="text-xs font-semibold text-green-700">Exchange Request</span>
                         </div>
                       )}
-                      {message.messageType === 'offer' && (
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Clock className="w-4 h-4 text-success-600" />
-                          <span className="font-medium text-success-900">Rate Offer</span>
+                      {!isOwnMessage && message.messageType === 'offer' && (
+                        <div className="flex items-center mb-1">
+                          <Clock className="w-3 h-3 mr-1 text-orange-600" />
+                          <span className="text-xs font-semibold text-orange-700">Rate Offer</span>
                         </div>
                       )}
-                      <p className="text-gray-700">{message.content}</p>
+                      
+                      <p className="text-sm leading-relaxed">{message.content}</p>
                       
                       {/* Quick Response for Exchange Requests */}
-                      {message.messageType === 'request' && user?.id !== message.userId && (
-                        <div className="mt-3 pt-3 border-t border-gray-200">
+                      {!isOwnMessage && message.messageType === 'request' && (
+                        <div className="mt-2 pt-2 border-t border-green-200">
                           {(() => {
                             const requestData = parseExchangeRequestFromMessage(message.content);
                             return requestData ? (
-                              <div className="flex items-center justify-between">
-                                <div className="text-sm text-gray-600">
-                                  <span className="font-medium">Quick Response:</span>
-                                  <span className="ml-2">Submit your rate offer</span>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleQuickOffer(requestData)}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                  <Zap className="w-3 h-3 mr-1" />
-                                  Make Offer
-                                </Button>
-                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => handleQuickOffer(requestData)}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white text-xs py-1 rounded-full"
+                              >
+                                <Zap className="w-3 h-3 mr-1" />
+                                Make Offer
+                              </Button>
                             ) : null;
                           })()}
                         </div>
                       )}
                     </div>
+                    
+                    {/* Timestamp - only show for last message in group */}
+                    {showAvatar && (
+                      <div className={`mt-1 text-xs text-gray-500 ${
+                        isOwnMessage ? 'text-right mr-3' : 'text-left ml-3'
+                      }`}>
+                        {formatTime(message.createdAt ? message.createdAt.toString() : '')}
+                      </div>
+                    )}
                   </div>
+                  
+                  {/* Avatar for own messages */}
+                  {isOwnMessage && (
+                    <div className="flex-shrink-0 ml-2">
+                      {showAvatar ? (
+                        <img 
+                          src={user?.profileImageUrl || `https://ui-avatars.com/api/?name=${user?.companyName || user?.firstName || 'You'}&background=3B82F6&color=fff`}
+                          alt="You"
+                          className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-8 h-8" />
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Message Input */}
-        <div className="border-t border-gray-200 p-4">
+        {/* Facebook-like Message Input */}
+        <div className="border-t border-gray-200 bg-white p-4">
           <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  name="messageType" 
-                  value="general"
-                  checked={messageType === "general"}
-                  onChange={(e) => setMessageType(e.target.value as "request" | "offer" | "general")}
-                  className="text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm font-medium text-gray-700">General</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  name="messageType" 
-                  value="request"
-                  checked={messageType === "request"}
-                  onChange={(e) => setMessageType(e.target.value as "request" | "offer" | "general")}
-                  className="text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Exchange Request</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  name="messageType" 
-                  value="offer"
-                  checked={messageType === "offer"}
-                  onChange={(e) => setMessageType(e.target.value as "request" | "offer" | "general")}
-                  className="text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Rate Offer</span>
-              </label>
-            </div>
-            <div className="flex space-x-3">
-              <Input
-                type="text"
-                placeholder="Type your message..."
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                className="flex-1"
-                disabled={sendMessageMutation.isPending}
-              />
-              <Button 
-                type="submit" 
-                disabled={!messageText.trim() || sendMessageMutation.isPending}
-                className="bg-primary-500 hover:bg-primary-600"
+            {/* Message Type Pills */}
+            <div className="flex items-center space-x-2 mb-3">
+              <span className="text-xs font-medium text-gray-500 mr-2">Message type:</span>
+              <button
+                type="button"
+                onClick={() => setMessageType("general")}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  messageType === "general"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
-                {sendMessageMutation.isPending ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
+                💬 General
+              </button>
+              <button
+                type="button"
+                onClick={() => setMessageType("request")}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  messageType === "request"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                📈 Exchange Request
+              </button>
+              <button
+                type="button"
+                onClick={() => setMessageType("offer")}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  messageType === "offer"
+                    ? "bg-orange-500 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                💰 Rate Offer
+              </button>
+            </div>
+            
+            {/* Input Area */}
+            <div className="flex items-end space-x-2">
+              <div className="flex-1 relative">
+                <Input
+                  type="text"
+                  placeholder={
+                    messageType === "request" 
+                      ? "Share your exchange request..."
+                      : messageType === "offer"
+                      ? "Make a rate offer..."
+                      : "Write a message..."
+                  }
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  className="pr-12 rounded-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-gray-50 hover:bg-white transition-colors"
+                  disabled={sendMessageMutation.isPending}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit(e as any);
+                    }
+                  }}
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Button 
+                    type="submit" 
+                    size="sm"
+                    disabled={!messageText.trim() || sendMessageMutation.isPending}
+                    className="w-8 h-8 rounded-full p-0 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300"
+                  >
+                    {sendMessageMutation.isPending ? (
+                      <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
           </form>
         </div>
