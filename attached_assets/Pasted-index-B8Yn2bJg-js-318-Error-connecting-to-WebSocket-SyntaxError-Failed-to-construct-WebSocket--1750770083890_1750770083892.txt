@@ -1,0 +1,75 @@
+index-B8Yn2bJg.js:318  Error connecting to WebSocket: SyntaxError: Failed to construct 'WebSocket': The URL 'wss://currencia-app.replit.appp=>{p.type==="notification"&&e&&(s(!0),setTimeout(()=>s(!1),1e3))}' is invalid.
+    at index-B8Yn2bJg.js:318:64767
+    at index-B8Yn2bJg.js:318:65332
+    at Su (index-B8Yn2bJg.js:40:24263)
+    at Xi (index-B8Yn2bJg.js:40:42318)
+    at XC (index-B8Yn2bJg.js:40:41166)
+    at Vs (index-B8Yn2bJg.js:40:40215)
+    at Ug (index-B8Yn2bJg.js:40:36825)
+    at As (index-B8Yn2bJg.js:38:3274)
+    at index-B8Yn2bJg.js:40:34207
+(anonymous) @ index-B8Yn2bJg.js:318
+index-B8Yn2bJg.js:318  WebSocket connection to 'wss://currencia-app.replit.app/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ index-B8Yn2bJg.js:318
+index-B8Yn2bJg.js:318  Error connecting to WebSocket: SyntaxError: Failed to construct 'WebSocket': The URL 'wss://currencia-app.replit.appp=>{p.type==="notification"&&e&&(s(!0),setTimeout(()=>s(!1),1e3))}' is invalid.
+    at index-B8Yn2bJg.js:318:64767
+    at index-B8Yn2bJg.js:318:65332
+    at Su (index-B8Yn2bJg.js:40:24263)
+    at Xi (index-B8Yn2bJg.js:40:42318)
+    at XC (index-B8Yn2bJg.js:40:41166)
+    at Vs (index-B8Yn2bJg.js:40:40215)
+    at Ug (index-B8Yn2bJg.js:40:36825)
+    at As (index-B8Yn2bJg.js:38:3274)
+    at index-B8Yn2bJg.js:40:34207
+(anonymous) @ index-B8Yn2bJg.js:318
+index-B8Yn2bJg.js:318  WebSocket error: Event
+n.current.onerror @ index-B8Yn2bJg.js:318
+index-B8Yn2bJg.js:318 WebSocket disconnected
+index-B8Yn2bJg.js:318  WebSocket connection to 'wss://currencia-app.replit.app/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ index-B8Yn2bJg.js:318
+index-B8Yn2bJg.js:318  WebSocket error: Event
+n.current.onerror @ index-B8Yn2bJg.js:318
+index-B8Yn2bJg.js:318 WebSocket disconnected
+index-B8Yn2bJg.js:318 WebSocket connected
+index-B8Yn2bJg.js:318 WebSocket disconnected
+index-B8Yn2bJg.js:318 WebSocket connected
+index-B8Yn2bJg.js:318 WebSocket connected
+index-B8Yn2bJg.js:318 WebSocket disconnected
+index-B8Yn2bJg.js:318 WebSocket connected
+index-B8Yn2bJg.js:318 WebSocket connected
+index-B8Yn2bJg.js:318  Error connecting to WebSocket: SyntaxError: Failed to construct 'WebSocket': The URL 'wss://currencia-app.replit.appp=>{p.type==="notification"&&e&&(s(!0),setTimeout(()=>s(!1),1e3))}' is invalid.
+    at index-B8Yn2bJg.js:318:64767
+    at index-B8Yn2bJg.js:318:65332
+    at Su (index-B8Yn2bJg.js:40:24263)
+    at Xi (index-B8Yn2bJg.js:40:42318)
+    at XC (index-B8Yn2bJg.js:40:41166)
+    at Vs (index-B8Yn2bJg.js:40:40215)
+    at Ug (index-B8Yn2bJg.js:40:36825)
+    at As (index-B8Yn2bJg.js:38:3274)
+    at index-B8Yn2bJg.js:40:34207
+(anonymous) @ index-B8Yn2bJg.js:318
+index-B8Yn2bJg.js:318 WebSocket disconnected
+index-B8Yn2bJg.js:318 WebSocket connected
+index-B8Yn2bJg.js:40  ReferenceError: formatAmount is not defined
+    at index-B8Yn2bJg.js:363:109450
+    at Array.map (<anonymous>)
+    at F4 (index-B8Yn2bJg.js:363:109072)
+    at xm (index-B8Yn2bJg.js:38:16998)
+    at _0 (index-B8Yn2bJg.js:40:43963)
+    at C0 (index-B8Yn2bJg.js:40:39727)
+    at ZC (index-B8Yn2bJg.js:40:39655)
+    at Uc (index-B8Yn2bJg.js:40:39508)
+    at Gf (index-B8Yn2bJg.js:40:35875)
+    at Ug (index-B8Yn2bJg.js:40:36678)
+zf @ index-B8Yn2bJg.js:40
+index-B8Yn2bJg.js:38  Uncaught ReferenceError: formatAmount is not defined
+    at index-B8Yn2bJg.js:363:109450
+    at Array.map (<anonymous>)
+    at F4 (index-B8Yn2bJg.js:363:109072)
+    at xm (index-B8Yn2bJg.js:38:16998)
+    at _0 (index-B8Yn2bJg.js:40:43963)
+    at C0 (index-B8Yn2bJg.js:40:39727)
+    at ZC (index-B8Yn2bJg.js:40:39655)
+    at Uc (index-B8Yn2bJg.js:40:39508)
+    at Gf (index-B8Yn2bJg.js:40:35875)
+    at Ug (index-B8Yn2bJg.js:40:36678)
