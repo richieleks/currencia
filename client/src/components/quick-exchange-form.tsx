@@ -87,7 +87,7 @@ export default function QuickExchangeForm() {
         description: "Your exchange request has been posted successfully.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -99,9 +99,16 @@ export default function QuickExchangeForm() {
         }, 500);
         return;
       }
+      
+      // Handle server error messages
+      let errorMessage = "Failed to post exchange request. Please try again.";
+      if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to post exchange request. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
