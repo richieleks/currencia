@@ -123,15 +123,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserProfile(id: string, updates: Partial<UpsertUser>): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({
-        ...updates,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, id))
-      .returning();
-    return user;
+    console.log("Storage updateUserProfile called with:", { id, updates });
+    
+    try {
+      const [user] = await db
+        .update(users)
+        .set({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, id))
+        .returning();
+      
+      console.log("User profile updated in database:", user);
+      return user;
+    } catch (error) {
+      console.error("Database error in updateUserProfile:", error);
+      throw error;
+    }
   }
 
   async updateUserActivity(id: string): Promise<void> {
