@@ -257,12 +257,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getChatMessages(): Promise<(ChatMessage & { user: User, replies?: (ChatMessage & { user: User })[] })[]> {
-    // Get main messages including exchange requests
+    // Get main messages (excluding replies) including exchange requests
     const mainMessages = await db
       .select()
       .from(chatMessages)
       .innerJoin(users, eq(chatMessages.userId, users.id))
-      .where(eq(chatMessages.messageType, "general"))
+      .where(and(
+        eq(chatMessages.messageType, "general"),
+        isNull(chatMessages.parentMessageId)
+      ))
       .orderBy(desc(chatMessages.createdAt));
     
     // Get all replies
