@@ -287,6 +287,67 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
+  async createThreadReply(userId: string, content: string, parentMessageId: number, exchangeRequestId?: number): Promise<ChatMessage & { user: User }> {
+    const replyMessage: InsertChatMessage = {
+      userId,
+      content,
+      messageType: "general",
+      parentMessageId,
+      exchangeRequestId,
+    };
+
+    return this.createChatMessage(replyMessage);
+  }
+
+  async getThreadMessages(exchangeRequestId: number): Promise<(ChatMessage & { user: User, replies?: (ChatMessage & { user: User })[] })[]> {
+    // Get main messages for this exchange request
+    const mainMessages = await db
+      .select()
+      .from(chatMessages)
+      .innerJoin(users, eq(chatMessages.userId, users.id))
+      .where(
+        and(
+          eq(chatMessages.exchangeRequestId, exchangeRequestId),
+          isNull(chatMessages.parentMessageId)
+        )
+      )
+      .orderBy(asc(chatMessages.createdAt));
+    
+    // Get all replies for this exchange request
+    const repliesQuery = await db
+      .select()
+      .from(chatMessages)
+      .innerJoin(users, eq(chatMessages.userId, users.id))
+      .where(
+        and(
+          eq(chatMessages.exchangeRequestId, exchangeRequestId),
+          isNotNull(chatMessages.parentMessageId)
+        )
+      )
+      .orderBy(asc(chatMessages.createdAt));
+    
+    // Group replies by parent message ID
+    const repliesMap = new Map<number, (ChatMessage & { user: User })[]>();
+    repliesQuery.forEach(result => {
+      const reply = {
+        ...result.chat_messages,
+        user: result.users,
+      };
+      const parentId = reply.parentMessageId!;
+      if (!repliesMap.has(parentId)) {
+        repliesMap.set(parentId, []);
+      }
+      repliesMap.get(parentId)!.push(reply);
+    });
+    
+    // Combine main messages with their replies
+    return mainMessages.map(result => ({
+      ...result.chat_messages,
+      user: result.users,
+      replies: repliesMap.get(result.chat_messages.id) || [],
+    }));
+  }
+
   async createBidActionMessage(userId: string, action: "accept" | "reject", rateOfferId: number, exchangeRequestId: number, targetUserId: string): Promise<ChatMessage & { user: User }> {
     const actionText = action === "accept" ? "accepted" : "rejected";
     const content = `${actionText} a bid on exchange request #${exchangeRequestId}`;
