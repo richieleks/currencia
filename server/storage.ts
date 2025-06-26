@@ -169,6 +169,23 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  async getExistingCurrencyRequest(userId: string, fromCurrency: string, toCurrency: string): Promise<ExchangeRequest | undefined> {
+    const [result] = await db
+      .select()
+      .from(exchangeRequests)
+      .where(
+        and(
+          eq(exchangeRequests.userId, userId),
+          eq(exchangeRequests.fromCurrency, fromCurrency),
+          eq(exchangeRequests.toCurrency, toCurrency),
+          eq(exchangeRequests.status, "active")
+        )
+      )
+      .limit(1);
+
+    return result;
+  }
+
   async updateExchangeRequestStatus(id: number, status: "active" | "completed" | "cancelled", selectedOfferId?: number): Promise<void> {
     await db
       .update(exchangeRequests)
