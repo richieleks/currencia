@@ -29,6 +29,7 @@ export interface IStorage {
   createExchangeRequest(request: InsertExchangeRequest): Promise<ExchangeRequest>;
   getExchangeRequests(): Promise<(ExchangeRequest & { user: User })[]>;
   getExchangeRequestById(id: number): Promise<(ExchangeRequest & { user: User }) | undefined>;
+  getExistingCurrencyRequest(userId: string, fromCurrency: string, toCurrency: string): Promise<ExchangeRequest | undefined>;
   updateExchangeRequestStatus(id: number, status: string, selectedOfferId?: number): Promise<void>;
   
   // Rate offer operations
