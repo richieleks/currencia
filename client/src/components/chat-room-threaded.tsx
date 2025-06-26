@@ -32,17 +32,22 @@ export default function ChatRoomThreaded() {
   const queryClient = useQueryClient();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: messages = [], isLoading } = useQuery({
+  const { data: messages = [], isLoading } = useQuery<ChatMessageWithUser[]>({
     queryKey: ["/api/chat/messages"],
     refetchInterval: 5000,
   });
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest("/api/chat/messages", {
+      const response = await fetch("/api/chat/messages", {
         method: "POST",
-        body: { content, messageType: "general" },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content, messageType: "general" }),
       });
+      if (!response.ok) throw new Error("Failed to send message");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
@@ -56,10 +61,15 @@ export default function ChatRoomThreaded() {
 
   const sendReplyMutation = useMutation({
     mutationFn: async ({ parentId, content }: { parentId: number; content: string }) => {
-      return apiRequest(`/api/chat/messages/${parentId}/reply`, {
+      const response = await fetch(`/api/chat/messages/${parentId}/reply`, {
         method: "POST",
-        body: { content },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content }),
       });
+      if (!response.ok) throw new Error("Failed to send reply");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
