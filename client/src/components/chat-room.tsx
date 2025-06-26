@@ -107,10 +107,10 @@ export default function ChatRoom() {
   });
 
   // WebSocket for real-time updates
-  const { sendMessage } = useWebSocket("/ws", (message: any) => {
-    if (message.type === "new_message") {
+  useWebSocket({
+    onMessage: (message) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
-    }
+    },
   });
 
   // Send message mutation
