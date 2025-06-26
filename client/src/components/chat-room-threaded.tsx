@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChatMessage } from "@shared/schema";
 import { Send, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { z } from "zod";
 
 interface ChatMessageWithUser extends ChatMessage {
   user: {
@@ -22,6 +23,27 @@ interface ChatMessageWithUser extends ChatMessage {
   };
   replies?: ChatMessageWithUser[];
 }
+
+interface ExchangeRequestData {
+  id: number;
+  fromCurrency: string;
+  toCurrency: string;
+  amount: string;
+  desiredRate?: string;
+  priority: string;
+  user: {
+    id: string;
+    companyName?: string | null;
+    firstName: string | null;
+  };
+}
+
+const rateOfferSchema = z.object({
+  rate: z.string().min(1, "Rate is required"),
+  totalAmount: z.string().min(1, "Total amount is required"),
+});
+
+type RateOfferData = z.infer<typeof rateOfferSchema>;
 
 export default function ChatRoomThreaded() {
   const [message, setMessage] = useState("");
@@ -149,7 +171,7 @@ export default function ChatRoomThreaded() {
                     <div className="flex items-center space-x-2">
                       <span className="font-medium text-gray-900">{displayName}</span>
                       <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+                        {msg.createdAt && formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
                       </span>
                     </div>
                     <div className="mt-1">

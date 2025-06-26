@@ -10,9 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ChatMessage } from "@shared/schema";
-import { Send, TrendingUp, Clock, MessageSquare, CheckCircle, XCircle, Bell, ArrowRight, Zap } from "lucide-react";
+import { Send, TrendingUp, Clock, MessageSquare, CheckCircle, XCircle, Bell, ArrowRight, Zap, DollarSign } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
@@ -58,7 +58,13 @@ const quickOfferSchema = z.object({
   path: ["rate"],
 });
 
+const rateOfferSchema = z.object({
+  rate: z.string().min(1, "Rate is required"),
+  totalAmount: z.string().min(1, "Total amount is required"),
+});
+
 type QuickOfferData = z.infer<typeof quickOfferSchema>;
+type RateOfferData = z.infer<typeof rateOfferSchema>;
 
 export default function ChatRoom() {
   const { user } = useAuth();
@@ -68,6 +74,7 @@ export default function ChatRoom() {
   const [messageType, setMessageType] = useState<"request" | "offer" | "general">("general");
   const [showQuickOffer, setShowQuickOffer] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<ExchangeRequestData | null>(null);
+  const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch chat messages
@@ -90,8 +97,17 @@ export default function ChatRoom() {
     },
   });
 
+  // Rate offer form
+  const rateOfferForm = useForm<RateOfferData>({
+    resolver: zodResolver(rateOfferSchema),
+    defaultValues: {
+      rate: "",
+      totalAmount: "",
+    },
+  });
+
   // WebSocket for real-time updates
-  const { sendMessage } = useWebSocket("/ws", (message) => {
+  const { sendMessage } = useWebSocket("/ws", (message: any) => {
     if (message.type === "new_message") {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
     }
@@ -139,6 +155,54 @@ export default function ChatRoom() {
     },
   });
 
+  // Rate offer mutation
+  const createRateOfferMutation = useMutation({
+    mutationFn: async (data: RateOfferData & { exchangeRequestId: number }) => {
+      const response = await fetch("/api/rate-offers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to create rate offer");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exchange-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
+      setIsOfferDialogOpen(false);
+      rateOfferForm.reset();
+      toast({
+        title: "Rate offer submitted",
+        description: "Your rate offer has been submitted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to submit rate offer. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Quick offer mutation
+  const quickOfferMutation = useMutation({
+    mutationFn: async (data: QuickOfferData & { exchangeRequestId: number }) => {
+      await apiRequest("POST", "/api/rate-offers", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exchange-requests"] });
+      setShowQuickOffer(false);
+      quickOfferForm.reset();
+      toast({
+        title: "Rate offer submitted",
+        description: "Your offer has been submitted successfully.",
+      });
+    },
+  });
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -167,12 +231,44 @@ export default function ChatRoom() {
     setShowQuickOffer(true);
   };
 
+  const handleRateOffer = (request: ExchangeRequestData) => {
+    setSelectedRequest(request);
+    setIsOfferDialogOpen(true);
+  };
+
   const onQuickOfferSubmit = (data: QuickOfferData) => {
     if (!selectedRequest) return;
     quickOfferMutation.mutate({
       ...data,
       exchangeRequestId: selectedRequest.id,
     });
+  };
+
+  const onRateOfferSubmit = (data: RateOfferData) => {
+    if (!selectedRequest) return;
+    
+    createRateOfferMutation.mutate({
+      ...data,
+      exchangeRequestId: selectedRequest.id,
+    });
+  };
+
+  // Extract exchange request data from message content
+  const extractRequestData = (message: ChatMessageWithUser): ExchangeRequestData | null => {
+    if (!message.exchangeRequestId) return null;
+    
+    // Parse the content to extract request details
+    const match = message.content.match(/Exchange request: ([\d,]+(?:\.\d+)?)\s+(\w+)\s+to\s+(\w+)/);
+    if (!match) return null;
+    
+    return {
+      id: message.exchangeRequestId,
+      amount: match[1],
+      fromCurrency: match[2],
+      toCurrency: match[3],
+      priority: "standard", // Default since we can't extract it
+      user: message.user,
+    };
   };
 
   // Parse exchange request data from message content
@@ -272,22 +368,22 @@ export default function ChatRoom() {
         <div className="flex items-start space-x-3">
           <Avatar className="h-8 w-8">
             <AvatarFallback className="text-xs">
-              {message.user.firstName?.charAt(0) || message.user.email?.charAt(0) || "U"}
+              {message.user.firstName?.charAt(0) || "U"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {message.user.firstName || message.user.email}
+                {message.user.firstName || "User"}
               </span>
               <Badge variant="secondary" className={getMessageTypeColor(message.messageType)}>
                 <div className="flex items-center gap-1">
-                  {getMessageIcon(message.messageType, message.actionType)}
+                  {getMessageIcon(message.messageType, message.actionType || undefined)}
                   <span className="capitalize">{actionText}</span>
                 </div>
               </Badge>
               <span className="text-xs text-gray-500">
-                {format(new Date(message.createdAt), "HH:mm")}
+                {message.createdAt && format(new Date(message.createdAt), "HH:mm")}
               </span>
             </div>
             <div className={`mt-1 text-sm ${actionColor} font-medium`}>
@@ -327,7 +423,7 @@ export default function ChatRoom() {
                 </div>
               </Badge>
               <span className="text-xs text-gray-500">
-                {format(new Date(message.createdAt), "HH:mm")}
+                {message.createdAt && format(new Date(message.createdAt), "HH:mm")}
               </span>
               {isForUser && (
                 <Badge variant="outline" className="text-xs">
@@ -360,25 +456,26 @@ export default function ChatRoom() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Exchange Requests</CardTitle>
-          <Badge variant="outline" className="bg-success-100 text-success-800 border-success-200">
-            <div className="w-2 h-2 bg-success-500 rounded-full mr-1"></div>
-            Live
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
-        {/* Facebook-like Chat Messages Area */}
-        <div className="h-96 overflow-y-auto p-4 space-y-2 bg-gray-50">
-          {messages.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>No messages yet. Start the conversation!</p>
-            </div>
-          ) : (
+    <div className="flex flex-col h-full max-w-4xl mx-auto">
+      <Card className="flex-1 flex flex-col">
+        <CardHeader className="flex-shrink-0">
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" />
+            Market Discussion
+            <Badge variant="outline" className="ml-auto">
+              {messages?.length || 0} messages
+            </Badge>
+          </CardTitle>
+          </CardHeader>
+        <CardContent className="flex-1 flex flex-col p-0">
+          {/* Chat Messages Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
+            {messages.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>No messages yet. Start the conversation!</p>
+              </div>
+            ) : (
             messages.map((message, index) => {
               const isOwnMessage = message.userId === user?.id;
               const showAvatar = index === messages.length - 1 || 
@@ -585,5 +682,86 @@ export default function ChatRoom() {
         </div>
       </CardContent>
     </Card>
+
+      {/* Rate Offer Dialog */}
+    <Dialog open={isOfferDialogOpen} onOpenChange={setIsOfferDialogOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {selectedRequest && user?.id === selectedRequest.user.id ? "Counter Offer" : "Rate Offer"}
+          </DialogTitle>
+        </DialogHeader>
+        {selectedRequest ? (
+          <div className="space-y-4">
+            <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+              <div className="text-sm text-gray-600 dark:text-gray-400">Exchange Request</div>
+              <div className="font-semibold">
+                {selectedRequest.amount} {selectedRequest.fromCurrency} → {selectedRequest.toCurrency}
+              </div>
+              <div className="text-xs text-gray-500">
+                By {selectedRequest.user.companyName || selectedRequest.user.firstName || "Anonymous"}
+              </div>
+            </div>
+            
+            <Form {...rateOfferForm}>
+              <form onSubmit={rateOfferForm.handleSubmit(onRateOfferSubmit)} className="space-y-4">
+                <FormField
+                  control={rateOfferForm.control}
+                  name="rate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Exchange Rate</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., 3750.00" 
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={rateOfferForm.control}
+                  name="totalAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Amount ({selectedRequest.toCurrency})</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., 18750000.00" 
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setIsOfferDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1"
+                    disabled={createRateOfferMutation.isPending}
+                  >
+                    {createRateOfferMutation.isPending ? "Submitting..." : "Submit Offer"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+    </div>
   );
 }

@@ -139,6 +139,9 @@ Changelog:
 - June 24, 2025. Updated branding throughout application with new logo and improved visual identity
 - June 26, 2025. Fixed trades display issue by creating proper completed transaction data and ensuring proper database relationships
 - June 26, 2025. Added comprehensive dummy trading data with realistic completed exchanges for testing interface functionality
+- June 26, 2025. Added validation to prevent duplicate currency exchange requests for same currency pairs
+- June 26, 2025. Fixed exchange requests visibility in chat room with proper message creation and WebSocket broadcasting
+- June 26, 2025. Enhanced chat interface with rate offer and counter offer buttons in reply fields for streamlined trading
 
 ## User Preferences
 
