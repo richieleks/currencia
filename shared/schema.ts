@@ -90,7 +90,7 @@ export const rateOffers = pgTable("rate_offers", {
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
-  messageType: varchar("message_type", { enum: ["request", "offer", "general", "bid_action", "notification", "private"] }).notNull(),
+  messageType: varchar("message_type", { enum: ["request", "offer", "general", "bid_action", "notification", "private", "reply"] }).notNull(),
   content: text("content").notNull(),
   exchangeRequestId: integer("exchange_request_id").references(() => exchangeRequests.id),
   rateOfferId: integer("rate_offer_id").references(() => rateOffers.id),
