@@ -142,6 +142,7 @@ Changelog:
 - June 26, 2025. Added validation to prevent duplicate currency exchange requests for same currency pairs
 - June 26, 2025. Fixed exchange requests visibility in chat room with proper message creation and WebSocket broadcasting
 - June 26, 2025. Enhanced chat interface with rate offer and counter offer buttons in reply fields for streamlined trading
+- June 26, 2025. Fixed threaded chat system to prevent replies from appearing in main chat room - added "reply" message type and proper filtering
 
 ## User Preferences
 
