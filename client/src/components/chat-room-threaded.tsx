@@ -190,7 +190,7 @@ export default function ChatRoomThreaded() {
                             <div className="flex items-center space-x-2">
                               <span className="text-sm font-medium text-gray-900">{replyDisplayName}</span>
                               <span className="text-xs text-gray-500">
-                                {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
+                                {formatDistanceToNow(new Date(reply.createdAt || new Date()), { addSuffix: true })}
                               </span>
                             </div>
                             <p className="text-sm text-gray-700 mt-1">{reply.content}</p>

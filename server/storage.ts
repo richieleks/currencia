@@ -39,9 +39,9 @@ export interface IStorage {
   
   // Chat operations
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage & { user: User }>;
-  getChatMessages(): Promise<(ChatMessage & { user: User })[]>;
+  getChatMessages(): Promise<(ChatMessage & { user: User, replies?: (ChatMessage & { user: User })[] })[]>;
   getThreadMessages(exchangeRequestId: number): Promise<(ChatMessage & { user: User, replies?: (ChatMessage & { user: User })[] })[]>;
-  createThreadReply(userId: string, content: string, parentMessageId: number, exchangeRequestId: number): Promise<ChatMessage & { user: User }>;
+  createThreadReply(userId: string, content: string, parentMessageId: number, exchangeRequestId?: number): Promise<ChatMessage & { user: User }>;
   createBidActionMessage(userId: string, action: "accept" | "reject", rateOfferId: number, exchangeRequestId: number, targetUserId: string): Promise<ChatMessage & { user: User }>;
   createNotificationMessage(userId: string, content: string, targetUserId?: string): Promise<ChatMessage & { user: User }>;
   createPrivateMessage(userId: string, targetUserId: string, content: string, exchangeRequestId?: number, rateOfferId?: number): Promise<ChatMessage & { user: User }>;
