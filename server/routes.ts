@@ -65,15 +65,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
       });
 
+      // Check for existing active request with same currency pair
+      const existingRequest = await storage.getExistingCurrencyRequest(
+        userId, 
+        requestData.fromCurrency, 
+        requestData.toCurrency
+      );
+      
+      if (existingRequest) {
+        return res.status(400).json({ 
+          message: `You already have an active ${requestData.fromCurrency} to ${requestData.toCurrency} exchange request. Please cancel or complete it before creating a new one.` 
+        });
+      }
+
       const exchangeRequest = await storage.createExchangeRequest(requestData);
       
       // Create chat message for the request
       const rateInfo = requestData.desiredRate ? ` at rate ${requestData.desiredRate}` : '';
-      await storage.createChatMessage({
+      const chatMessage = await storage.createChatMessage({
         userId,
-        messageType: "request",
+        messageType: "general",
         content: `Exchange request: ${requestData.amount} ${requestData.fromCurrency} to ${requestData.toCurrency}${rateInfo}`,
         exchangeRequestId: exchangeRequest.id,
+      });
+
+      // Broadcast to WebSocket clients
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({ 
+            type: 'newExchangeRequest', 
+            data: { exchangeRequest, chatMessage }
+          }));
+        }
       });
 
       res.json(exchangeRequest);
