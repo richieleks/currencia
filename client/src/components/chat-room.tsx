@@ -29,6 +29,7 @@ interface ChatMessageWithUser extends ChatMessage {
     role: string;
     profileImageUrl: string | null;
   };
+  replies?: ChatMessageWithUser[];
 }
 
 interface BidActionProps {
