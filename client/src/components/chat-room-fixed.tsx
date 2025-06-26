@@ -53,13 +53,20 @@ const rateOfferSchema = z.object({
 
 type RateOfferData = z.infer<typeof rateOfferSchema>;
 
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(word => word.charAt(0))
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+function getInitials(firstName: string | null, lastName: string | null, email?: string): string {
+  if (firstName && lastName) {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  }
+  if (firstName) {
+    return firstName.charAt(0).toUpperCase();
+  }
+  if (lastName) {
+    return lastName.charAt(0).toUpperCase();
+  }
+  if (email) {
+    return email.charAt(0).toUpperCase();
+  }
+  return 'U';
 }
 
 function getMessageIcon(messageType: string, actionType?: string) {
