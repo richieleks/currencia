@@ -90,6 +90,7 @@ export default function BidderProfile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: BidderProfileData) => {
+      console.log("Updating profile with data:", { ...data, specializedCurrencies: selectedCurrencies });
       const response = await fetch("/api/auth/user/profile", {
         method: "PATCH",
         headers: {
@@ -100,10 +101,20 @@ export default function BidderProfile() {
           specializedCurrencies: selectedCurrencies,
         }),
       });
+      
+      console.log("Profile update response status:", response.status);
+      const responseData = await response.text();
+      console.log("Profile update response:", responseData);
+      
       if (!response.ok) {
-        throw new Error("Failed to update profile");
+        throw new Error(`Failed to update profile: ${responseData}`);
       }
-      return response.json();
+      
+      try {
+        return JSON.parse(responseData);
+      } catch (e) {
+        throw new Error("Invalid JSON response from server");
+      }
     },
     onSuccess: () => {
       toast({

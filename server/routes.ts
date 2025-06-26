@@ -36,17 +36,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const updates = req.body;
+      
+      console.log("Profile update request for user:", userId);
+      console.log("Profile update data:", updates);
 
       const user = await storage.getUser(userId);
       if (!user) {
+        console.log("User not found:", userId);
         return res.status(404).json({ message: "User not found" });
       }
 
       const updatedUser = await storage.updateUserProfile(userId, updates);
+      console.log("Profile updated successfully:", updatedUser);
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating user profile:", error);
-      res.status(500).json({ message: "Failed to update user profile" });
+      res.status(500).json({ message: "Failed to update user profile", error: error.message });
     }
   });
 
