@@ -144,7 +144,7 @@ export const rateOffersRelations = relations(rateOffers, ({ one, many }) => ({
   chatMessages: many(chatMessages),
 }));
 
-export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+export const chatMessagesRelations: any = relations(chatMessages, ({ one }) => ({
   user: one(users, {
     fields: [chatMessages.userId],
     references: [users.id],
