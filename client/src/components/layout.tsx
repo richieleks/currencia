@@ -5,7 +5,7 @@ import { Menu, Bell, TrendingUp } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import Sidebar from "@/components/sidebar";
 import NotificationsDropdown from "@/components/notifications-dropdown";
-import { ThemeToggle } from "@/components/theme-toggle";
+
 import DemoButton from "@/components/demo-button";
 
 interface LayoutProps {
@@ -78,7 +78,6 @@ export default function Layout({ children, user }: LayoutProps) {
             <div className="flex items-center space-x-4">
               <DemoButton className="hidden sm:flex" />
               <NotificationsDropdown />
-              <ThemeToggle />
               
               {/* User Profile */}
               <div className="flex items-center space-x-3">
