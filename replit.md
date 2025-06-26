@@ -145,6 +145,7 @@ Changelog:
 - June 26, 2025. Fixed threaded chat system to prevent replies from appearing in main chat room - added "reply" message type and proper filtering
 - June 26, 2025. Implemented comprehensive user registration system with business details and profile completion workflow
 - June 26, 2025. Added automatic company name defaulting to first and last name for new users during authentication
+- June 26, 2025. Implemented automatic user logout after 15 minutes of inactivity with activity tracking and status management
 
 ## User Preferences
 
