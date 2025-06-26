@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRightLeft, Wallet, CreditCard, Settings, User, Shield } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -110,9 +111,10 @@ export default function SettingsPage() {
         </div>
 
         <Tabs defaultValue="transfers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="transfers">Money Transfers</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="appearance">Appearance</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
 
@@ -314,6 +316,33 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground">
                   Profile information is managed through your authentication provider.
                 </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="appearance" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Theme Preferences
+                </CardTitle>
+                <CardDescription>
+                  Customize the appearance of the application
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-medium mb-1">Theme</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Switch between light and dark modes
+                      </p>
+                    </div>
+                    <ThemeToggle />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
