@@ -597,5 +597,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Create thread reply
+  app.post("/api/chat/messages/:id/reply", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const parentMessageId = parseInt(req.params.id);
+      const { content } = req.body;
+      
+      if (!content || !content.trim()) {
+        return res.status(400).json({ message: "Content is required" });
+      }
+      
+      console.log("Creating reply:", { userId, parentMessageId, content });
+      
+      const reply = await storage.createThreadReply(userId, content.trim(), parentMessageId);
+      
+      // Broadcast to WebSocket clients
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({ 
+            type: 'newReply', 
+            data: reply 
+          }));
+        }
+      });
+      
+      res.json(reply);
+    } catch (error) {
+      console.error("Error creating thread reply:", error);
+      res.status(500).json({ message: "Failed to create reply" });
+    }
+  });
+
   return httpServer;
 }

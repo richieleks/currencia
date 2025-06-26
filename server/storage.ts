@@ -238,18 +238,53 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getChatMessages(): Promise<(ChatMessage & { user: User })[]> {
-    const results = await db
+  async getChatMessages(): Promise<(ChatMessage & { user: User, replies?: (ChatMessage & { user: User })[] })[]> {
+    // Get main messages (not replies)
+    const mainMessages = await db
       .select()
       .from(chatMessages)
       .innerJoin(users, eq(chatMessages.userId, users.id))
-      .orderBy(desc(chatMessages.createdAt))
-      .limit(50);
+      .where(
+        and(
+          eq(chatMessages.messageType, "general"),
+          isNull(chatMessages.parentMessageId)
+        )
+      )
+      .orderBy(asc(chatMessages.createdAt));
     
-    return results.map(result => ({
+    // Get all replies
+    const repliesQuery = await db
+      .select()
+      .from(chatMessages)
+      .innerJoin(users, eq(chatMessages.userId, users.id))
+      .where(
+        and(
+          eq(chatMessages.messageType, "general"),
+          isNotNull(chatMessages.parentMessageId)
+        )
+      )
+      .orderBy(asc(chatMessages.createdAt));
+    
+    // Group replies by parent message ID
+    const repliesMap = new Map<number, (ChatMessage & { user: User })[]>();
+    repliesQuery.forEach(result => {
+      const reply = {
+        ...result.chat_messages,
+        user: result.users,
+      };
+      const parentId = reply.parentMessageId!;
+      if (!repliesMap.has(parentId)) {
+        repliesMap.set(parentId, []);
+      }
+      repliesMap.get(parentId)!.push(reply);
+    });
+    
+    // Combine main messages with their replies
+    return mainMessages.map(result => ({
       ...result.chat_messages,
       user: result.users,
-    })).reverse();
+      replies: repliesMap.get(result.chat_messages.id) || [],
+    }));
   }
 
   async createBidActionMessage(userId: string, action: "accept" | "reject", rateOfferId: number, exchangeRequestId: number, targetUserId: string): Promise<ChatMessage & { user: User }> {
