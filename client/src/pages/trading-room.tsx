@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import ChatRoom from "@/components/chat-room";
+import ChatRoomThreaded from "@/components/chat-room-threaded";
 import QuickExchangeForm from "@/components/quick-exchange-form";
 import ActiveOffers from "@/components/active-offers";
 import MarketStats from "@/components/market-stats";
@@ -44,7 +44,7 @@ export default function TradingRoom() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Chat Section */}
           <div className="xl:col-span-2" data-demo="chat-room">
-            <ChatRoom />
+            <ChatRoomThreaded />
           </div>
 
           {/* Sidebar Section */}
