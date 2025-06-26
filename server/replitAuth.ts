@@ -68,6 +68,8 @@ async function upsertUser(
     profileImageUrl: claims["profile_image_url"] || null,
     // Set default company name to first and last name if both are available
     companyName: firstName && lastName ? `${firstName} ${lastName}` : null,
+    status: "active",
+    lastActiveAt: new Date(),
   });
 }
 

@@ -24,6 +24,9 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserProfile(id: string, updates: Partial<UpsertUser>): Promise<User>;
+  updateUserActivity(id: string): Promise<void>;
+  setUserInactive(id: string): Promise<void>;
+  getActiveUsers(): Promise<User[]>;
   
   // Exchange request operations
   createExchangeRequest(request: InsertExchangeRequest): Promise<ExchangeRequest>;
@@ -129,6 +132,34 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async updateUserActivity(id: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        status: "active",
+        lastActiveAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id));
+  }
+
+  async setUserInactive(id: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        status: "inactive",
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id));
+  }
+
+  async getActiveUsers(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.status, "active"));
   }
 
   // Exchange request operations

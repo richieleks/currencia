@@ -33,6 +33,8 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["trader", "admin", "suspended"] }).notNull().default("trader"),
+  status: varchar("status", { enum: ["active", "inactive"] }).notNull().default("active"),
+  lastActiveAt: timestamp("last_active_at").defaultNow(),
   
   // Registration fields
   companyName: varchar("company_name"),
