@@ -33,6 +33,16 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["trader", "admin", "suspended"] }).notNull().default("trader"),
+  
+  // Registration fields
+  companyName: varchar("company_name"),
+  phoneNumber: varchar("phone_number"),
+  address: text("address"),
+  businessType: varchar("business_type", { enum: ["individual", "company", "financial_institution"] }),
+  tradingExperience: varchar("trading_experience", { enum: ["beginner", "intermediate", "advanced"] }),
+  specializedCurrencies: varchar("specialized_currencies"),
+  isRegistrationComplete: boolean("is_registration_complete").default(false),
+  
   balance: numeric("balance", { precision: 15, scale: 2 }).default("10000.00"),
   ugxBalance: numeric("ugx_balance", { precision: 15, scale: 2 }).default("37000000.00"),
   usdBalance: numeric("usd_balance", { precision: 15, scale: 2 }).default("10000.00"),
