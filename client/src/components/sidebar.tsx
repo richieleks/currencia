@@ -1,7 +1,7 @@
 import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home, Shield } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ const exchangeRates = [
 ];
 
 export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
+  const [location] = useLocation();
   return (
     <>
       <aside className={`fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 pt-16 transition-transform duration-300 ease-in-out z-40 ${
@@ -36,7 +37,11 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
               <MessageSquare className="w-5 h-5" />
               <span className="font-medium">Trading Room</span>
             </Link>
-            <Link href="/trades" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
+            <Link href="/trades" className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+              location === '/trades' 
+                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' 
+                : 'text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}>
               <History className="w-5 h-5" />
               <span>My Trades</span>
             </Link>
@@ -45,12 +50,20 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
               <span>Trader Profile</span>
             </Link>
             {user.role === "admin" && (
-              <Link href="/admin" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
+              <Link href="/admin" className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                location === '/admin' 
+                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' 
+                  : 'text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
+              }`}>
                 <Shield className="w-5 h-5" />
                 <span>Admin Panel</span>
               </Link>
             )}
-            <Link href="/settings" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
+            <Link href="/settings" className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+              location === '/settings' 
+                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' 
+                : 'text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}>
               <Settings className="w-5 h-5" />
               <span>Settings</span>
             </Link>
