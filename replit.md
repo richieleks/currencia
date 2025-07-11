@@ -147,6 +147,7 @@ Changelog:
 - June 26, 2025. Added automatic company name defaulting to first and last name for new users during authentication
 - June 26, 2025. Implemented automatic user logout after 15 minutes of inactivity with activity tracking and status management
 - June 26, 2025. Set light theme as default theme instead of system theme for better user experience
+- January 11, 2025. Updated default theme to light mode and changed storage key to currencia-ui-theme
 - June 26, 2025. Fixed navigation menu highlighting to show selected menu items with blue background
 
 ## User Preferences
