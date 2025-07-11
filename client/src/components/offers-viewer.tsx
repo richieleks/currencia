@@ -6,8 +6,10 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Clock, User, TrendingUp, MessageSquare } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { CheckCircle, Clock, User, TrendingUp, MessageSquare, AlertTriangle } from "lucide-react";
 import { formatCurrency, formatRate } from "@/lib/utils";
 import PrivateMessages from "./private-messages";
 
@@ -43,6 +45,9 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
   const [privateMessagesOpen, setPrivateMessagesOpen] = useState(false);
   const [selectedBidderId, setSelectedBidderId] = useState<string>("");
   const [initialMessageContent, setInitialMessageContent] = useState("");
+  const [showTermsDialog, setShowTermsDialog] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [offerToAccept, setOfferToAccept] = useState<number | null>(null);
 
   const { data: offers = [], isLoading } = useQuery<RateOffer[]>({
     queryKey: [`/api/rate-offers/${exchangeRequestId}`],
@@ -54,6 +59,7 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
     mutationFn: async (offerId: number) => {
       await apiRequest("POST", `/api/rate-offers/${offerId}/accept`, {
         exchangeRequestId,
+        termsAccepted: true,
       });
     },
     onSuccess: () => {
@@ -143,8 +149,18 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
 
   const handleAcceptOffer = (offerId: number) => {
     console.log("Attempting to accept offer:", { offerId, exchangeRequestId });
-    setSelectedOfferId(offerId);
-    acceptOfferMutation.mutate(offerId);
+    setOfferToAccept(offerId);
+    setTermsAccepted(false);
+    setShowTermsDialog(true);
+  };
+
+  const handleConfirmAccept = () => {
+    if (offerToAccept && termsAccepted) {
+      setSelectedOfferId(offerToAccept);
+      acceptOfferMutation.mutate(offerToAccept);
+      setShowTermsDialog(false);
+      setOfferToAccept(null);
+    }
   };
 
   const handleDeclineOffer = (offerId: number) => {
@@ -322,6 +338,72 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
         initialTargetUserId={selectedBidderId}
         initialContent={initialMessageContent}
       />
+
+      {/* Terms and Conditions Dialog */}
+      <Dialog open={showTermsDialog} onOpenChange={setShowTermsDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Confirm Exchange
+            </DialogTitle>
+            <DialogDescription>
+              Please review and accept the terms before proceeding with this exchange.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg">
+              <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-2">
+                Exchange Terms & Conditions
+              </h4>
+              <ul className="text-sm text-orange-800 dark:text-orange-200 space-y-1">
+                <li>• All exchanges are final and cannot be reversed</li>
+                <li>• Exchange rates are locked at the time of acceptance</li>
+                <li>• You are responsible for verifying all transaction details</li>
+                <li>• Disputes must be reported within 24 hours</li>
+                <li>• Service fees may apply as per our standard rates</li>
+              </ul>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="terms-acceptance"
+                checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+              />
+              <Label htmlFor="terms-acceptance" className="text-sm">
+                I have read and agree to the terms and conditions
+              </Label>
+            </div>
+          </div>
+
+          <div className="flex space-x-3">
+            <Button 
+              variant="outline" 
+              className="flex-1"
+              onClick={() => setShowTermsDialog(false)}
+              disabled={acceptOfferMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button 
+              className="flex-1"
+              onClick={handleConfirmAccept}
+              disabled={acceptOfferMutation.isPending || !termsAccepted}
+            >
+              {acceptOfferMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Processing...
+                </>
+              ) : (
+                "Confirm Exchange"
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
