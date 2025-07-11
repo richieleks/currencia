@@ -17,6 +17,7 @@ interface ExchangeRequest {
   desiredRate?: string;
   priority: string;
   status: string;
+  selectedOfferId?: number | null;
   createdAt: string;
   user: {
     id: string;
@@ -192,6 +193,8 @@ export default function ActiveOffers({ onRequestSelect }: ActiveOffersProps) {
           fromCurrency: selectedRequest.fromCurrency,
           toCurrency: selectedRequest.toCurrency,
           amount: selectedRequest.amount,
+          status: selectedRequest.status,
+          selectedOfferId: (selectedRequest as any).selectedOfferId,
         } : undefined}
       />
     </Card>

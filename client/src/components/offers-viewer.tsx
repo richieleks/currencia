@@ -35,6 +35,8 @@ interface OffersViewerProps {
     fromCurrency: string;
     toCurrency: string;
     amount: string;
+    status?: string;
+    selectedOfferId?: number | null;
   };
 }
 
@@ -49,10 +51,20 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [offerToAccept, setOfferToAccept] = useState<number | null>(null);
 
-  const { data: offers = [], isLoading } = useQuery<RateOffer[]>({
+  const { data: allOffers = [], isLoading } = useQuery<RateOffer[]>({
     queryKey: [`/api/rate-offers/${exchangeRequestId}`],
     enabled: !!exchangeRequestId && isOpen,
     refetchInterval: 5000,
+  });
+
+  // Filter offers based on exchange request status
+  const offers = allOffers.filter(offer => {
+    // If exchange is completed, only show the selected/accepted offer
+    if (exchangeRequestData?.status === 'completed' && exchangeRequestData?.selectedOfferId) {
+      return offer.id === exchangeRequestData.selectedOfferId;
+    }
+    // For active exchanges, show all offers
+    return true;
   });
 
   const acceptOfferMutation = useMutation({
@@ -207,7 +219,8 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
           ) : (
             <div className="space-y-3">
               <h4 className="font-medium text-gray-900">
-                {offers.length} offer{offers.length !== 1 ? 's' : ''} received
+                {exchangeRequestData?.status === 'completed' ? 'Accepted Offer' : 
+                  `${offers.length} offer${offers.length !== 1 ? 's' : ''} received`}
               </h4>
               
               {offers.map((offer) => (
