@@ -22,6 +22,23 @@ const currencies = [
   { code: "GBP", name: "British Pound", flag: "🇬🇧" },
 ];
 
+// Helper function to format amounts
+const formatAmount = (amount: number, currency?: string) => {
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency || 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  
+  try {
+    return formatter.format(amount);
+  } catch {
+    // Fallback if currency is not supported
+    return `${currency || 'USD'} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+};
+
 export default function SettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -54,6 +71,17 @@ export default function SettingsPage() {
     },
   });
 
+  // Helper function to get balance for a specific currency
+  const getBalanceForCurrency = (currencyCode: string, isWallet = false) => {
+    if (!user) return 0;
+    
+    const balanceKey = isWallet ? 
+      `${currencyCode.toLowerCase()}WalletBalance` : 
+      `${currencyCode.toLowerCase()}Balance`;
+    
+    return parseFloat(user[balanceKey as keyof typeof user] as string || "0");
+  };
+
   const handleTransfer = (e: React.FormEvent) => {
     e.preventDefault();
     if (!transferData.currency || !transferData.amount) {
@@ -76,14 +104,6 @@ export default function SettingsPage() {
     }
 
     transferMutation.mutate(transferData);
-  };
-
-  const getBalanceForCurrency = (currency: string, isWallet: boolean = false) => {
-    if (!user) return 0;
-    const key = isWallet 
-      ? `${currency.toLowerCase()}WalletBalance` as keyof typeof user
-      : `${currency.toLowerCase()}Balance` as keyof typeof user;
-    return parseFloat(user[key] as string || "0");
   };
 
   if (!user) {
