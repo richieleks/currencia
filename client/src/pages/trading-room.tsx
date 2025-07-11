@@ -49,6 +49,11 @@ export default function TradingRoom() {
 
           {/* Sidebar Section */}
           <div className="space-y-6">
+            {/* Active Offers */}
+            <div data-demo="active-requests">
+              <ActiveOffers />
+            </div>
+            
             {/* Quick Exchange Form */}
             <div data-demo="exchange-form">
               <QuickExchangeForm />
@@ -60,11 +65,6 @@ export default function TradingRoom() {
             {/* Market Stats */}
             <div data-demo="market-stats">
               <MarketStats />
-            </div>
-            
-            {/* Active Offers */}
-            <div data-demo="active-requests">
-              <ActiveOffers />
             </div>
           </div>
         </div>
