@@ -94,12 +94,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         exchangeRequestId: exchangeRequest.id,
       });
 
+      // Create notification for all traders about new exchange request
+      const requester = await storage.getUser(userId);
+      const requesterName = requester?.companyName || requester?.firstName || "Someone";
+      await storage.createNotificationMessage(
+        userId,
+        `${requesterName} posted a new ${requestData.fromCurrency}/${requestData.toCurrency} exchange request`
+      );
+
       // Broadcast to WebSocket clients
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({ 
             type: 'newExchangeRequest', 
             data: { exchangeRequest, chatMessage }
+          }));
+          // Also send notification broadcast
+          client.send(JSON.stringify({
+            type: 'notification',
+            data: { type: 'new_exchange_request', exchangeRequestId: exchangeRequest.id }
           }));
         }
       });
@@ -146,6 +159,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         exchangeRequestId: offerData.exchangeRequestId,
         rateOfferId: rateOffer.id,
       });
+
+      // Get the exchange request to find the requester
+      const exchangeRequest = await storage.getExchangeRequestById(offerData.exchangeRequestId);
+      
+      if (exchangeRequest) {
+        // Create notification for the exchange request owner
+        const bidder = await storage.getUser(userId);
+        const bidderName = bidder?.companyName || bidder?.firstName || "Someone";
+        await storage.createNotificationMessage(
+          userId,
+          `${bidderName} made an offer on your ${exchangeRequest.fromCurrency}/${exchangeRequest.toCurrency} exchange request`,
+          exchangeRequest.userId
+        );
+        
+        // Broadcast notification via WebSocket
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'notification',
+              targetUserId: exchangeRequest.userId,
+              data: { type: 'new_offer', exchangeRequestId: offerData.exchangeRequestId }
+            }));
+          }
+        });
+      }
 
       res.json(rateOffer);
     } catch (error) {
@@ -261,6 +299,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Create bid action message in chat
+      await storage.createBidActionMessage(userId, "accept", offerId, offer.exchangeRequestId, offer.bidderId);
+      
+      // Create notification for the bidder
+      const currentUser = await storage.getUser(userId);
+      const userName = currentUser?.companyName || currentUser?.firstName || "Someone";
+      await storage.createNotificationMessage(
+        userId,
+        `${userName} accepted your bid on ${exchangeRequest.fromCurrency}/${exchangeRequest.toCurrency} exchange`,
+        offer.bidderId
+      );
+      
+      // Broadcast the notification via WebSocket
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'notification',
+            targetUserId: offer.bidderId,
+            data: { type: 'bid_accepted', exchangeRequestId: offer.exchangeRequestId, rateOfferId: offerId }
+          }));
+        }
+      });
+
       res.json({ message: "Rate offer accepted successfully" });
     } catch (error) {
       console.error("Error accepting rate offer:", error);
@@ -304,12 +365,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       // Broadcast the notification via WebSocket
-      const clients = wss.clients;
-      clients.forEach((client) => {
+      wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({
-            type: 'new_message',
-            targetUserId: offer.bidderId
+            type: 'notification',
+            targetUserId: offer.bidderId,
+            data: { type: 'bid_rejected', exchangeRequestId: offer.exchangeRequestId, rateOfferId: offerId }
           }));
         }
       });
