@@ -16,6 +16,7 @@ import AuditLogViewer from "@/components/audit-log-viewer";
 import SystemActivityMonitor from "@/components/system-activity-monitor";
 import ForexRatesManager from "@/components/forex-rates-manager";
 import MarketRatesWidget from "@/components/market-rates-widget";
+import LayoutSettingsManager from "@/components/layout-settings-manager";
 
 interface SystemStats {
   totalUsers: number;
@@ -108,6 +109,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="forex">Forex Rates</TabsTrigger>
           <TabsTrigger value="audit">Audit Logs</TabsTrigger>
           <TabsTrigger value="activity">Activity Monitor</TabsTrigger>
+          <TabsTrigger value="layout">Layout Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-4">
@@ -135,6 +137,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="activity" className="space-y-4">
           <SystemActivityMonitor />
+        </TabsContent>
+
+        <TabsContent value="layout" className="space-y-4">
+          <LayoutSettingsManager />
         </TabsContent>
       </Tabs>
     </div>
