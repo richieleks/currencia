@@ -174,6 +174,7 @@ Changelog:
 - January 12, 2025. Added dynamic currency indication to quick exchange form amount field showing selected "from currency"
 - January 12, 2025. Implemented real-time total amount calculation in exchange form when desired rate is entered
 - January 12, 2025. Created professional currency converter widget with live exchange rates, swap functionality, and trend indicators
+- July 12, 2025. Fixed critical application startup errors: resolved SelectItem empty value validation errors in forex rates manager, portfolio manager, and quick exchange form components; stabilized WebSocket connections and resolved controlled/uncontrolled input warnings
 
 ## User Preferences
 
