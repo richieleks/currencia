@@ -159,14 +159,14 @@ export default function AuditLogViewer() {
             </div>
             
             <div className="flex gap-2">
-              <Select value={filters.action || ""} onValueChange={(value) => 
-                setFilters(prev => ({ ...prev, action: value || undefined }))
+              <Select value={filters.action || "all"} onValueChange={(value) => 
+                setFilters(prev => ({ ...prev, action: value === "all" ? undefined : value }))
               }>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Filter by Action" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Actions</SelectItem>
+                  <SelectItem value="all">All Actions</SelectItem>
                   <SelectItem value="user_create">User Create</SelectItem>
                   <SelectItem value="user_update">User Update</SelectItem>
                   <SelectItem value="user_suspend">User Suspend</SelectItem>
@@ -179,14 +179,14 @@ export default function AuditLogViewer() {
                 </SelectContent>
               </Select>
 
-              <Select value={filters.resource || ""} onValueChange={(value) => 
-                setFilters(prev => ({ ...prev, resource: value || undefined }))
+              <Select value={filters.resource || "all"} onValueChange={(value) => 
+                setFilters(prev => ({ ...prev, resource: value === "all" ? undefined : value }))
               }>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Filter by Resource" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Resources</SelectItem>
+                  <SelectItem value="all">All Resources</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="role">Role</SelectItem>
                   <SelectItem value="exchange_request">Exchange Request</SelectItem>
