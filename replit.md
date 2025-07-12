@@ -149,6 +149,11 @@ Changelog:
 - June 26, 2025. Set light theme as default theme instead of system theme for better user experience
 - January 11, 2025. Updated default theme to light mode and changed storage key to currencia-ui-theme
 - June 26, 2025. Fixed navigation menu highlighting to show selected menu items with blue background
+- January 12, 2025. Implemented comprehensive RBAC (Role-Based Access Control) system with enterprise-level user management, role management, and permissions system
+- January 12, 2025. Created enhanced admin dashboard with User Management and Role Management tabs
+- January 12, 2025. Added RBAC API routes for user administration and role assignments with audit logging
+- January 12, 2025. Populated database with default roles (Administrator, Moderator, Trader, Viewer) and 23 different permission categories
+- January 12, 2025. Assigned admin rights to DENNIS LEKU (dennisleku@gmail.com) with audit trail logging
 
 ## User Preferences
 
