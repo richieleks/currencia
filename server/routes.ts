@@ -720,6 +720,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // RBAC Admin Routes
+  // System Activity Monitoring routes
+  app.get("/api/admin/active-sessions", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      // Mock data for now - in real implementation, this would fetch from session store and user activity
+      const activeSessions = [
+        {
+          id: "sess_1",
+          userId: "43104392",
+          userName: "Dennis Leku",
+          userEmail: "dennisleku@gmail.com", 
+          ipAddress: "192.168.1.100",
+          userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          lastActivity: new Date().toISOString(),
+          isOnline: true,
+          sessionDuration: 3600, // 1 hour in seconds
+          location: "Kampala, Uganda"
+        },
+        {
+          id: "sess_2",
+          userId: "42908557",
+          userName: "John Smith",
+          userEmail: "john@example.com",
+          ipAddress: "192.168.1.101", 
+          userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+          lastActivity: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+          isOnline: true,
+          sessionDuration: 2400, // 40 minutes
+          location: "New York, USA"
+        }
+      ];
+      
+      res.json(activeSessions);
+    } catch (error) {
+      console.error("Error fetching active sessions:", error);
+      res.status(500).json({ message: "Failed to fetch active sessions" });
+    }
+  });
+
+  app.get("/api/admin/system-metrics", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      // In real implementation, these would be actual system metrics
+      const metrics = {
+        totalSessions: 15,
+        activeSessions: 7,
+        websocketConnections: connectedClients.size,
+        avgSessionDuration: 2700, // 45 minutes in seconds
+        peakConcurrentUsers: 12,
+        systemUptime: process.uptime(),
+        databaseConnections: 5,
+        memoryUsage: process.memoryUsage().heapUsed,
+        cpuUsage: Math.random() * 30 + 10 // Mock CPU usage
+      };
+      
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching system metrics:", error);
+      res.status(500).json({ message: "Failed to fetch system metrics" });
+    }
+  });
+
+  app.get("/api/admin/recent-activity", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      // Mock recent activity data - in real implementation, this would come from audit logs
+      const recentActivity = [
+        {
+          id: "act_1",
+          timestamp: new Date().toISOString(),
+          type: "login",
+          userId: "43104392",
+          userName: "Dennis Leku",
+          description: "Logged into admin panel",
+          ipAddress: "192.168.1.100"
+        },
+        {
+          id: "act_2", 
+          timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+          type: "action",
+          userId: "42908557",
+          userName: "John Smith",
+          description: "Created new exchange request",
+          ipAddress: "192.168.1.101"
+        },
+        {
+          id: "act_3",
+          timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), 
+          type: "action",
+          userId: "43104392",
+          userName: "Dennis Leku",
+          description: "Updated user role permissions",
+          ipAddress: "192.168.1.100"
+        }
+      ];
+      
+      res.json(recentActivity);
+    } catch (error) {
+      console.error("Error fetching recent activity:", error);
+      res.status(500).json({ message: "Failed to fetch recent activity" });
+    }
+  });
+
   // User management routes
   app.get("/api/admin/users", isAuthenticated, async (req: any, res) => {
     try {

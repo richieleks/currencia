@@ -12,6 +12,7 @@ import {
 import UserManagement from "@/components/user-management";
 import RoleManagement from "@/components/role-management";
 import AuditLogViewer from "@/components/audit-log-viewer";
+import SystemActivityMonitor from "@/components/system-activity-monitor";
 
 interface SystemStats {
   totalUsers: number;
@@ -118,23 +119,7 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                System Activity
-              </CardTitle>
-              <CardDescription>
-                Monitor real-time system activity and user sessions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Activity monitoring coming soon</p>
-              </div>
-            </CardContent>
-          </Card>
+          <SystemActivityMonitor />
         </TabsContent>
       </Tabs>
     </div>
