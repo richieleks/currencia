@@ -1165,5 +1165,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Forex Rates routes
+  app.post("/api/forex-rates", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      const rateData = {
+        ...req.body,
+        traderId: userId,
+      };
+
+      const rate = await storage.createForexRate(rateData);
+      res.json(rate);
+    } catch (error: any) {
+      console.error("Error creating forex rate:", error);
+      if (error.message?.includes("unique")) {
+        res.status(409).json({ error: "Rate for this currency pair already exists for today" });
+      } else {
+        res.status(500).json({ error: "Failed to create forex rate" });
+      }
+    }
+  });
+
+  app.get("/api/forex-rates", async (req, res) => {
+    try {
+      const { traderId, fromCurrency, toCurrency, date } = req.query;
+      const filters: any = {};
+      
+      if (traderId) filters.traderId = traderId as string;
+      if (fromCurrency) filters.fromCurrency = fromCurrency as string;
+      if (toCurrency) filters.toCurrency = toCurrency as string;
+      if (date) filters.date = date as string;
+
+      const rates = await storage.getForexRates(filters);
+      res.json(rates);
+    } catch (error) {
+      console.error("Error fetching forex rates:", error);
+      res.status(500).json({ error: "Failed to fetch forex rates" });
+    }
+  });
+
+  app.put("/api/forex-rates/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const rateId = parseInt(req.params.id);
+      
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      // Verify ownership
+      const existingRates = await storage.getForexRates({ traderId: userId });
+      const existingRate = existingRates.find(r => r.id === rateId);
+      
+      if (!existingRate) {
+        return res.status(404).json({ error: "Forex rate not found or unauthorized" });
+      }
+
+      const updateData = req.body;
+      const updatedRate = await storage.updateForexRate(rateId, updateData);
+      
+      res.json(updatedRate);
+    } catch (error) {
+      console.error("Error updating forex rate:", error);
+      res.status(500).json({ error: "Failed to update forex rate" });
+    }
+  });
+
+  app.delete("/api/forex-rates/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const rateId = parseInt(req.params.id);
+      
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      // Verify ownership
+      const existingRates = await storage.getForexRates({ traderId: userId });
+      const existingRate = existingRates.find(r => r.id === rateId);
+      
+      if (!existingRate) {
+        return res.status(404).json({ error: "Forex rate not found or unauthorized" });
+      }
+
+      await storage.deleteForexRate(rateId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting forex rate:", error);
+      res.status(500).json({ error: "Failed to delete forex rate" });
+    }
+  });
+
+  app.get("/api/market-rates/:fromCurrency/:toCurrency", async (req, res) => {
+    try {
+      const { fromCurrency, toCurrency } = req.params;
+      const summary = await storage.getMarketRatesSummary(fromCurrency, toCurrency);
+      res.json(summary);
+    } catch (error) {
+      console.error("Error fetching market rates summary:", error);
+      res.status(500).json({ error: "Failed to fetch market rates summary" });
+    }
+  });
+
   return httpServer;
 }

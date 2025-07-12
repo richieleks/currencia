@@ -1,6 +1,6 @@
 import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home, Shield } from "lucide-react";
+import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home, Shield, DollarSign } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface SidebarProps {
@@ -48,6 +48,14 @@ export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
             <Link href="/profile" className="flex items-center space-x-3 text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 p-3 rounded-lg">
               <UserCog className="w-5 h-5" />
               <span>Trader Profile</span>
+            </Link>
+            <Link href="/forex-rates" className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+              location === '/forex-rates' 
+                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' 
+                : 'text-black dark:text-white hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}>
+              <DollarSign className="w-5 h-5" />
+              <span>Forex Rates</span>
             </Link>
             {user.role === "admin" && (
               <Link href="/admin" className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${

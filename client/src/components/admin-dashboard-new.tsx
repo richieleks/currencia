@@ -7,12 +7,15 @@ import {
   TrendingUp, 
   AlertTriangle,
   Shield,
-  FileText
+  FileText,
+  DollarSign
 } from "lucide-react";
 import UserManagement from "@/components/user-management";
 import RoleManagement from "@/components/role-management";
 import AuditLogViewer from "@/components/audit-log-viewer";
 import SystemActivityMonitor from "@/components/system-activity-monitor";
+import ForexRatesManager from "@/components/forex-rates-manager";
+import MarketRatesWidget from "@/components/market-rates-widget";
 
 interface SystemStats {
   totalUsers: number;
@@ -102,6 +105,7 @@ export default function AdminDashboard() {
         <TabsList>
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="roles">Role Management</TabsTrigger>
+          <TabsTrigger value="forex">Forex Rates</TabsTrigger>
           <TabsTrigger value="audit">Audit Logs</TabsTrigger>
           <TabsTrigger value="activity">Activity Monitor</TabsTrigger>
         </TabsList>
@@ -112,6 +116,17 @@ export default function AdminDashboard() {
 
         <TabsContent value="roles" className="space-y-4">
           <RoleManagement />
+        </TabsContent>
+
+        <TabsContent value="forex" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <ForexRatesManager />
+            </div>
+            <div>
+              <MarketRatesWidget />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="audit" className="space-y-4">

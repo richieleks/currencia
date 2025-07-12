@@ -9,6 +9,9 @@ import {
   numeric,
   boolean,
   integer,
+  decimal,
+  date,
+  unique,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -126,6 +129,20 @@ export const auditLogs = pgTable("audit_logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const forexRates = pgTable("forex_rates", {
+  id: serial("id").primaryKey(),
+  traderId: varchar("trader_id", { length: 255 }).notNull().references(() => users.id),
+  fromCurrency: varchar("from_currency", { length: 3 }).notNull(),
+  toCurrency: varchar("to_currency", { length: 3 }).notNull(),
+  buyRate: decimal("buy_rate", { precision: 15, scale: 6 }).notNull(),
+  sellRate: decimal("sell_rate", { precision: 15, scale: 6 }).notNull(),
+  date: date("date").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  uniqueTraderCurrencyDate: unique().on(table.traderId, table.fromCurrency, table.toCurrency, table.date),
+}));
+
 export const exchangeRequests = pgTable("exchange_requests", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -184,6 +201,14 @@ export const usersRelations = relations(users, ({ many }) => ({
   transactions: many(transactions),
   userSessions: many(userSessions),
   auditLogs: many(auditLogs),
+  forexRates: many(forexRates),
+}));
+
+export const forexRatesRelations = relations(forexRates, ({ one }) => ({
+  trader: one(users, {
+    fields: [forexRates.traderId],
+    references: [users.id],
+  }),
 }));
 
 export const rolesRelations = relations(roles, ({ many }) => ({
@@ -279,6 +304,12 @@ export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
   createdAt: true,
 });
 
+export const insertForexRateSchema = createInsertSchema(forexRates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertExchangeRequestSchema = createInsertSchema(exchangeRequests).omit({
   id: true,
   selectedOfferId: true,
@@ -310,7 +341,9 @@ export type InsertPermission = z.infer<typeof insertPermissionSchema>;
 export type UserSession = typeof userSessions.$inferSelect;
 export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
 export type AuditLog = typeof auditLogs.$inferSelect;
+export type ForexRate = typeof forexRates.$inferSelect;
 export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type InsertForexRate = z.infer<typeof insertForexRateSchema>;
 export type ExchangeRequest = typeof exchangeRequests.$inferSelect;
 export type InsertExchangeRequest = z.infer<typeof insertExchangeRequestSchema>;
 export type RateOffer = typeof rateOffers.$inferSelect;

@@ -12,6 +12,7 @@ import BidderProfilePage from "@/pages/bidder-profile";
 import TradesHistoryPage from "@/pages/trades-history";
 import SettingsPage from "@/pages/settings";
 import AdminPage from "@/pages/admin";
+import ForexRatesPage from "@/pages/forex-rates";
 import RoleSelector from "@/components/role-selector";
 import Layout from "@/components/layout";
 import { useState } from "react";
@@ -46,6 +47,7 @@ function Router() {
           <Route path="/profile" component={BidderProfilePage} />
           <Route path="/trades" component={TradesHistoryPage} />
           <Route path="/settings" component={SettingsPage} />
+          <Route path="/forex-rates" component={ForexRatesPage} />
           <Route path="/admin" component={AdminPage} />
         </Layout>
       )}
