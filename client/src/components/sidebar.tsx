@@ -64,7 +64,7 @@ export default function Sidebar({ isOpen, onClose, user, collapsed = false, onTo
       <aside className={`fixed inset-y-0 left-0 ${collapsed ? 'w-16' : 'w-64'} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 pt-16 transition-all duration-300 ease-in-out z-40 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0`}>
-        <div className={`${collapsed ? 'p-2' : 'p-4'} h-full flex flex-col`}>
+        <div className={`${collapsed ? 'p-2' : 'p-4'} h-full flex flex-col overflow-y-auto`}>
           {/* Mobile close button */}
           {!collapsed && (
             <button 

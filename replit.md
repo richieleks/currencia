@@ -167,6 +167,8 @@ Changelog:
 - January 12, 2025. Created AdminUserCreation component for manual user account creation with comprehensive profile fields and role assignment
 - January 12, 2025. Added UnauthorizedAccess component to display helpful message for users who aren't registered in the system
 - January 12, 2025. Updated authentication flow to check for existing users and reject login attempts from unregistered users
+- January 12, 2025. Made sidebar scrollable with overflow-y-auto to handle content overflow properly
+- January 12, 2025. Updated all decimal precision to exactly 2 decimal places across entire application for consistent professional financial presentation
 
 ## User Preferences
 
