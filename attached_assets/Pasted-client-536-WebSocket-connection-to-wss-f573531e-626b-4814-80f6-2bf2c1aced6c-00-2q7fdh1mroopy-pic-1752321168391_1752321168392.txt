@@ -1,0 +1,59 @@
+client:536  WebSocket connection to 'wss://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/?token=QbXh4p05SQVG' failed: 
+setupWebSocket @ client:536
+client:536  Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=QbXh4p05SQVG' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)
+layout.tsx:88  Uncaught TypeError: Cannot read properties of undefined (reading 'companyName')
+    at Layout (layout.tsx:88:27)
+    at renderWithHooks (react-dom.development.js:15486:18)
+    at mountIndeterminateComponent (react-dom.development.js:20103:13)
+    at beginWork (react-dom.development.js:21626:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+layout.tsx:88  Uncaught TypeError: Cannot read properties of undefined (reading 'companyName')
+    at Layout (layout.tsx:88:27)
+    at renderWithHooks (react-dom.development.js:15486:18)
+    at mountIndeterminateComponent (react-dom.development.js:20103:13)
+    at beginWork (react-dom.development.js:21626:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+react-dom.development.js:18704  The above error occurred in the <Layout> component:
+
+    at Layout (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/layout.tsx:26:34)
+    at ForexRatesPage (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/pages/forex-rates.tsx:26:31)
+    at Route (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7604e3fb:323:16)
+    at main
+    at div
+    at div
+    at Layout (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/layout.tsx:26:34)
+    at Switch (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7604e3fb:379:17)
+    at Router (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/App.tsx?v=Ifm-FIuYEsaME8O7I99JK:38:48)
+    at Provider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=7604e3fb:38:15)
+    at TooltipProvider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=7604e3fb:63:5)
+    at ThemeProvider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/theme-provider.tsx:25:3)
+    at QueryClientProvider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=7604e3fb:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ react-dom.development.js:18704
+react-dom.development.js:12056  Uncaught TypeError: Cannot read properties of undefined (reading 'companyName')
+    at Layout (layout.tsx:88:27)
+    at renderWithHooks (react-dom.development.js:15486:18)
+    at mountIndeterminateComponent (react-dom.development.js:20103:13)
+    at beginWork (react-dom.development.js:21626:16)
+    at beginWork$1 (react-dom.development.js:27465:14)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+    at renderRootSync (react-dom.development.js:26473:7)
+    at recoverFromConcurrentError (react-dom.development.js:25889:20)
+    at performSyncWorkOnRoot (react-dom.development.js:26135:20)
