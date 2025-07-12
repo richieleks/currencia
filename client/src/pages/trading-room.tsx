@@ -27,6 +27,17 @@ export default function TradingRoom() {
   const chatSpan = layoutSetting?.chatColumnSpan || 2;
   const sidebarSpan = layoutSetting?.sidebarColumnSpan || 2;
 
+  // Map column spans to Tailwind classes
+  const getColumnClasses = (span: number) => {
+    const classMap: Record<number, string> = {
+      1: "lg:col-span-1",
+      2: "lg:col-span-2", 
+      3: "lg:col-span-3",
+      4: "lg:col-span-4"
+    };
+    return classMap[span] || "lg:col-span-2";
+  };
+
   // Check if user is new and should see the demo automatically
   useEffect(() => {
     if (user) {
@@ -56,7 +67,7 @@ export default function TradingRoom() {
 
         <div className={`grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 mt-6`}>
           {/* Chat Section */}
-          <div className={`order-2 lg:order-1 lg:col-span-${chatSpan}`} data-demo="chat-room">
+          <div className={`order-2 lg:order-1 ${getColumnClasses(chatSpan)}`} data-demo="chat-room">
             {/* Offers Card - appears above chat when a request is selected */}
             {selectedRequestForOffers && (
               <div className="mb-4">
@@ -70,7 +81,7 @@ export default function TradingRoom() {
           </div>
 
           {/* Sidebar Section */}
-          <div className={`space-y-4 lg:space-y-6 order-1 lg:order-2 lg:col-span-${sidebarSpan}`}>
+          <div className={`space-y-4 lg:space-y-6 order-1 lg:order-2 ${getColumnClasses(sidebarSpan)}`}>
             {/* Active Offers */}
             <div data-demo="active-requests">
               <ActiveOffers onRequestSelect={setSelectedRequestForOffers} />
