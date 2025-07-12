@@ -143,6 +143,16 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 
   const now = Math.floor(Date.now() / 1000);
   if (now <= user.expires_at) {
+    // Fetch current user data from database to get latest role
+    try {
+      const dbUser = await storage.getUser(user.claims.sub);
+      if (dbUser) {
+        user.claims.role = dbUser.role;
+        user.claims.status = dbUser.status;
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
     return next();
   }
 
