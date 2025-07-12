@@ -160,6 +160,9 @@ Changelog:
 - January 12, 2025. Fixed authentication middleware and storage imports to resolve 403 Forbidden errors for admin functionality
 - January 12, 2025. Updated live trading demo widget to only appear automatically for first-time users, with on-demand access via Tutorial button in navigation
 - January 12, 2025. Added demo reset functionality for testing and development purposes
+- January 12, 2025. Fixed SelectItem components error in audit log viewer by replacing empty string values with proper "all" values
+- January 12, 2025. Created comprehensive real-time system activity monitor component with active sessions, WebSocket connections, and system metrics tracking
+- January 12, 2025. Integrated SystemActivityMonitor into admin dashboard with dedicated Activity Monitor tab showing live user sessions and system statistics
 
 ## User Preferences
 
