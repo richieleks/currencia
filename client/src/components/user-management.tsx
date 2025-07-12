@@ -86,10 +86,20 @@ export default function UserManagement({ className }: UserManagementProps) {
   // Mutations
   const updateUserMutation = useMutation({
     mutationFn: async (userData: { id: string; updates: Partial<User> }) => {
-      return apiRequest(`/api/admin/users/${userData.id}`, {
+      const response = await fetch(`/api/admin/users/${userData.id}`, {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(userData.updates),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update user");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
@@ -111,9 +121,19 @@ export default function UserManagement({ className }: UserManagementProps) {
 
   const suspendUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/users/${userId}/suspend`, {
+      const response = await fetch(`/api/admin/users/${userId}/suspend`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to suspend user");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
@@ -133,9 +153,19 @@ export default function UserManagement({ className }: UserManagementProps) {
 
   const unsuspendUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/users/${userId}/unsuspend`, {
+      const response = await fetch(`/api/admin/users/${userId}/unsuspend`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to unsuspend user");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
@@ -155,9 +185,19 @@ export default function UserManagement({ className }: UserManagementProps) {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/users/${userId}`, {
+      const response = await fetch(`/api/admin/users/${userId}`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to delete user");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
