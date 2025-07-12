@@ -6,6 +6,7 @@ import {
   transactions,
   userSessions,
   auditLogs,
+  forexRates,
   roles,
   permissions,
   type User,
@@ -22,6 +23,8 @@ import {
   type InsertUserSession,
   type AuditLog,
   type InsertAuditLog,
+  type ForexRate,
+  type InsertForexRate,
   type Role,
   type InsertRole,
   type Permission,
@@ -1046,6 +1049,112 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  // Forex Rates Management
+  async createForexRate(data: InsertForexRate): Promise<ForexRate> {
+    const [rate] = await db
+      .insert(forexRates)
+      .values(data)
+      .returning();
+    return rate;
+  }
+
+  async getForexRates(filters?: { 
+    traderId?: string; 
+    fromCurrency?: string; 
+    toCurrency?: string; 
+    date?: string;
+  }): Promise<ForexRate[]> {
+    let query = db
+      .select({
+        id: forexRates.id,
+        traderId: forexRates.traderId,
+        fromCurrency: forexRates.fromCurrency,
+        toCurrency: forexRates.toCurrency,
+        buyRate: forexRates.buyRate,
+        sellRate: forexRates.sellRate,
+        date: forexRates.date,
+        createdAt: forexRates.createdAt,
+        updatedAt: forexRates.updatedAt,
+        traderName: users.companyName,
+        traderEmail: users.email,
+      })
+      .from(forexRates)
+      .leftJoin(users, eq(forexRates.traderId, users.id));
+
+    if (filters?.traderId) {
+      query = query.where(eq(forexRates.traderId, filters.traderId));
+    }
+    if (filters?.fromCurrency) {
+      query = query.where(eq(forexRates.fromCurrency, filters.fromCurrency));
+    }
+    if (filters?.toCurrency) {
+      query = query.where(eq(forexRates.toCurrency, filters.toCurrency));
+    }
+    if (filters?.date) {
+      query = query.where(eq(forexRates.date, filters.date));
+    }
+
+    return await query.orderBy(desc(forexRates.createdAt));
+  }
+
+  async updateForexRate(id: number, data: Partial<InsertForexRate>): Promise<ForexRate> {
+    const [rate] = await db
+      .update(forexRates)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(forexRates.id, id))
+      .returning();
+    return rate;
+  }
+
+  async deleteForexRate(id: number): Promise<void> {
+    await db.delete(forexRates).where(eq(forexRates.id, id));
+  }
+
+  async getMarketRatesSummary(fromCurrency: string, toCurrency: string): Promise<{
+    highestBuyRate: string | null;
+    lowestBuyRate: string | null;
+    highestSellRate: string | null;
+    lowestSellRate: string | null;
+    totalTraders: number;
+    lastUpdated: string | null;
+  }> {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const rates = await db
+      .select()
+      .from(forexRates)
+      .where(
+        and(
+          eq(forexRates.fromCurrency, fromCurrency),
+          eq(forexRates.toCurrency, toCurrency),
+          eq(forexRates.date, today)
+        )
+      );
+
+    if (rates.length === 0) {
+      return {
+        highestBuyRate: null,
+        lowestBuyRate: null,
+        highestSellRate: null,
+        lowestSellRate: null,
+        totalTraders: 0,
+        lastUpdated: null,
+      };
+    }
+
+    const buyRates = rates.map(r => parseFloat(r.buyRate));
+    const sellRates = rates.map(r => parseFloat(r.sellRate));
+
+    return {
+      highestBuyRate: Math.max(...buyRates).toFixed(6),
+      lowestBuyRate: Math.min(...buyRates).toFixed(6),
+      highestSellRate: Math.max(...sellRates).toFixed(6),
+      lowestSellRate: Math.min(...sellRates).toFixed(6),
+      totalTraders: rates.length,
+      lastUpdated: Math.max(...rates.map(r => new Date(r.updatedAt || r.createdAt || '').getTime())).toString(),
+    };
   }
 }
 
