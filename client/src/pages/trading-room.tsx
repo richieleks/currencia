@@ -27,6 +27,10 @@ export default function TradingRoom() {
   const chatSpan = layoutSetting?.chatColumnSpan || 2;
   const sidebarSpan = layoutSetting?.sidebarColumnSpan || 2;
 
+  // Debug layout values
+  console.log("Layout setting:", layoutSetting);
+  console.log("Chat span:", chatSpan, "Sidebar span:", sidebarSpan);
+
   // Map column spans to Tailwind classes
   const getColumnClasses = (span: number) => {
     const classMap: Record<number, string> = {
