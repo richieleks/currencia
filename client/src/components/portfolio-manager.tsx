@@ -37,7 +37,7 @@ interface PortfolioManagerProps {
 }
 
 export default function PortfolioManager({ isOpen, onClose }: PortfolioManagerProps) {
-  const [selectedCurrency, setSelectedCurrency] = useState<string>("");
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("UGX");
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
