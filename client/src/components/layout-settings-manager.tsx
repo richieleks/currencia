@@ -293,31 +293,90 @@ export default function LayoutSettingsManager() {
               </div>
               
               <div>
-                <Label>Chat Column Span: {form.chatColumnSpan}</Label>
+                <Label>Chat Column Span: {form.chatColumnSpan.toFixed(1)}</Label>
                 <Slider
                   value={[form.chatColumnSpan]}
                   onValueChange={([value]) => 
                     setForm({ ...form, chatColumnSpan: value, sidebarColumnSpan: 4 - value })
                   }
-                  min={1}
-                  max={3}
-                  step={1}
+                  min={0.5}
+                  max={3.5}
+                  step={0.1}
                   className="mt-2"
                 />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0.5</span>
+                  <span>3.5</span>
+                </div>
               </div>
               
               <div>
-                <Label>Sidebar Column Span: {form.sidebarColumnSpan}</Label>
+                <Label>Sidebar Column Span: {form.sidebarColumnSpan.toFixed(1)}</Label>
                 <Slider
                   value={[form.sidebarColumnSpan]}
                   onValueChange={([value]) => 
                     setForm({ ...form, sidebarColumnSpan: value, chatColumnSpan: 4 - value })
                   }
-                  min={1}
-                  max={3}
-                  step={1}
+                  min={0.5}
+                  max={3.5}
+                  step={0.1}
                   className="mt-2"
                 />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0.5</span>
+                  <span>3.5</span>
+                </div>
+              </div>
+              
+              <div>
+                <Label>Direct Value Input</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div>
+                    <Label htmlFor="chatInput" className="text-sm">Chat Span</Label>
+                    <Input
+                      id="chatInput"
+                      type="number"
+                      min="0.1"
+                      max="3.9"
+                      step="0.1"
+                      value={form.chatColumnSpan}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value) || 0.1;
+                        const clampedValue = Math.max(0.1, Math.min(3.9, value));
+                        setForm({ 
+                          ...form, 
+                          chatColumnSpan: clampedValue, 
+                          sidebarColumnSpan: 4 - clampedValue 
+                        });
+                      }}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="sidebarInput" className="text-sm">Sidebar Span</Label>
+                    <Input
+                      id="sidebarInput"
+                      type="number"
+                      min="0.1"
+                      max="3.9"
+                      step="0.1"
+                      value={form.sidebarColumnSpan}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value) || 0.1;
+                        const clampedValue = Math.max(0.1, Math.min(3.9, value));
+                        setForm({ 
+                          ...form, 
+                          sidebarColumnSpan: clampedValue, 
+                          chatColumnSpan: 4 - clampedValue 
+                        });
+                      }}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Total must equal 4.0 (Chat: {form.chatColumnSpan.toFixed(1)} + Sidebar: {form.sidebarColumnSpan.toFixed(1)} = {(form.chatColumnSpan + form.sidebarColumnSpan).toFixed(1)})
+                </p>
               </div>
               
               <div>

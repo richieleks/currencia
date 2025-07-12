@@ -31,15 +31,11 @@ export default function TradingRoom() {
   console.log("Layout setting:", layoutSetting);
   console.log("Chat span:", chatSpan, "Sidebar span:", sidebarSpan);
 
-  // Map column spans to Tailwind classes
+  // Map column spans to Tailwind classes with support for decimal values
   const getColumnClasses = (span: number) => {
-    const classMap: Record<number, string> = {
-      1: "lg:col-span-1",
-      2: "lg:col-span-2", 
-      3: "lg:col-span-3",
-      4: "lg:col-span-4"
-    };
-    return classMap[span] || "lg:col-span-2";
+    // For decimal values, use CSS Grid fr units for precise control
+    const percentage = (span / 4) * 100;
+    return { width: `${percentage}%` };
   };
 
   // Check if user is new and should see the demo automatically
@@ -69,9 +65,13 @@ export default function TradingRoom() {
         {/* Currency Balance Dashboard */}
         <CurrencyBalanceDashboard />
 
-        <div className={`grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 mt-6`}>
+        <div className={`grid grid-cols-1 lg:flex gap-4 lg:gap-6 mt-6`}>
           {/* Chat Section */}
-          <div className={`order-2 lg:order-1 ${getColumnClasses(chatSpan)}`} data-demo="chat-room">
+          <div 
+            className={`order-2 lg:order-1`} 
+            style={{ ...getColumnClasses(chatSpan) }}
+            data-demo="chat-room"
+          >
             {/* Offers Card - appears above chat when a request is selected */}
             {selectedRequestForOffers && (
               <div className="mb-4">
@@ -85,7 +85,10 @@ export default function TradingRoom() {
           </div>
 
           {/* Sidebar Section */}
-          <div className={`space-y-4 lg:space-y-6 order-1 lg:order-2 ${getColumnClasses(sidebarSpan)}`}>
+          <div 
+            className={`space-y-4 lg:space-y-6 order-1 lg:order-2`}
+            style={{ ...getColumnClasses(sidebarSpan) }}
+          >
             {/* Active Offers */}
             <div data-demo="active-requests">
               <ActiveOffers onRequestSelect={setSelectedRequestForOffers} />
