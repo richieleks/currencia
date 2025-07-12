@@ -11,7 +11,7 @@ import CurrencyBalanceDashboard from "@/components/currency-balance-dashboard";
 import RateComparisonSlider from "@/components/rate-comparison-slider";
 import OnboardingDemo from "@/components/onboarding-demo";
 import OffersCard from "@/components/offers-card";
-import CurrencyConverter from "@/components/currency-converter";
+
 import { ExchangeRequest, LayoutSetting } from "@shared/schema";
 
 export default function TradingRoom() {
@@ -98,11 +98,6 @@ export default function TradingRoom() {
             {/* Quick Exchange Form */}
             <div data-demo="exchange-form">
               <QuickExchangeForm />
-            </div>
-            
-            {/* Currency Converter */}
-            <div className="hidden sm:block">
-              <CurrencyConverter />
             </div>
             
             {/* Rate Comparison Slider */}

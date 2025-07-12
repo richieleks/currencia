@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowRight, CheckCircle, Info } from "lucide-react";
+import { ArrowRight, CheckCircle, Info, ArrowLeftRight, TrendingUp, TrendingDown, Calculator } from "lucide-react";
 import { formatCurrency, formatRate } from "@/lib/utils";
 
 const currencies = [
@@ -49,12 +49,23 @@ const exchangeFormSchema = z.object({
 
 type ExchangeFormData = z.infer<typeof exchangeFormSchema>;
 
+// Mock exchange rates - in a real app, this would come from an API
+const exchangeRates: Record<string, Record<string, number>> = {
+  UGX: { USD: 0.00028, KES: 0.10, EUR: 0.00025, GBP: 0.00022, UGX: 1 },
+  USD: { UGX: 3571.43, KES: 357.14, EUR: 0.89, GBP: 0.79, USD: 1 },
+  KES: { UGX: 10.0, USD: 0.0028, EUR: 0.0025, GBP: 0.0022, KES: 1 },
+  EUR: { UGX: 4000.0, USD: 1.12, KES: 400.0, GBP: 0.89, EUR: 1 },
+  GBP: { UGX: 4545.45, USD: 1.27, KES: 454.55, EUR: 1.12, GBP: 1 }
+};
+
 export default function QuickExchangeForm() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingData, setPendingData] = useState<ExchangeFormData | null>(null);
+  const [showConverter, setShowConverter] = useState(false);
+  const [converterAmount, setConverterAmount] = useState("1");
 
   const form = useForm<ExchangeFormData>({
     resolver: zodResolver(exchangeFormSchema),
@@ -302,6 +313,70 @@ export default function QuickExchangeForm() {
                 </FormItem>
               )}
             />
+
+            {/* Rate Converter Toggle */}
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowConverter(!showConverter)}
+                className="text-xs"
+              >
+                <Calculator className="h-4 w-4 mr-2" />
+                {showConverter ? "Hide" : "Check"} Live Rates
+              </Button>
+            </div>
+
+            {/* Inline Currency Converter */}
+            {showConverter && (
+              <div className="bg-gray-50 p-4 rounded-lg border space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Quick Rate Check</span>
+                  <div className="text-xs text-green-600 flex items-center">
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                    Live rates
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      value={converterAmount}
+                      onChange={(e) => setConverterAmount(e.target.value)}
+                      className="h-8 text-sm"
+                      placeholder="Amount"
+                    />
+                    <span className="text-sm text-gray-600">
+                      {form.watch("fromCurrency") || "From"}
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm font-medium text-green-600">
+                      {(() => {
+                        const fromCur = form.watch("fromCurrency");
+                        const toCur = form.watch("toCurrency");
+                        const amount = parseFloat(converterAmount) || 0;
+                        if (fromCur && toCur && amount) {
+                          const rate = exchangeRates[fromCur]?.[toCur] || 0;
+                          const result = amount * rate;
+                          return formatCurrency(result, toCur);
+                        }
+                        return toCur || "To";
+                      })()}
+                    </span>
+                  </div>
+                  
+                  {form.watch("fromCurrency") && form.watch("toCurrency") && (
+                    <div className="text-xs text-gray-500 text-center bg-white p-2 rounded">
+                      1 {form.watch("fromCurrency")} = {
+                        (exchangeRates[form.watch("fromCurrency")]?.[form.watch("toCurrency")] || 0).toFixed(6)
+                      } {form.watch("toCurrency")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="pt-4">
               <Button 
