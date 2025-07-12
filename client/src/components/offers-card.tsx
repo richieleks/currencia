@@ -4,6 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { RateOffer, ExchangeRequest } from "@shared/schema";
 import { 
@@ -16,14 +19,28 @@ import {
   TrendingDown,
   AlertCircle,
   Eye,
-  MessageCircle
+  MessageCircle,
+  DollarSign,
+  ArrowUpDown
 } from "lucide-react";
 import PrivateMessages from "@/components/private-messages";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 interface OffersCardProps {
   exchangeRequest: ExchangeRequest | null;
   onClose: () => void;
 }
+
+// Counter offer form schema
+const counterOfferSchema = z.object({
+  rate: z.string().min(1, "Rate is required"),
+  totalAmount: z.string().min(1, "Total amount is required"),
+  note: z.string().optional(),
+});
+
+type CounterOfferData = z.infer<typeof counterOfferSchema>;
 
 export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps) {
   const { toast } = useToast();
@@ -35,11 +52,23 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [offerToAccept, setOfferToAccept] = useState<number | null>(null);
+  const [showCounterOfferDialog, setShowCounterOfferDialog] = useState(false);
+  const [counterOfferTargetOffer, setCounterOfferTargetOffer] = useState<RateOffer | null>(null);
 
   const { data: allOffers = [], isLoading } = useQuery<RateOffer[]>({
     queryKey: [`/api/rate-offers/${exchangeRequest?.id}`],
     enabled: !!exchangeRequest?.id,
     refetchInterval: 5000,
+  });
+
+  // Counter offer form
+  const counterOfferForm = useForm<CounterOfferData>({
+    resolver: zodResolver(counterOfferSchema),
+    defaultValues: {
+      rate: "",
+      totalAmount: "",
+      note: "",
+    },
   });
 
   // Filter offers based on exchange request status
@@ -121,6 +150,45 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
     },
   });
 
+  // Counter offer mutation
+  const createCounterOfferMutation = useMutation({
+    mutationFn: async (data: CounterOfferData) => {
+      const response = await fetch("/api/rate-offers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          exchangeRequestId: exchangeRequest?.id,
+          isCounterOffer: true,
+          originalOfferId: counterOfferTargetOffer?.id,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to create counter offer");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exchange-requests"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/rate-offers/${exchangeRequest?.id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
+      setShowCounterOfferDialog(false);
+      setCounterOfferTargetOffer(null);
+      counterOfferForm.reset();
+      toast({
+        title: "Counter offer submitted",
+        description: "Your counter offer has been submitted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to submit counter offer. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAcceptOffer = (offerId: number) => {
     setOfferToAccept(offerId);
     setShowTermsDialog(true);
@@ -142,6 +210,19 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
     setSelectedBidderId(bidderId);
     setInitialMessageContent(`Hi ${bidderName}, I have some questions about your offer for ${exchangeRequest?.amount} ${exchangeRequest?.fromCurrency} → ${exchangeRequest?.toCurrency}.`);
     setPrivateMessagesOpen(true);
+  };
+
+  const handleCounterOffer = (offer: RateOffer) => {
+    setCounterOfferTargetOffer(offer);
+    // Pre-fill form with current offer details for easy modification
+    counterOfferForm.setValue("rate", offer.rate);
+    counterOfferForm.setValue("totalAmount", (parseFloat(exchangeRequest?.amount || "0") * parseFloat(offer.rate)).toString());
+    counterOfferForm.setValue("note", `Counter offer to your rate of ${offer.rate}`);
+    setShowCounterOfferDialog(true);
+  };
+
+  const onCounterOfferSubmit = (data: CounterOfferData) => {
+    createCounterOfferMutation.mutate(data);
   };
 
   const formatTime = (dateString: string) => {
@@ -276,31 +357,43 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                         )}
 
                         {exchangeRequest.status !== 'completed' && offer.status === 'pending' && (
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              size="sm"
-                              onClick={() => handleAcceptOffer(offer.id)}
-                              disabled={acceptOfferMutation.isPending}
-                              className="flex-1 bg-success-600 hover:bg-success-700 text-white"
-                            >
-                              {acceptOfferMutation.isPending ? "Accepting..." : "Accept Offer"}
-                            </Button>
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleAcceptOffer(offer.id)}
+                                disabled={acceptOfferMutation.isPending}
+                                className="flex-1 bg-success-600 hover:bg-success-700 text-white"
+                              >
+                                {acceptOfferMutation.isPending ? "Accepting..." : "Accept Offer"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeclineOffer(offer.id)}
+                                disabled={declineOfferMutation.isPending}
+                                className="border-red-300 text-red-600 hover:bg-red-50"
+                              >
+                                Decline
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSendMessage(offer.bidderId, offer.bidder?.companyName || offer.bidder?.firstName || "Bidder")}
+                                className="border-gray-300 hover:bg-gray-50"
+                              >
+                                <MessageSquare className="w-4 h-4" />
+                              </Button>
+                            </div>
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDeclineOffer(offer.id)}
-                              disabled={declineOfferMutation.isPending}
-                              className="border-red-300 text-red-600 hover:bg-red-50"
+                              onClick={() => handleCounterOffer(offer)}
+                              disabled={createCounterOfferMutation.isPending}
+                              className="w-full border-blue-300 text-blue-600 hover:bg-blue-50"
                             >
-                              Decline
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleSendMessage(offer.bidderId, offer.bidder?.companyName || offer.bidder?.firstName || "Bidder")}
-                              className="border-gray-300 hover:bg-gray-50"
-                            >
-                              <MessageSquare className="w-4 h-4" />
+                              <ArrowUpDown className="w-4 h-4 mr-2" />
+                              Counter Offer
                             </Button>
                           </div>
                         )}
@@ -385,6 +478,113 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
               {acceptOfferMutation.isPending ? "Processing..." : "Accept Offer"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Counter Offer Dialog */}
+      <Dialog open={showCounterOfferDialog} onOpenChange={setShowCounterOfferDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowUpDown className="h-5 w-5 text-blue-600" />
+              Counter Offer
+            </DialogTitle>
+            <DialogDescription>
+              Propose a different rate to {counterOfferTargetOffer?.bidder?.companyName || counterOfferTargetOffer?.bidder?.firstName || "the bidder"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {counterOfferTargetOffer && exchangeRequest && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                <div className="text-sm text-gray-600 dark:text-gray-400">Original Offer</div>
+                <div className="font-semibold">
+                  Rate: {parseFloat(counterOfferTargetOffer.rate).toLocaleString()} {exchangeRequest.toCurrency}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Total: {(parseFloat(exchangeRequest.amount) * parseFloat(counterOfferTargetOffer.rate)).toLocaleString()} {exchangeRequest.toCurrency}
+                </div>
+              </div>
+              
+              <Form {...counterOfferForm}>
+                <form onSubmit={counterOfferForm.handleSubmit(onCounterOfferSubmit)} className="space-y-4">
+                  <FormField
+                    control={counterOfferForm.control}
+                    name="rate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Your Counter Rate</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="e.g., 3750.00" 
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={counterOfferForm.control}
+                    name="totalAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Total Amount ({exchangeRequest.toCurrency})</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="e.g., 18750000.00" 
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={counterOfferForm.control}
+                    name="note"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Message (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Add a note to explain your counter offer..." 
+                            {...field}
+                            rows={3}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        setShowCounterOfferDialog(false);
+                        setCounterOfferTargetOffer(null);
+                        counterOfferForm.reset();
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      disabled={createCounterOfferMutation.isPending}
+                    >
+                      {createCounterOfferMutation.isPending ? "Submitting..." : "Submit Counter Offer"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
