@@ -163,6 +163,10 @@ Changelog:
 - January 12, 2025. Fixed SelectItem components error in audit log viewer by replacing empty string values with proper "all" values
 - January 12, 2025. Created comprehensive real-time system activity monitor component with active sessions, WebSocket connections, and system metrics tracking
 - January 12, 2025. Integrated SystemActivityMonitor into admin dashboard with dedicated Activity Monitor tab showing live user sessions and system statistics
+- January 12, 2025. Implemented admin-only user registration system - modified authentication to prevent auto-registration and require admin approval
+- January 12, 2025. Created AdminUserCreation component for manual user account creation with comprehensive profile fields and role assignment
+- January 12, 2025. Added UnauthorizedAccess component to display helpful message for users who aren't registered in the system
+- January 12, 2025. Updated authentication flow to check for existing users and reject login attempts from unregistered users
 
 ## User Preferences
 

@@ -833,6 +833,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User management routes
+  app.post("/api/admin/users/create", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const userData = req.body;
+      
+      // Validate required fields
+      if (!userData.id || !userData.email || !userData.firstName || !userData.lastName) {
+        return res.status(400).json({ message: "Missing required fields: id, email, firstName, lastName" });
+      }
+      
+      // Check if user already exists
+      const existingUser = await storage.getUser(userData.id);
+      if (existingUser) {
+        return res.status(400).json({ message: "User with this ID already exists" });
+      }
+      
+      // Create user with proper defaults
+      const newUser = await storage.upsertUser({
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        companyName: userData.companyName || `${userData.firstName} ${userData.lastName}`,
+        phoneNumber: userData.phoneNumber || null,
+        address: userData.address || null,
+        businessType: userData.businessType || null,
+        tradingExperience: userData.tradingExperience || null,
+        specializedCurrencies: userData.specializedCurrencies || null,
+        role: userData.role || "trader",
+        status: userData.status || "active",
+        profileImageUrl: null,
+        lastActiveAt: new Date(),
+      });
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "user_create",
+        resource: "user",
+        resourceId: newUser.id,
+        details: { createdUser: userData },
+        success: true,
+      });
+      
+      res.json(newUser);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
   app.get("/api/admin/users", isAuthenticated, async (req: any, res) => {
     try {
       if (req.user.claims.role !== "admin") {
