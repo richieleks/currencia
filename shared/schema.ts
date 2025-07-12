@@ -291,6 +291,78 @@ export const layoutSettings = pgTable("layout_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Reports Module Tables
+export const reportTemplates = pgTable("report_templates", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull().unique(),
+  displayName: varchar("display_name").notNull(),
+  description: text("description"),
+  category: varchar("category", { enum: ["admin", "user", "business_intelligence", "financial", "operational"] }).notNull(),
+  type: varchar("type", { enum: ["system_overview", "user_activity", "transaction_volume", "currency_analysis", "profit_loss", "market_trends", "performance_metrics", "audit_summary"] }).notNull(),
+  permissions: text("permissions").array().notNull().default([]),
+  parameters: jsonb("parameters").notNull().default({}), // Report configuration parameters
+  chartConfig: jsonb("chart_config").default({}), // Chart and visualization settings
+  columns: jsonb("columns").notNull().default([]), // Table columns configuration
+  filters: jsonb("filters").default({}), // Available filter options
+  isActive: boolean("is_active").default(true),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const reportInstances = pgTable("report_instances", {
+  id: serial("id").primaryKey(),
+  templateId: integer("template_id").notNull().references(() => reportTemplates.id),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  generatedBy: varchar("generated_by").notNull().references(() => users.id),
+  parameters: jsonb("parameters").notNull().default({}), // Applied parameters for this instance
+  filters: jsonb("filters").default({}), // Applied filters
+  data: jsonb("data").notNull(), // Cached report data
+  summary: jsonb("summary").default({}), // Report summary statistics
+  status: varchar("status", { enum: ["generating", "completed", "failed", "expired"] }).notNull().default("generating"),
+  generatedAt: timestamp("generated_at").defaultNow(),
+  expiresAt: timestamp("expires_at"), // Cache expiration
+  fileSize: integer("file_size"), // Size in bytes
+  error: text("error"), // Error message if failed
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const reportSchedules = pgTable("report_schedules", {
+  id: serial("id").primaryKey(),
+  templateId: integer("template_id").notNull().references(() => reportTemplates.id),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  schedule: varchar("schedule").notNull(), // Cron expression
+  parameters: jsonb("parameters").notNull().default({}),
+  filters: jsonb("filters").default({}),
+  recipients: text("recipients").array().notNull().default([]), // Email addresses
+  format: varchar("format", { enum: ["pdf", "excel", "csv", "json"] }).notNull().default("pdf"),
+  isActive: boolean("is_active").default(true),
+  lastRun: timestamp("last_run"),
+  nextRun: timestamp("next_run"),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const reportExports = pgTable("report_exports", {
+  id: serial("id").primaryKey(),
+  reportInstanceId: integer("report_instance_id").references(() => reportInstances.id),
+  templateId: integer("template_id").references(() => reportTemplates.id),
+  exportedBy: varchar("exported_by").notNull().references(() => users.id),
+  format: varchar("format", { enum: ["pdf", "excel", "csv", "json"] }).notNull(),
+  fileName: varchar("file_name").notNull(),
+  filePath: varchar("file_path"),
+  fileSize: integer("file_size"),
+  downloadCount: integer("download_count").default(0),
+  lastDownloaded: timestamp("last_downloaded"),
+  expiresAt: timestamp("expires_at"),
+  status: varchar("status", { enum: ["generating", "ready", "failed", "expired"] }).notNull().default("generating"),
+  error: text("error"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -351,6 +423,28 @@ export const insertLayoutSettingSchema = createInsertSchema(layoutSettings).omit
   updatedAt: true,
 });
 
+export const insertReportTemplateSchema = createInsertSchema(reportTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertReportInstanceSchema = createInsertSchema(reportInstances).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertReportScheduleSchema = createInsertSchema(reportSchedules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertReportExportSchema = createInsertSchema(reportExports).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -374,3 +468,11 @@ export type Transaction = typeof transactions.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type LayoutSetting = typeof layoutSettings.$inferSelect;
 export type InsertLayoutSetting = z.infer<typeof insertLayoutSettingSchema>;
+export type ReportTemplate = typeof reportTemplates.$inferSelect;
+export type InsertReportTemplate = z.infer<typeof insertReportTemplateSchema>;
+export type ReportInstance = typeof reportInstances.$inferSelect;
+export type InsertReportInstance = z.infer<typeof insertReportInstanceSchema>;
+export type ReportSchedule = typeof reportSchedules.$inferSelect;
+export type InsertReportSchedule = z.infer<typeof insertReportScheduleSchema>;
+export type ReportExport = typeof reportExports.$inferSelect;
+export type InsertReportExport = z.infer<typeof insertReportExportSchema>;

@@ -1410,5 +1410,463 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================================
+  // REPORTS MODULE API ROUTES
+  // ========================================
+
+  // Report Templates
+  app.get("/api/reports/templates", isAuthenticated, async (req: any, res) => {
+    try {
+      const templates = await storage.getReportTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching report templates:", error);
+      res.status(500).json({ message: "Failed to fetch report templates" });
+    }
+  });
+
+  app.get("/api/reports/templates/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const template = await storage.getReportTemplateById(templateId);
+      
+      if (!template) {
+        return res.status(404).json({ message: "Report template not found" });
+      }
+      
+      res.json(template);
+    } catch (error) {
+      console.error("Error fetching report template:", error);
+      res.status(500).json({ message: "Failed to fetch report template" });
+    }
+  });
+
+  app.post("/api/reports/templates", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const templateData = {
+        ...req.body,
+        createdBy: req.user.claims.sub,
+      };
+      
+      const template = await storage.createReportTemplate(templateData);
+      
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "report_template_create",
+        resource: "report_template",
+        resourceId: template.id.toString(),
+        details: templateData,
+        success: true,
+      });
+      
+      res.json(template);
+    } catch (error) {
+      console.error("Error creating report template:", error);
+      res.status(500).json({ message: "Failed to create report template" });
+    }
+  });
+
+  app.patch("/api/reports/templates/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const templateId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const template = await storage.updateReportTemplate(templateId, updates);
+      
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "report_template_update",
+        resource: "report_template",
+        resourceId: templateId.toString(),
+        details: { updates },
+        success: true,
+      });
+      
+      res.json(template);
+    } catch (error) {
+      console.error("Error updating report template:", error);
+      res.status(500).json({ message: "Failed to update report template" });
+    }
+  });
+
+  app.delete("/api/reports/templates/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const templateId = parseInt(req.params.id);
+      await storage.deleteReportTemplate(templateId);
+      
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "report_template_delete",
+        resource: "report_template",
+        resourceId: templateId.toString(),
+        success: true,
+      });
+      
+      res.json({ message: "Report template deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting report template:", error);
+      res.status(500).json({ message: "Failed to delete report template" });
+    }
+  });
+
+  // Report Generation
+  app.post("/api/reports/generate", isAuthenticated, async (req: any, res) => {
+    try {
+      const { templateId, parameters, filters, name, description } = req.body;
+      
+      if (!templateId) {
+        return res.status(400).json({ message: "Template ID is required" });
+      }
+      
+      const template = await storage.getReportTemplateById(templateId);
+      if (!template) {
+        return res.status(404).json({ message: "Report template not found" });
+      }
+      
+      // Generate report data based on template type
+      let reportData: any = {};
+      try {
+        switch (template.type) {
+          case "system_overview":
+            reportData = await storage.generateSystemOverviewReport(parameters || {});
+            break;
+          case "user_activity":
+            reportData = await storage.generateUserActivityReport(parameters || {});
+            break;
+          case "transaction_volume":
+            reportData = await storage.generateTransactionVolumeReport(parameters || {});
+            break;
+          case "currency_analysis":
+            reportData = await storage.generateCurrencyAnalysisReport(parameters || {});
+            break;
+          case "market_trends":
+            reportData = await storage.generateMarketTrendsReport(parameters || {});
+            break;
+          default:
+            return res.status(400).json({ message: "Unsupported report type" });
+        }
+      } catch (dataError) {
+        console.error("Error generating report data:", dataError);
+        
+        // Create failed report instance
+        const failedInstance = await storage.createReportInstance({
+          templateId,
+          name: name || `${template.displayName} - ${new Date().toLocaleDateString()}`,
+          description: description || `Generated on ${new Date().toLocaleString()}`,
+          generatedBy: req.user.claims.sub,
+          parameters: parameters || {},
+          filters: filters || {},
+          data: {},
+          status: "failed",
+          error: dataError instanceof Error ? dataError.message : "Unknown error generating report",
+        });
+        
+        return res.status(500).json({ 
+          message: "Failed to generate report data",
+          instanceId: failedInstance.id,
+          error: dataError instanceof Error ? dataError.message : "Unknown error"
+        });
+      }
+      
+      // Create report instance with generated data
+      const reportInstance = await storage.createReportInstance({
+        templateId,
+        name: name || `${template.displayName} - ${new Date().toLocaleDateString()}`,
+        description: description || `Generated on ${new Date().toLocaleString()}`,
+        generatedBy: req.user.claims.sub,
+        parameters: parameters || {},
+        filters: filters || {},
+        data: reportData,
+        summary: {
+          recordCount: Array.isArray(reportData.data) ? reportData.data.length : 0,
+          generatedAt: new Date(),
+          templateName: template.displayName,
+        },
+        status: "completed",
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      });
+      
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "report_generate",
+        resource: "report_instance",
+        resourceId: reportInstance.id.toString(),
+        details: { templateId, parameters, filters },
+        success: true,
+      });
+      
+      res.json(reportInstance);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      res.status(500).json({ message: "Failed to generate report" });
+    }
+  });
+
+  // Report Instances
+  app.get("/api/reports/instances", isAuthenticated, async (req: any, res) => {
+    try {
+      const templateId = req.query.templateId ? parseInt(req.query.templateId as string) : undefined;
+      const instances = await storage.getReportInstances(templateId);
+      res.json(instances);
+    } catch (error) {
+      console.error("Error fetching report instances:", error);
+      res.status(500).json({ message: "Failed to fetch report instances" });
+    }
+  });
+
+  app.get("/api/reports/instances/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const instanceId = parseInt(req.params.id);
+      const instance = await storage.getReportInstanceById(instanceId);
+      
+      if (!instance) {
+        return res.status(404).json({ message: "Report instance not found" });
+      }
+      
+      res.json(instance);
+    } catch (error) {
+      console.error("Error fetching report instance:", error);
+      res.status(500).json({ message: "Failed to fetch report instance" });
+    }
+  });
+
+  app.delete("/api/reports/instances/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const instanceId = parseInt(req.params.id);
+      const instance = await storage.getReportInstanceById(instanceId);
+      
+      if (!instance) {
+        return res.status(404).json({ message: "Report instance not found" });
+      }
+      
+      // Check permissions - users can delete their own reports, admins can delete any
+      if (instance.generatedBy !== req.user.claims.sub && req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Can only delete your own reports" });
+      }
+      
+      await storage.deleteReportInstance(instanceId);
+      
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "report_instance_delete",
+        resource: "report_instance",
+        resourceId: instanceId.toString(),
+        success: true,
+      });
+      
+      res.json({ message: "Report instance deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting report instance:", error);
+      res.status(500).json({ message: "Failed to delete report instance" });
+    }
+  });
+
+  // Report Exports
+  app.post("/api/reports/export", isAuthenticated, async (req: any, res) => {
+    try {
+      const { reportInstanceId, templateId, format, fileName } = req.body;
+      
+      if (!reportInstanceId && !templateId) {
+        return res.status(400).json({ message: "Either reportInstanceId or templateId is required" });
+      }
+      
+      const exportData = {
+        reportInstanceId: reportInstanceId || null,
+        templateId: templateId || null,
+        exportedBy: req.user.claims.sub,
+        format: format || "pdf",
+        fileName: fileName || `report-${Date.now()}.${format || "pdf"}`,
+        status: "generating" as const,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      };
+      
+      const exportRecord = await storage.createReportExport(exportData);
+      
+      // In a real implementation, you would trigger actual file generation here
+      // For now, we'll simulate successful generation
+      setTimeout(async () => {
+        try {
+          await storage.updateReportExport(exportRecord.id, {
+            status: "ready",
+            filePath: `/exports/${exportRecord.fileName}`,
+            fileSize: Math.floor(Math.random() * 1000000) + 100000, // Simulated file size
+          });
+        } catch (updateError) {
+          console.error("Error updating export status:", updateError);
+        }
+      }, 2000);
+      
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "report_export",
+        resource: "report_export",
+        resourceId: exportRecord.id.toString(),
+        details: { format, fileName },
+        success: true,
+      });
+      
+      res.json(exportRecord);
+    } catch (error) {
+      console.error("Error creating report export:", error);
+      res.status(500).json({ message: "Failed to create report export" });
+    }
+  });
+
+  app.get("/api/reports/exports", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.role === "admin" ? undefined : req.user.claims.sub;
+      const exports = await storage.getReportExports(userId);
+      res.json(exports);
+    } catch (error) {
+      console.error("Error fetching report exports:", error);
+      res.status(500).json({ message: "Failed to fetch report exports" });
+    }
+  });
+
+  app.get("/api/reports/exports/:id/download", isAuthenticated, async (req: any, res) => {
+    try {
+      const exportId = parseInt(req.params.id);
+      const exportRecord = await storage.getReportExports();
+      const targetExport = exportRecord.find(exp => exp.id === exportId);
+      
+      if (!targetExport) {
+        return res.status(404).json({ message: "Export not found" });
+      }
+      
+      // Check permissions
+      if (targetExport.exportedBy !== req.user.claims.sub && req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Can only download your own exports" });
+      }
+      
+      if (targetExport.status !== "ready") {
+        return res.status(400).json({ message: "Export not ready for download" });
+      }
+      
+      // Update download count and last downloaded
+      await storage.updateReportExport(exportId, {
+        downloadCount: (targetExport.downloadCount || 0) + 1,
+        lastDownloaded: new Date(),
+      });
+      
+      // In a real implementation, you would stream the actual file
+      res.json({ 
+        message: "Download started",
+        fileName: targetExport.fileName,
+        fileSize: targetExport.fileSize,
+        downloadUrl: targetExport.filePath
+      });
+    } catch (error) {
+      console.error("Error downloading export:", error);
+      res.status(500).json({ message: "Failed to download export" });
+    }
+  });
+
+  // Report Schedules (Admin only)
+  app.get("/api/reports/schedules", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const schedules = await storage.getReportSchedules();
+      res.json(schedules);
+    } catch (error) {
+      console.error("Error fetching report schedules:", error);
+      res.status(500).json({ message: "Failed to fetch report schedules" });
+    }
+  });
+
+  app.post("/api/reports/schedules", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const scheduleData = {
+        ...req.body,
+        createdBy: req.user.claims.sub,
+      };
+      
+      const schedule = await storage.createReportSchedule(scheduleData);
+      
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "report_schedule_create",
+        resource: "report_schedule",
+        resourceId: schedule.id.toString(),
+        details: scheduleData,
+        success: true,
+      });
+      
+      res.json(schedule);
+    } catch (error) {
+      console.error("Error creating report schedule:", error);
+      res.status(500).json({ message: "Failed to create report schedule" });
+    }
+  });
+
+  app.patch("/api/reports/schedules/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const scheduleId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const schedule = await storage.updateReportSchedule(scheduleId, updates);
+      
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "report_schedule_update",
+        resource: "report_schedule",
+        resourceId: scheduleId.toString(),
+        details: { updates },
+        success: true,
+      });
+      
+      res.json(schedule);
+    } catch (error) {
+      console.error("Error updating report schedule:", error);
+      res.status(500).json({ message: "Failed to update report schedule" });
+    }
+  });
+
+  app.delete("/api/reports/schedules/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const scheduleId = parseInt(req.params.id);
+      await storage.deleteReportSchedule(scheduleId);
+      
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "report_schedule_delete",
+        resource: "report_schedule",
+        resourceId: scheduleId.toString(),
+        success: true,
+      });
+      
+      res.json({ message: "Report schedule deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting report schedule:", error);
+      res.status(500).json({ message: "Failed to delete report schedule" });
+    }
+  });
+
   return httpServer;
 }
