@@ -250,7 +250,7 @@ export default function LayoutSettingsManager() {
               Create Layout
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingLayout ? "Edit Layout Setting" : "Create Layout Setting"}
@@ -260,135 +260,111 @@ export default function LayoutSettingsManager() {
               </DialogDescription>
             </DialogHeader>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Name (Identifier)</Label>
-                <Input
-                  id="name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="e.g., balanced-50-50"
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="displayName">Display Name</Label>
-                <Input
-                  id="displayName"
-                  value={form.displayName}
-                  onChange={(e) => setForm({ ...form, displayName: e.target.value })}
-                  placeholder="e.g., Balanced 50/50 Layout"
-                  required
-                />
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="name">Name (Identifier)</Label>
+                  <Input
+                    id="name"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="e.g., balanced-50-50"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="displayName">Display Name</Label>
+                  <Input
+                    id="displayName"
+                    value={form.displayName}
+                    onChange={(e) => setForm({ ...form, displayName: e.target.value })}
+                    placeholder="e.g., Balanced 50/50 Layout"
+                    required
+                  />
+                </div>
               </div>
               
               <div>
                 <Label htmlFor="description">Description</Label>
-                <Textarea
+                <Input
                   id="description"
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Optional description"
-                  rows={2}
                 />
               </div>
               
-              <div>
-                <Label>Chat Column Span: {form.chatColumnSpan.toFixed(1)}</Label>
-                <Slider
-                  value={[form.chatColumnSpan]}
-                  onValueChange={([value]) => 
-                    setForm({ ...form, chatColumnSpan: value, sidebarColumnSpan: 4 - value })
-                  }
-                  min={0.5}
-                  max={3.5}
-                  step={0.1}
-                  className="mt-2"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>0.5</span>
-                  <span>3.5</span>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Chat: {form.chatColumnSpan.toFixed(1)}</Label>
+                  <Slider
+                    value={[form.chatColumnSpan]}
+                    onValueChange={([value]) => 
+                      setForm({ ...form, chatColumnSpan: value, sidebarColumnSpan: 4 - value })
+                    }
+                    min={0.5}
+                    max={3.5}
+                    step={0.1}
+                    className="mt-1"
+                  />
+                  <Input
+                    type="number"
+                    min="0.1"
+                    max="3.9"
+                    step="0.1"
+                    value={form.chatColumnSpan}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value) || 0.1;
+                      const clampedValue = Math.max(0.1, Math.min(3.9, value));
+                      setForm({ 
+                        ...form, 
+                        chatColumnSpan: clampedValue, 
+                        sidebarColumnSpan: 4 - clampedValue 
+                      });
+                    }}
+                    className="mt-1 h-8"
+                  />
+                </div>
+                <div>
+                  <Label>Sidebar: {form.sidebarColumnSpan.toFixed(1)}</Label>
+                  <Slider
+                    value={[form.sidebarColumnSpan]}
+                    onValueChange={([value]) => 
+                      setForm({ ...form, sidebarColumnSpan: value, chatColumnSpan: 4 - value })
+                    }
+                    min={0.5}
+                    max={3.5}
+                    step={0.1}
+                    className="mt-1"
+                  />
+                  <Input
+                    type="number"
+                    min="0.1"
+                    max="3.9"
+                    step="0.1"
+                    value={form.sidebarColumnSpan}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value) || 0.1;
+                      const clampedValue = Math.max(0.1, Math.min(3.9, value));
+                      setForm({ 
+                        ...form, 
+                        sidebarColumnSpan: clampedValue, 
+                        chatColumnSpan: 4 - clampedValue 
+                      });
+                    }}
+                    className="mt-1 h-8"
+                  />
                 </div>
               </div>
               
               <div>
-                <Label>Sidebar Column Span: {form.sidebarColumnSpan.toFixed(1)}</Label>
-                <Slider
-                  value={[form.sidebarColumnSpan]}
-                  onValueChange={([value]) => 
-                    setForm({ ...form, sidebarColumnSpan: value, chatColumnSpan: 4 - value })
-                  }
-                  min={0.5}
-                  max={3.5}
-                  step={0.1}
-                  className="mt-2"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>0.5</span>
-                  <span>3.5</span>
-                </div>
-              </div>
-              
-              <div>
-                <Label>Direct Value Input</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  <div>
-                    <Label htmlFor="chatInput" className="text-sm">Chat Span</Label>
-                    <Input
-                      id="chatInput"
-                      type="number"
-                      min="0.1"
-                      max="3.9"
-                      step="0.1"
-                      value={form.chatColumnSpan}
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value) || 0.1;
-                        const clampedValue = Math.max(0.1, Math.min(3.9, value));
-                        setForm({ 
-                          ...form, 
-                          chatColumnSpan: clampedValue, 
-                          sidebarColumnSpan: 4 - clampedValue 
-                        });
-                      }}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="sidebarInput" className="text-sm">Sidebar Span</Label>
-                    <Input
-                      id="sidebarInput"
-                      type="number"
-                      min="0.1"
-                      max="3.9"
-                      step="0.1"
-                      value={form.sidebarColumnSpan}
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value) || 0.1;
-                        const clampedValue = Math.max(0.1, Math.min(3.9, value));
-                        setForm({ 
-                          ...form, 
-                          sidebarColumnSpan: clampedValue, 
-                          chatColumnSpan: 4 - clampedValue 
-                        });
-                      }}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Total must equal 4.0 (Chat: {form.chatColumnSpan.toFixed(1)} + Sidebar: {form.sidebarColumnSpan.toFixed(1)} = {(form.chatColumnSpan + form.sidebarColumnSpan).toFixed(1)})
-                </p>
-              </div>
-              
-              <div>
-                <Label>Layout Preview</Label>
-                <div className="mt-2">
+                <Label>Preview (Total: {(form.chatColumnSpan + form.sidebarColumnSpan).toFixed(1)}/4)</Label>
+                <div className="mt-1">
                   {getLayoutPreview(form.chatColumnSpan, form.sidebarColumnSpan)}
                 </div>
               </div>
               
-              <div className="flex justify-end space-x-2 pt-4">
+              <div className="flex justify-end space-x-2 pt-2">
                 <Button 
                   type="button" 
                   variant="outline" 
