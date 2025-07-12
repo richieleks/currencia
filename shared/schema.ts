@@ -277,6 +277,20 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
   }),
 }));
 
+// Layout Settings table
+export const layoutSettings = pgTable("layout_settings", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull().unique(),
+  displayName: varchar("display_name").notNull(),
+  description: text("description"),
+  chatColumnSpan: integer("chat_column_span").notNull().default(3), // out of 4 columns (3/4 = 75%)
+  sidebarColumnSpan: integer("sidebar_column_span").notNull().default(1), // out of 4 columns (1/4 = 25%)
+  isDefault: boolean("is_default").default(false),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -331,6 +345,12 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
   createdAt: true,
 });
 
+export const insertLayoutSettingSchema = createInsertSchema(layoutSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -352,3 +372,5 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type Transaction = typeof transactions.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+export type LayoutSetting = typeof layoutSettings.$inferSelect;
+export type InsertLayoutSetting = z.infer<typeof insertLayoutSettingSchema>;

@@ -9,6 +9,7 @@ import {
   forexRates,
   roles,
   permissions,
+  layoutSettings,
   type User,
   type UpsertUser,
   type ExchangeRequest,
@@ -29,6 +30,8 @@ import {
   type InsertRole,
   type Permission,
   type InsertPermission,
+  type LayoutSetting,
+  type InsertLayoutSetting,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, sql, count, avg, sum, isNull, isNotNull } from "drizzle-orm";
@@ -133,6 +136,14 @@ export interface IStorage {
   getAuditLogs(filters?: { userId?: string; action?: string; resource?: string }): Promise<AuditLog[]>;
   
   updateUserPermissions(userId: string, permissions: string[]): Promise<User>;
+  
+  // Layout settings operations
+  getLayoutSettings(): Promise<LayoutSetting[]>;
+  getActiveLayoutSetting(): Promise<LayoutSetting | undefined>;
+  createLayoutSetting(setting: InsertLayoutSetting): Promise<LayoutSetting>;
+  updateLayoutSetting(id: number, updates: Partial<InsertLayoutSetting>): Promise<LayoutSetting>;
+  deleteLayoutSetting(id: number): Promise<void>;
+  setDefaultLayoutSetting(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1155,6 +1166,59 @@ export class DatabaseStorage implements IStorage {
       totalTraders: rates.length,
       lastUpdated: Math.max(...rates.map(r => new Date(r.updatedAt || r.createdAt || '').getTime())).toString(),
     };
+  }
+
+  // Layout settings operations
+  async getLayoutSettings(): Promise<LayoutSetting[]> {
+    return await db.select().from(layoutSettings).orderBy(asc(layoutSettings.name));
+  }
+
+  async getActiveLayoutSetting(): Promise<LayoutSetting | undefined> {
+    const [setting] = await db
+      .select()
+      .from(layoutSettings)
+      .where(eq(layoutSettings.isDefault, true))
+      .limit(1);
+    return setting;
+  }
+
+  async createLayoutSetting(settingData: InsertLayoutSetting): Promise<LayoutSetting> {
+    const [setting] = await db
+      .insert(layoutSettings)
+      .values(settingData)
+      .returning();
+    return setting;
+  }
+
+  async updateLayoutSetting(id: number, updates: Partial<InsertLayoutSetting>): Promise<LayoutSetting> {
+    const [setting] = await db
+      .update(layoutSettings)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(layoutSettings.id, id))
+      .returning();
+    return setting;
+  }
+
+  async deleteLayoutSetting(id: number): Promise<void> {
+    await db
+      .delete(layoutSettings)
+      .where(eq(layoutSettings.id, id));
+  }
+
+  async setDefaultLayoutSetting(id: number): Promise<void> {
+    // First, unset all other defaults
+    await db
+      .update(layoutSettings)
+      .set({ isDefault: false });
+    
+    // Then set the new default
+    await db
+      .update(layoutSettings)
+      .set({ isDefault: true })
+      .where(eq(layoutSettings.id, id));
   }
 }
 

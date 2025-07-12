@@ -1271,5 +1271,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Layout Settings API routes
+  app.get("/api/admin/layout-settings", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const settings = await storage.getLayoutSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching layout settings:", error);
+      res.status(500).json({ message: "Failed to fetch layout settings" });
+    }
+  });
+
+  app.get("/api/layout-settings/active", async (req, res) => {
+    try {
+      const setting = await storage.getActiveLayoutSetting();
+      res.json(setting);
+    } catch (error) {
+      console.error("Error fetching active layout setting:", error);
+      res.status(500).json({ message: "Failed to fetch active layout setting" });
+    }
+  });
+
+  app.post("/api/admin/layout-settings", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const settingData = req.body;
+      const setting = await storage.createLayoutSetting(settingData);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "layout_setting_create",
+        resource: "layout_setting",
+        resourceId: setting.id.toString(),
+        details: settingData,
+        success: true,
+      });
+      
+      res.json(setting);
+    } catch (error) {
+      console.error("Error creating layout setting:", error);
+      res.status(500).json({ message: "Failed to create layout setting" });
+    }
+  });
+
+  app.patch("/api/admin/layout-settings/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const settingId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const setting = await storage.updateLayoutSetting(settingId, updates);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "layout_setting_update",
+        resource: "layout_setting",
+        resourceId: settingId.toString(),
+        details: { updates },
+        success: true,
+      });
+      
+      res.json(setting);
+    } catch (error) {
+      console.error("Error updating layout setting:", error);
+      res.status(500).json({ message: "Failed to update layout setting" });
+    }
+  });
+
+  app.post("/api/admin/layout-settings/:id/set-default", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const settingId = parseInt(req.params.id);
+      await storage.setDefaultLayoutSetting(settingId);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "layout_setting_set_default",
+        resource: "layout_setting",
+        resourceId: settingId.toString(),
+        success: true,
+      });
+      
+      res.json({ message: "Default layout setting updated successfully" });
+    } catch (error) {
+      console.error("Error setting default layout setting:", error);
+      res.status(500).json({ message: "Failed to set default layout setting" });
+    }
+  });
+
+  app.delete("/api/admin/layout-settings/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const settingId = parseInt(req.params.id);
+      await storage.deleteLayoutSetting(settingId);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "layout_setting_delete",
+        resource: "layout_setting",
+        resourceId: settingId.toString(),
+        success: true,
+      });
+      
+      res.json({ message: "Layout setting deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting layout setting:", error);
+      res.status(500).json({ message: "Failed to delete layout setting" });
+    }
+  });
+
   return httpServer;
 }

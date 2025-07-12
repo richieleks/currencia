@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import ChatRoomThreaded from "@/components/chat-room-threaded";
 import QuickExchangeForm from "@/components/quick-exchange-form";
 import ActiveOffers from "@/components/active-offers";
@@ -10,12 +11,21 @@ import CurrencyBalanceDashboard from "@/components/currency-balance-dashboard";
 import RateComparisonSlider from "@/components/rate-comparison-slider";
 import OnboardingDemo from "@/components/onboarding-demo";
 import OffersCard from "@/components/offers-card";
-import { ExchangeRequest } from "@shared/schema";
+import { ExchangeRequest, LayoutSetting } from "@shared/schema";
 
 export default function TradingRoom() {
   const { user } = useAuth();
   const [showDemo, setShowDemo] = useState(false);
   const [selectedRequestForOffers, setSelectedRequestForOffers] = useState<ExchangeRequest | null>(null);
+
+  // Fetch active layout setting
+  const { data: layoutSetting } = useQuery<LayoutSetting>({
+    queryKey: ["/api/layout-settings/active"],
+  });
+
+  // Use default 50/50 layout if no setting is found
+  const chatSpan = layoutSetting?.chatColumnSpan || 2;
+  const sidebarSpan = layoutSetting?.sidebarColumnSpan || 2;
 
   // Check if user is new and should see the demo automatically
   useEffect(() => {
@@ -44,9 +54,9 @@ export default function TradingRoom() {
         {/* Currency Balance Dashboard */}
         <CurrencyBalanceDashboard />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mt-6">
+        <div className={`grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 mt-6`}>
           {/* Chat Section */}
-          <div className="order-2 lg:order-1" data-demo="chat-room">
+          <div className={`order-2 lg:order-1 lg:col-span-${chatSpan}`} data-demo="chat-room">
             {/* Offers Card - appears above chat when a request is selected */}
             {selectedRequestForOffers && (
               <div className="mb-4">
@@ -60,7 +70,7 @@ export default function TradingRoom() {
           </div>
 
           {/* Sidebar Section */}
-          <div className="space-y-4 lg:space-y-6 order-1 lg:order-2">
+          <div className={`space-y-4 lg:space-y-6 order-1 lg:order-2 lg:col-span-${sidebarSpan}`}>
             {/* Active Offers */}
             <div data-demo="active-requests">
               <ActiveOffers onRequestSelect={setSelectedRequestForOffers} />
