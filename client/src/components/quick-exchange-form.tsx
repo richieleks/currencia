@@ -435,11 +435,53 @@ export default function QuickExchangeForm() {
                 </span>
               </div>
               
-              {pendingData.desiredRate && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Desired Rate:</span>
-                  <span className="font-medium">{formatRate(pendingData.desiredRate)}</span>
+              {/* Market Rate Conversion */}
+              <div className="bg-green-50 border border-green-200 rounded p-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-green-700 text-sm">Current Market Rate:</span>
+                  <span className="text-green-700 text-xs">
+                    1 {pendingData.fromCurrency} = {(exchangeRates[pendingData.fromCurrency]?.[pendingData.toCurrency] || 0).toFixed(6)} {pendingData.toCurrency}
+                  </span>
                 </div>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-green-700 text-sm font-medium">You would receive:</span>
+                  <span className="text-green-700 font-semibold">
+                    {(() => {
+                      const rate = exchangeRates[pendingData.fromCurrency]?.[pendingData.toCurrency] || 0;
+                      const convertedAmount = pendingData.amount * rate;
+                      return formatCurrency(convertedAmount, pendingData.toCurrency);
+                    })()}
+                  </span>
+                </div>
+              </div>
+              
+              {pendingData.desiredRate && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Desired Rate:</span>
+                    <span className="font-medium">{formatRate(pendingData.desiredRate)}</span>
+                  </div>
+                  
+                  {/* Desired Rate Conversion */}
+                  <div className="bg-blue-50 border border-blue-200 rounded p-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-blue-700 text-sm font-medium">With your desired rate:</span>
+                      <span className="text-blue-700 font-semibold">
+                        {formatCurrency(pendingData.amount * pendingData.desiredRate, pendingData.toCurrency)}
+                      </span>
+                    </div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      Difference: {(() => {
+                        const marketRate = exchangeRates[pendingData.fromCurrency]?.[pendingData.toCurrency] || 0;
+                        const marketAmount = pendingData.amount * marketRate;
+                        const desiredAmount = pendingData.amount * pendingData.desiredRate;
+                        const difference = desiredAmount - marketAmount;
+                        const sign = difference >= 0 ? "+" : "";
+                        return `${sign}${formatCurrency(Math.abs(difference), pendingData.toCurrency)}`;
+                      })()} vs market rate
+                    </div>
+                  </div>
+                </>
               )}
               
               <div className="flex justify-between">
