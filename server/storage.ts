@@ -10,6 +10,10 @@ import {
   roles,
   permissions,
   layoutSettings,
+  reportTemplates,
+  reportInstances,
+  reportSchedules,
+  reportExports,
   type User,
   type UpsertUser,
   type ExchangeRequest,
@@ -32,6 +36,14 @@ import {
   type InsertPermission,
   type LayoutSetting,
   type InsertLayoutSetting,
+  type ReportTemplate,
+  type InsertReportTemplate,
+  type ReportInstance,
+  type InsertReportInstance,
+  type ReportSchedule,
+  type InsertReportSchedule,
+  type ReportExport,
+  type InsertReportExport,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, sql, count, avg, sum, isNull, isNotNull } from "drizzle-orm";
@@ -144,6 +156,35 @@ export interface IStorage {
   updateLayoutSetting(id: number, updates: Partial<InsertLayoutSetting>): Promise<LayoutSetting>;
   deleteLayoutSetting(id: number): Promise<void>;
   setDefaultLayoutSetting(id: number): Promise<void>;
+  
+  // Reports operations
+  getReportTemplates(): Promise<ReportTemplate[]>;
+  getReportTemplateById(id: number): Promise<ReportTemplate | undefined>;
+  createReportTemplate(template: InsertReportTemplate): Promise<ReportTemplate>;
+  updateReportTemplate(id: number, updates: Partial<InsertReportTemplate>): Promise<ReportTemplate>;
+  deleteReportTemplate(id: number): Promise<void>;
+  
+  getReportInstances(templateId?: number): Promise<ReportInstance[]>;
+  getReportInstanceById(id: number): Promise<ReportInstance | undefined>;
+  createReportInstance(instance: InsertReportInstance): Promise<ReportInstance>;
+  updateReportInstance(id: number, updates: Partial<InsertReportInstance>): Promise<ReportInstance>;
+  deleteReportInstance(id: number): Promise<void>;
+  
+  getReportSchedules(): Promise<ReportSchedule[]>;
+  createReportSchedule(schedule: InsertReportSchedule): Promise<ReportSchedule>;
+  updateReportSchedule(id: number, updates: Partial<InsertReportSchedule>): Promise<ReportSchedule>;
+  deleteReportSchedule(id: number): Promise<void>;
+  
+  getReportExports(userId?: string): Promise<ReportExport[]>;
+  createReportExport(exportData: InsertReportExport): Promise<ReportExport>;
+  updateReportExport(id: number, updates: Partial<InsertReportExport>): Promise<ReportExport>;
+  
+  // Report data generation methods
+  generateSystemOverviewReport(params: any): Promise<any>;
+  generateUserActivityReport(params: any): Promise<any>;
+  generateTransactionVolumeReport(params: any): Promise<any>;
+  generateCurrencyAnalysisReport(params: any): Promise<any>;
+  generateMarketTrendsReport(params: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1225,6 +1266,396 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date()
       })
       .where(eq(layoutSettings.id, id));
+  }
+
+  // Reports operations implementation
+  async getReportTemplates(): Promise<ReportTemplate[]> {
+    return await db.select().from(reportTemplates).orderBy(desc(reportTemplates.createdAt));
+  }
+
+  async getReportTemplateById(id: number): Promise<ReportTemplate | undefined> {
+    const [template] = await db.select().from(reportTemplates).where(eq(reportTemplates.id, id));
+    return template;
+  }
+
+  async createReportTemplate(template: InsertReportTemplate): Promise<ReportTemplate> {
+    const [newTemplate] = await db
+      .insert(reportTemplates)
+      .values(template)
+      .returning();
+    return newTemplate;
+  }
+
+  async updateReportTemplate(id: number, updates: Partial<InsertReportTemplate>): Promise<ReportTemplate> {
+    const [template] = await db
+      .update(reportTemplates)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(reportTemplates.id, id))
+      .returning();
+    return template;
+  }
+
+  async deleteReportTemplate(id: number): Promise<void> {
+    await db.delete(reportTemplates).where(eq(reportTemplates.id, id));
+  }
+
+  async getReportInstances(templateId?: number): Promise<ReportInstance[]> {
+    let query = db.select().from(reportInstances);
+    if (templateId) {
+      query = query.where(eq(reportInstances.templateId, templateId));
+    }
+    return await query.orderBy(desc(reportInstances.createdAt));
+  }
+
+  async getReportInstanceById(id: number): Promise<ReportInstance | undefined> {
+    const [instance] = await db.select().from(reportInstances).where(eq(reportInstances.id, id));
+    return instance;
+  }
+
+  async createReportInstance(instance: InsertReportInstance): Promise<ReportInstance> {
+    const [newInstance] = await db
+      .insert(reportInstances)
+      .values(instance)
+      .returning();
+    return newInstance;
+  }
+
+  async updateReportInstance(id: number, updates: Partial<InsertReportInstance>): Promise<ReportInstance> {
+    const [instance] = await db
+      .update(reportInstances)
+      .set(updates)
+      .where(eq(reportInstances.id, id))
+      .returning();
+    return instance;
+  }
+
+  async deleteReportInstance(id: number): Promise<void> {
+    await db.delete(reportInstances).where(eq(reportInstances.id, id));
+  }
+
+  async getReportSchedules(): Promise<ReportSchedule[]> {
+    return await db.select().from(reportSchedules).orderBy(desc(reportSchedules.createdAt));
+  }
+
+  async createReportSchedule(schedule: InsertReportSchedule): Promise<ReportSchedule> {
+    const [newSchedule] = await db
+      .insert(reportSchedules)
+      .values(schedule)
+      .returning();
+    return newSchedule;
+  }
+
+  async updateReportSchedule(id: number, updates: Partial<InsertReportSchedule>): Promise<ReportSchedule> {
+    const [schedule] = await db
+      .update(reportSchedules)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(reportSchedules.id, id))
+      .returning();
+    return schedule;
+  }
+
+  async deleteReportSchedule(id: number): Promise<void> {
+    await db.delete(reportSchedules).where(eq(reportSchedules.id, id));
+  }
+
+  async getReportExports(userId?: string): Promise<ReportExport[]> {
+    let query = db.select().from(reportExports);
+    if (userId) {
+      query = query.where(eq(reportExports.exportedBy, userId));
+    }
+    return await query.orderBy(desc(reportExports.createdAt));
+  }
+
+  async createReportExport(exportData: InsertReportExport): Promise<ReportExport> {
+    const [newExport] = await db
+      .insert(reportExports)
+      .values(exportData)
+      .returning();
+    return newExport;
+  }
+
+  async updateReportExport(id: number, updates: Partial<InsertReportExport>): Promise<ReportExport> {
+    const [exportRecord] = await db
+      .update(reportExports)
+      .set(updates)
+      .where(eq(reportExports.id, id))
+      .returning();
+    return exportRecord;
+  }
+
+  // Report data generation methods
+  async generateSystemOverviewReport(params: any): Promise<any> {
+    const dateRange = params.dateRange || { start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), end: new Date() };
+    
+    const [totalUsersResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users);
+
+    const [totalTransactionsResult] = await db
+      .select({ 
+        count: sql<number>`count(*)`,
+        volume: sql<number>`coalesce(sum(cast(amount as decimal)), 0)`
+      })
+      .from(transactions)
+      .where(
+        and(
+          gte(transactions.createdAt, dateRange.start),
+          lte(transactions.createdAt, dateRange.end)
+        )
+      );
+
+    const [activeRequestsResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(exchangeRequests)
+      .where(eq(exchangeRequests.status, "active"));
+
+    const dailyTransactions = await db
+      .select({
+        date: sql<string>`date(${transactions.createdAt})`,
+        count: sql<number>`count(*)`,
+        volume: sql<number>`sum(cast(${transactions.amount} as decimal))`
+      })
+      .from(transactions)
+      .where(
+        and(
+          gte(transactions.createdAt, dateRange.start),
+          lte(transactions.createdAt, dateRange.end)
+        )
+      )
+      .groupBy(sql`date(${transactions.createdAt})`)
+      .orderBy(sql`date(${transactions.createdAt})`);
+
+    return {
+      summary: {
+        totalUsers: totalUsersResult?.count || 0,
+        totalTransactions: totalTransactionsResult?.count || 0,
+        totalVolume: totalTransactionsResult?.volume || 0,
+        activeRequests: activeRequestsResult?.count || 0,
+      },
+      charts: {
+        dailyTransactions,
+      },
+      dateRange,
+      generatedAt: new Date(),
+    };
+  }
+
+  async generateUserActivityReport(params: any): Promise<any> {
+    const dateRange = params.dateRange || { start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), end: new Date() };
+    
+    const userActivity = await db
+      .select({
+        userId: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        companyName: users.companyName,
+        email: users.email,
+        role: users.role,
+        totalRequests: sql<number>`coalesce((
+          select count(*) from exchange_requests 
+          where user_id = ${users.id} 
+          and created_at >= ${dateRange.start} 
+          and created_at <= ${dateRange.end}
+        ), 0)`,
+        totalOffers: sql<number>`coalesce((
+          select count(*) from rate_offers 
+          where bidder_id = ${users.id} 
+          and created_at >= ${dateRange.start} 
+          and created_at <= ${dateRange.end}
+        ), 0)`,
+        totalTransactions: sql<number>`coalesce((
+          select count(*) from transactions 
+          where (requester_id = ${users.id} or bidder_id = ${users.id})
+          and created_at >= ${dateRange.start} 
+          and created_at <= ${dateRange.end}
+        ), 0)`,
+        lastActive: users.lastActiveAt,
+      })
+      .from(users)
+      .where(eq(users.status, "active"));
+
+    const topTraders = userActivity
+      .sort((a, b) => (b.totalTransactions + b.totalRequests + b.totalOffers) - (a.totalTransactions + a.totalRequests + a.totalOffers))
+      .slice(0, 10);
+
+    return {
+      userActivity,
+      topTraders,
+      dateRange,
+      generatedAt: new Date(),
+    };
+  }
+
+  async generateTransactionVolumeReport(params: any): Promise<any> {
+    const dateRange = params.dateRange || { start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), end: new Date() };
+    
+    const volumeByDate = await db
+      .select({
+        date: sql<string>`date(${transactions.createdAt})`,
+        volume: sql<number>`sum(cast(${transactions.amount} as decimal))`,
+        count: sql<number>`count(*)`
+      })
+      .from(transactions)
+      .where(
+        and(
+          gte(transactions.createdAt, dateRange.start),
+          lte(transactions.createdAt, dateRange.end)
+        )
+      )
+      .groupBy(sql`date(${transactions.createdAt})`)
+      .orderBy(sql`date(${transactions.createdAt})`);
+
+    const volumeByCurrency = await db
+      .select({
+        currency: exchangeRequests.fromCurrency,
+        volume: sql<number>`sum(cast(${transactions.amount} as decimal))`,
+        count: sql<number>`count(*)`
+      })
+      .from(transactions)
+      .innerJoin(exchangeRequests, eq(transactions.exchangeRequestId, exchangeRequests.id))
+      .where(
+        and(
+          gte(transactions.createdAt, dateRange.start),
+          lte(transactions.createdAt, dateRange.end)
+        )
+      )
+      .groupBy(exchangeRequests.fromCurrency)
+      .orderBy(desc(sql`sum(cast(${transactions.amount} as decimal))`));
+
+    const [totalVolumeResult] = await db
+      .select({
+        totalVolume: sql<number>`sum(cast(${transactions.amount} as decimal))`,
+        totalCount: sql<number>`count(*)`
+      })
+      .from(transactions)
+      .where(
+        and(
+          gte(transactions.createdAt, dateRange.start),
+          lte(transactions.createdAt, dateRange.end)
+        )
+      );
+
+    return {
+      summary: {
+        totalVolume: totalVolumeResult?.totalVolume || 0,
+        totalTransactions: totalVolumeResult?.totalCount || 0,
+        averageTransaction: (totalVolumeResult?.totalVolume || 0) / (totalVolumeResult?.totalCount || 1),
+      },
+      charts: {
+        volumeByDate,
+        volumeByCurrency,
+      },
+      dateRange,
+      generatedAt: new Date(),
+    };
+  }
+
+  async generateCurrencyAnalysisReport(params: any): Promise<any> {
+    const dateRange = params.dateRange || { start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), end: new Date() };
+    
+    const currencyPairs = await db
+      .select({
+        fromCurrency: exchangeRequests.fromCurrency,
+        toCurrency: exchangeRequests.toCurrency,
+        totalRequests: sql<number>`count(*)`,
+        completedTransactions: sql<number>`sum(case when ${exchangeRequests.status} = 'completed' then 1 else 0 end)`,
+        totalVolume: sql<number>`sum(cast(${exchangeRequests.amount} as decimal))`,
+        avgAmount: sql<number>`avg(cast(${exchangeRequests.amount} as decimal))`
+      })
+      .from(exchangeRequests)
+      .where(
+        and(
+          gte(exchangeRequests.createdAt, dateRange.start),
+          lte(exchangeRequests.createdAt, dateRange.end)
+        )
+      )
+      .groupBy(exchangeRequests.fromCurrency, exchangeRequests.toCurrency)
+      .orderBy(desc(sql`count(*)`));
+
+    const popularCurrencies = await db
+      .select({
+        currency: sql<string>`currency`,
+        requests: sql<number>`total_requests`
+      })
+      .from(sql`(
+        select from_currency as currency, count(*) as total_requests 
+        from exchange_requests 
+        where created_at >= ${dateRange.start} and created_at <= ${dateRange.end}
+        group by from_currency
+        union all
+        select to_currency as currency, count(*) as total_requests 
+        from exchange_requests 
+        where created_at >= ${dateRange.start} and created_at <= ${dateRange.end}
+        group by to_currency
+      ) as currency_counts`)
+      .groupBy(sql`currency`)
+      .orderBy(desc(sql`sum(total_requests)`));
+
+    return {
+      currencyPairs,
+      popularCurrencies,
+      dateRange,
+      generatedAt: new Date(),
+    };
+  }
+
+  async generateMarketTrendsReport(params: any): Promise<any> {
+    const dateRange = params.dateRange || { start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), end: new Date() };
+    
+    const dailyActivity = await db
+      .select({
+        date: sql<string>`date(created_at)`,
+        newRequests: sql<number>`count(*)`,
+        activeUsers: sql<number>`count(distinct user_id)`
+      })
+      .from(exchangeRequests)
+      .where(
+        and(
+          gte(exchangeRequests.createdAt, dateRange.start),
+          lte(exchangeRequests.createdAt, dateRange.end)
+        )
+      )
+      .groupBy(sql`date(created_at)`)
+      .orderBy(sql`date(created_at)`);
+
+    const peakHours = await db
+      .select({
+        hour: sql<number>`extract(hour from created_at)`,
+        requests: sql<number>`count(*)`
+      })
+      .from(exchangeRequests)
+      .where(
+        and(
+          gte(exchangeRequests.createdAt, dateRange.start),
+          lte(exchangeRequests.createdAt, dateRange.end)
+        )
+      )
+      .groupBy(sql`extract(hour from created_at)`)
+      .orderBy(desc(sql`count(*)`));
+
+    const responseTimeAnalysis = await db
+      .select({
+        avgResponseMinutes: sql<number>`avg(extract(epoch from (${rateOffers.createdAt} - ${exchangeRequests.createdAt}))/60)`,
+        currencyPair: sql<string>`${exchangeRequests.fromCurrency} || '/' || ${exchangeRequests.toCurrency}`
+      })
+      .from(rateOffers)
+      .innerJoin(exchangeRequests, eq(rateOffers.exchangeRequestId, exchangeRequests.id))
+      .where(
+        and(
+          gte(rateOffers.createdAt, dateRange.start),
+          lte(rateOffers.createdAt, dateRange.end)
+        )
+      )
+      .groupBy(sql`${exchangeRequests.fromCurrency} || '/' || ${exchangeRequests.toCurrency}`)
+      .orderBy(sql`avg(extract(epoch from (${rateOffers.createdAt} - ${exchangeRequests.createdAt}))/60)`);
+
+    return {
+      dailyActivity,
+      peakHours,
+      responseTimeAnalysis,
+      dateRange,
+      generatedAt: new Date(),
+    };
   }
 }
 

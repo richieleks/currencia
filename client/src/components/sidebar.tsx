@@ -1,6 +1,6 @@
 import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home, Shield, DollarSign, ChevronLeft, ChevronRight } from "lucide-react";
+import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home, Shield, DollarSign, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -109,6 +109,9 @@ export default function Sidebar({ isOpen, onClose, user, collapsed = false, onTo
                 Admin Panel
               </NavLink>
             )}
+            <NavLink href="/reports" icon={FileText}>
+              Reports
+            </NavLink>
             <NavLink href="/settings" icon={Settings}>
               Settings
             </NavLink>
