@@ -37,7 +37,7 @@ export default function MarketRatesWidget() {
     if (!rate) return "N/A";
     return parseFloat(rate).toLocaleString(undefined, {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 6,
+      maximumFractionDigits: 2,
     });
   };
 

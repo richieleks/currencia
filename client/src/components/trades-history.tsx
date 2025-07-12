@@ -374,7 +374,7 @@ export default function TradesHistory({ activeFilter = "all" }: TradesHistoryPro
                         <div>
                           <p className="text-muted-foreground">Rate</p>
                           <p className="font-medium">
-                            {trade.rate ? `${parseFloat(trade.rate).toFixed(4)}` : 'N/A'}
+                            {trade.rate ? `${parseFloat(trade.rate).toFixed(2)}` : 'N/A'}
                           </p>
                         </div>
                         <div>

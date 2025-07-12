@@ -291,7 +291,7 @@ export default function BiddingDashboard() {
                     <div key={bid.id} className="border border-gray-200 dark:border-gray-700 rounded p-3">
                       <div className="flex justify-between items-start mb-2">
                         <div className="text-sm font-medium">
-                          Rate: {parseFloat(bid.rate).toFixed(4)}
+                          Rate: {parseFloat(bid.rate).toFixed(2)}
                         </div>
                         <Badge className={getStatusColor(bid.status)}>
                           {bid.status}
