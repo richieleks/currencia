@@ -135,9 +135,13 @@ export default function ActiveOffers({ onRequestSelect }: ActiveOffersProps) {
                       size="sm"
                       className="w-full bg-primary-500 hover:bg-primary-600"
                       onClick={() => {
-                        setViewingRequestId(request.id);
-                        setSelectedRequest(request);
-                        setIsOffersViewerOpen(true);
+                        if (onRequestSelect) {
+                          onRequestSelect(request);
+                        } else {
+                          setViewingRequestId(request.id);
+                          setSelectedRequest(request);
+                          setIsOffersViewerOpen(true);
+                        }
                       }}
                     >
                       View Offers
