@@ -9,10 +9,13 @@ import DemoBanner from "@/components/demo-banner";
 import CurrencyBalanceDashboard from "@/components/currency-balance-dashboard";
 import RateComparisonSlider from "@/components/rate-comparison-slider";
 import OnboardingDemo from "@/components/onboarding-demo";
+import OffersCard from "@/components/offers-card";
+import { ExchangeRequest } from "@shared/schema";
 
 export default function TradingRoom() {
   const { user } = useAuth();
   const [showDemo, setShowDemo] = useState(false);
+  const [selectedRequestForOffers, setSelectedRequestForOffers] = useState<ExchangeRequest | null>(null);
 
   // Check if user is new and should see the demo automatically
   useEffect(() => {
@@ -44,6 +47,13 @@ export default function TradingRoom() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Chat Section */}
           <div className="xl:col-span-2" data-demo="chat-room">
+            {/* Offers Card - appears above chat when a request is selected */}
+            {selectedRequestForOffers && (
+              <OffersCard
+                exchangeRequest={selectedRequestForOffers}
+                onClose={() => setSelectedRequestForOffers(null)}
+              />
+            )}
             <ChatRoomThreaded />
           </div>
 
@@ -51,7 +61,7 @@ export default function TradingRoom() {
           <div className="space-y-6">
             {/* Active Offers */}
             <div data-demo="active-requests">
-              <ActiveOffers />
+              <ActiveOffers onRequestSelect={setSelectedRequestForOffers} />
             </div>
             
             {/* Quick Exchange Form */}
