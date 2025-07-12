@@ -44,9 +44,9 @@ export default function TradingRoom() {
         {/* Currency Balance Dashboard */}
         <CurrencyBalanceDashboard />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mt-6">
           {/* Chat Section */}
-          <div className="lg:col-span-3 order-2 lg:order-1" data-demo="chat-room">
+          <div className="order-2 lg:order-1" data-demo="chat-room">
             {/* Offers Card - appears above chat when a request is selected */}
             {selectedRequestForOffers && (
               <div className="mb-4">
