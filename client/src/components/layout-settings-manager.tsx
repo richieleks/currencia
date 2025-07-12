@@ -116,6 +116,8 @@ export default function LayoutSettingsManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/layout-settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/layout-settings/active"] });
+      // Force refresh of all layout-related queries
+      queryClient.refetchQueries({ queryKey: ["/api/layout-settings/active"] });
       toast({
         title: "Success",
         description: "Default layout setting updated",
