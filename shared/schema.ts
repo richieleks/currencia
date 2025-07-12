@@ -283,8 +283,8 @@ export const layoutSettings = pgTable("layout_settings", {
   name: varchar("name").notNull().unique(),
   displayName: varchar("display_name").notNull(),
   description: text("description"),
-  chatColumnSpan: integer("chat_column_span").notNull().default(3), // out of 4 columns (3/4 = 75%)
-  sidebarColumnSpan: integer("sidebar_column_span").notNull().default(1), // out of 4 columns (1/4 = 25%)
+  chatColumnSpan: numeric("chat_column_span", { precision: 3, scale: 1 }).notNull().default("2.0"), // out of 4 columns (supports decimal values)
+  sidebarColumnSpan: numeric("sidebar_column_span", { precision: 3, scale: 1 }).notNull().default("2.0"), // out of 4 columns (supports decimal values)
   isDefault: boolean("is_default").default(false),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
