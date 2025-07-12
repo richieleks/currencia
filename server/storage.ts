@@ -1212,12 +1212,18 @@ export class DatabaseStorage implements IStorage {
     // First, unset all other defaults
     await db
       .update(layoutSettings)
-      .set({ isDefault: false });
+      .set({ 
+        isDefault: false,
+        updatedAt: new Date()
+      });
     
     // Then set the new default
     await db
       .update(layoutSettings)
-      .set({ isDefault: true })
+      .set({ 
+        isDefault: true,
+        updatedAt: new Date()
+      })
       .where(eq(layoutSettings.id, id));
   }
 }
