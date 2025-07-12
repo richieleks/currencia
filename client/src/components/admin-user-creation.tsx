@@ -28,7 +28,7 @@ const userCreationSchema = z.object({
   role: z.enum(["trader", "admin", "moderator"], {
     required_error: "Please select a role"
   }),
-  status: z.enum(["active", "inactive", "suspended"]).default("active"),
+  status: z.enum(["active", "inactive", "suspended"]),
 });
 
 type UserCreationData = z.infer<typeof userCreationSchema>;
@@ -45,10 +45,18 @@ export default function AdminUserCreation({ onUserCreated }: AdminUserCreationPr
   const form = useForm<UserCreationData>({
     resolver: zodResolver(userCreationSchema),
     defaultValues: {
+      id: "",
+      email: "",
+      firstName: "",
+      lastName: "",
+      companyName: "",
+      phoneNumber: "",
+      address: "",
+      businessType: "individual",
+      tradingExperience: "beginner",
+      specializedCurrencies: "",
       role: "trader",
       status: "active",
-      businessType: "individual",
-      tradingExperience: "beginner"
     },
   });
 

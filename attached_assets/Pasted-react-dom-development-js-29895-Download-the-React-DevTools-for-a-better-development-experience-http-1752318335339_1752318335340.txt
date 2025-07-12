@@ -1,0 +1,84 @@
+react-dom.development.js:29895 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+App.tsx:25 Auth state: Object
+App.tsx:25 Auth state: Object
+useWebSocket.ts:17 Connecting to WebSocket: wss://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/ws
+useWebSocket.ts:84  WebSocket connection to 'wss://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ useWebSocket.ts:84
+useWebSocket.ts:17 Connecting to WebSocket: wss://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/ws
+useWebSocket.ts:64 WebSocket error: Event
+useWebSocket.ts:51 WebSocket disconnected
+useWebSocket.ts:17 Connecting to WebSocket: wss://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/ws
+useWebSocket.ts:21 WebSocket connected
+useWebSocket.ts:21 WebSocket connected
+react-dom.development.js:86  Warning: A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component. More info: https://reactjs.org/link/controlled-components
+    at input
+    at _c (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/input.tsx:20:11)
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=7604e3fb:79:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=7604e3fb:56:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/form.tsx:130:9
+    at div
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/form.tsx:72:6
+    at Controller (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-4BFJKWC4.js?v=7604e3fb:298:35)
+    at FormField (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/form.tsx:33:6)
+    at div
+    at _c9 (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/card.tsx:20:11)
+    at form
+    at FormProvider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-4BFJKWC4.js?v=7604e3fb:102:11)
+    at div
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-Q6YJROYD.js?v=7604e3fb:42:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RL3VCQZV.js?v=7604e3fb:61:7
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=7604e3fb:79:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=7604e3fb:56:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-Q6YJROYD.js?v=7604e3fb:42:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XTIJI72C.js?v=7604e3fb:57:5
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=7604e3fb:237:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=7604e3fb:160:58
+    at Presence (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WIIJQEXM.js?v=7604e3fb:24:11)
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=7604e3fb:151:64
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=7604e3fb:79:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=7604e3fb:56:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-Q6YJROYD.js?v=7604e3fb:42:13
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RL3VCQZV.js?v=7604e3fb:260:22
+    at Presence (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WIIJQEXM.js?v=7604e3fb:24:11)
+    at Provider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=7604e3fb:38:15)
+    at DialogPortal (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=7604e3fb:113:11)
+    at _c3 (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/dialog.tsx:52:12)
+    at Provider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=7604e3fb:38:15)
+    at Dialog (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=7604e3fb:54:5)
+    at AdminUserCreation (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/admin-user-creation.tsx:49:45)
+    at div
+    at div
+    at _c3 (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/card.tsx:45:12)
+    at div
+    at _c (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at UserManagement (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/user-management.tsx:72:42)
+    at div
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-Q6YJROYD.js?v=7604e3fb:42:13
+    at Presence (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WIIJQEXM.js?v=7604e3fb:24:11)
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=7604e3fb:175:13
+    at _c5 (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/ui/tabs.tsx:72:12)
+    at div
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-Q6YJROYD.js?v=7604e3fb:42:13
+    at Provider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=7604e3fb:38:15)
+    at https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=7604e3fb:53:7
+    at div
+    at AdminDashboard (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/admin-dashboard-new.tsx:34:58)
+    at div
+    at div
+    at AdminPage (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/pages/admin.tsx:24:31)
+    at Route (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7604e3fb:323:16)
+    at main
+    at div
+    at div
+    at Layout (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/layout.tsx:26:34)
+    at Switch (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7604e3fb:379:17)
+    at Router (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/App.tsx?v=Jru3-Uu5v8CiFCtcMK67E:37:48)
+    at Provider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=7604e3fb:38:15)
+    at TooltipProvider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=7604e3fb:63:5)
+    at ThemeProvider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/src/components/theme-provider.tsx:25:3)
+    at QueryClientProvider (https://f573531e-626b-4814-80f6-2bf2c1aced6c-00-2q7fdh1mroopy.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=7604e3fb:2805:3)
+    at App
+printWarning @ react-dom.development.js:86
