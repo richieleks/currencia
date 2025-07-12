@@ -70,8 +70,8 @@ export default function QuickExchangeForm() {
   const form = useForm<ExchangeFormData>({
     resolver: zodResolver(exchangeFormSchema),
     defaultValues: {
-      fromCurrency: "",
-      toCurrency: "",
+      fromCurrency: "UGX",
+      toCurrency: "USD",
       amount: 0,
       desiredRate: undefined,
       priority: "standard",

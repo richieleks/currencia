@@ -31,8 +31,8 @@ export default function ForexRatesManager() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingRate, setEditingRate] = useState<ForexRate | null>(null);
   const [formData, setFormData] = useState<ForexRateFormData>({
-    fromCurrency: "",
-    toCurrency: "",
+    fromCurrency: "USD",
+    toCurrency: "UGX",
     buyRate: "",
     sellRate: "",
   });
@@ -62,7 +62,7 @@ export default function ForexRatesManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/forex-rates"] });
       setIsAddDialogOpen(false);
-      setFormData({ fromCurrency: "", toCurrency: "", buyRate: "", sellRate: "" });
+      setFormData({ fromCurrency: "USD", toCurrency: "UGX", buyRate: "", sellRate: "" });
       toast({
         title: "Success",
         description: "Forex rate created successfully",
@@ -97,7 +97,7 @@ export default function ForexRatesManager() {
       queryClient.invalidateQueries({ queryKey: ["/api/forex-rates"] });
       setIsEditDialogOpen(false);
       setEditingRate(null);
-      setFormData({ fromCurrency: "", toCurrency: "", buyRate: "", sellRate: "" });
+      setFormData({ fromCurrency: "USD", toCurrency: "UGX", buyRate: "", sellRate: "" });
       toast({
         title: "Success",
         description: "Forex rate updated successfully",
