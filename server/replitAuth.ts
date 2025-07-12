@@ -87,7 +87,18 @@ export async function setupAuth(app: Express) {
   ) => {
     const user = {};
     updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
+    
+    // Check if user exists in database - don't auto-create
+    const claims = tokens.claims();
+    const existingUser = await storage.getUser(claims["sub"]);
+    
+    if (!existingUser) {
+      // User is not registered - reject authentication
+      return verified(new Error("User not registered. Please contact an administrator."), null);
+    }
+    
+    // Update existing user's last activity
+    await storage.updateUserActivity(claims["sub"]);
     verified(null, user);
   };
 

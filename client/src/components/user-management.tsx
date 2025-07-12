@@ -58,6 +58,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import AdminUserCreation from "./admin-user-creation";
 
 interface UserManagementProps {
   className?: string;
@@ -254,6 +255,11 @@ export default function UserManagement({ className }: UserManagementProps) {
                 Manage user accounts, roles, and permissions
               </CardDescription>
             </div>
+            <AdminUserCreation 
+              onUserCreated={() => {
+                queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+              }}
+            />
           </div>
         </CardHeader>
         <CardContent>
