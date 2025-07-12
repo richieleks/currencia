@@ -151,22 +151,22 @@ export default function QuickExchangeForm() {
   return (
     <>
     <Card>
-      <CardHeader>
-        <CardTitle>Quick Exchange Request</CardTitle>
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg">Quick Exchange Request</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="fromCurrency"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>From</FormLabel>
+                  <FormItem className="space-y-2">
+                    <FormLabel className="text-sm font-medium">From Currency</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-11">
                           <SelectValue placeholder="Select currency" />
                         </SelectTrigger>
                       </FormControl>
@@ -186,11 +186,11 @@ export default function QuickExchangeForm() {
                 control={form.control}
                 name="toCurrency"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>To</FormLabel>
+                  <FormItem className="space-y-2">
+                    <FormLabel className="text-sm font-medium">To Currency</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-11">
                           <SelectValue placeholder="Select currency" />
                         </SelectTrigger>
                       </FormControl>
@@ -211,13 +211,14 @@ export default function QuickExchangeForm() {
               control={form.control}
               name="amount"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm font-medium">Amount</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.01"
-                      placeholder="0.00"
+                      placeholder="Enter amount to exchange"
+                      className="h-11"
                       {...field}
                       onChange={(e) => field.onChange(e.target.value)}
                     />
@@ -230,13 +231,14 @@ export default function QuickExchangeForm() {
               control={form.control}
               name="desiredRate"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Desired Rate (Optional)</FormLabel>
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm font-medium">Desired Rate (Optional)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      step="0.000001"
-                      placeholder="Enter desired exchange rate"
+                      step="0.01"
+                      placeholder="Enter your preferred exchange rate"
+                      className="h-11"
                       {...field}
                       onChange={(e) => field.onChange(e.target.value)}
                     />
@@ -249,12 +251,12 @@ export default function QuickExchangeForm() {
               control={form.control}
               name="priority"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm font-medium">Priority Level</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Select priority level" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -269,11 +271,12 @@ export default function QuickExchangeForm() {
               )}
             />
 
-            <Button 
-              type="submit" 
-              className="w-full bg-primary-500 hover:bg-primary-600"
-              disabled={createExchangeRequestMutation.isPending}
-            >
+            <div className="pt-4">
+              <Button 
+                type="submit" 
+                className="w-full h-12 bg-primary-500 hover:bg-primary-600 text-base font-medium"
+                disabled={createExchangeRequestMutation.isPending}
+              >
               {createExchangeRequestMutation.isPending ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
@@ -282,7 +285,8 @@ export default function QuickExchangeForm() {
               ) : (
                 "Post Exchange Request"
               )}
-            </Button>
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
