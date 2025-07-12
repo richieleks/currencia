@@ -158,6 +158,8 @@ Changelog:
 - January 12, 2025. Integrated audit logging service throughout the application tracking all user actions, admin operations, security events, and business activities
 - January 12, 2025. Enhanced admin dashboard with dedicated Audit Logs tab providing real-time monitoring and compliance tracking
 - January 12, 2025. Fixed authentication middleware and storage imports to resolve 403 Forbidden errors for admin functionality
+- January 12, 2025. Updated live trading demo widget to only appear automatically for first-time users, with on-demand access via Tutorial button in navigation
+- January 12, 2025. Added demo reset functionality for testing and development purposes
 
 ## User Preferences
 

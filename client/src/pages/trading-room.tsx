@@ -14,7 +14,7 @@ export default function TradingRoom() {
   const { user } = useAuth();
   const [showDemo, setShowDemo] = useState(false);
 
-  // Check if user is new and should see the demo
+  // Check if user is new and should see the demo automatically
   useEffect(() => {
     if (user) {
       const hasSeenDemo = localStorage.getItem(`demo_completed_${user.id}`);
@@ -33,7 +33,7 @@ export default function TradingRoom() {
   };
   return (
     <div>
-      {/* Demo Banner */}
+      {/* Demo Banner - only for first-time users */}
       <DemoBanner />
 
       {/* Main Content */}

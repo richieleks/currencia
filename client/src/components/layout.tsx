@@ -7,6 +7,7 @@ import Sidebar from "@/components/sidebar";
 import NotificationsDropdown from "@/components/notifications-dropdown";
 
 import DemoButton from "@/components/demo-button";
+import DemoResetButton from "@/components/demo-reset-button";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -77,6 +78,7 @@ export default function Layout({ children, user }: LayoutProps) {
             {/* Right side - User actions */}
             <div className="flex items-center space-x-4">
               <DemoButton className="hidden sm:flex" />
+              <DemoResetButton className="hidden sm:flex" />
               <NotificationsDropdown />
               
               {/* User Profile */}

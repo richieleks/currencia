@@ -3,16 +3,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, Play, Users } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import OnboardingDemo from "./onboarding-demo";
 
-export default function DemoBanner() {
-  const [isVisible, setIsVisible] = useState(true);
+interface DemoBannerProps {
+  forceShow?: boolean;
+}
+
+export default function DemoBanner({ forceShow = false }: DemoBannerProps) {
+  const { user } = useAuth();
+  const [isVisible, setIsVisible] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30);
 
-  // Auto-hide banner after 30 seconds
+  // Check if user should see the demo banner
   useEffect(() => {
-    if (isVisible) {
+    if (user && !forceShow) {
+      const hasSeenDemo = localStorage.getItem(`demo_completed_${user.id}`);
+      setIsVisible(!hasSeenDemo);
+    } else if (forceShow) {
+      setIsVisible(true);
+    }
+  }, [user, forceShow]);
+
+  // Auto-hide banner after 30 seconds (only for first-time users)
+  useEffect(() => {
+    if (isVisible && !forceShow) {
       const countdown = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
@@ -25,7 +41,15 @@ export default function DemoBanner() {
 
       return () => clearInterval(countdown);
     }
-  }, [isVisible]);
+  }, [isVisible, forceShow]);
+
+  const handleDemoComplete = () => {
+    if (user) {
+      localStorage.setItem(`demo_completed_${user.id}`, "true");
+    }
+    setShowDemo(false);
+    setIsVisible(false);
+  };
 
   if (!isVisible) return null;
 
@@ -41,7 +65,10 @@ export default function DemoBanner() {
               <div>
                 <h3 className="font-semibold text-blue-900 dark:text-blue-100">Live Trading Demo</h3>
                 <p className="text-sm text-blue-700 dark:text-blue-200">
-                  Experience the complete forex marketplace workflow • Auto-hide in {timeRemaining}s
+                  {forceShow 
+                    ? "Experience the complete forex marketplace workflow" 
+                    : `Experience the complete forex marketplace workflow • Auto-hide in ${timeRemaining}s`
+                  }
                 </p>
               </div>
             </div>
@@ -80,7 +107,7 @@ export default function DemoBanner() {
       <OnboardingDemo
         isOpen={showDemo}
         onClose={() => setShowDemo(false)}
-        onComplete={() => setShowDemo(false)}
+        onComplete={handleDemoComplete}
       />
     </div>
   );
