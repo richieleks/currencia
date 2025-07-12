@@ -102,13 +102,13 @@ export default function RateComparisonSlider({ baseCurrency = "USD" }: RateCompa
     if (isPercent) {
       return `${prefix}${change.toFixed(2)}%`;
     }
-    return `${prefix}${change.toFixed(4)}`;
+    return `${prefix}${change.toFixed(2)}`;
   };
 
   const formatRate = (rate: number) => {
     return rate.toLocaleString('en-US', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 4
+      maximumFractionDigits: 2
     });
   };
 

@@ -176,7 +176,7 @@ export default function ForexRatesManager() {
   };
 
   const formatRate = (rate: string) => {
-    return parseFloat(rate).toFixed(6);
+    return parseFloat(rate).toFixed(2);
   };
 
   return (

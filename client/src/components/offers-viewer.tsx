@@ -251,7 +251,7 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
                       <div className="bg-gray-50 rounded-lg p-3">
                         <p className="text-xs text-gray-600 mb-1">Exchange Rate</p>
                         <p className="font-bold text-lg">
-                          {parseFloat(offer.rate).toFixed(6)}
+                          {parseFloat(offer.rate).toFixed(2)}
                         </p>
                         <p className="text-xs text-gray-500">
                           1 {exchangeRequestData.fromCurrency} = {offer.rate} {exchangeRequestData.toCurrency}

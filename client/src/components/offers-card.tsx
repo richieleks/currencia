@@ -272,7 +272,7 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                 </span>
                 {exchangeRequest.desiredRate && (
                   <span className="block sm:inline sm:ml-2 text-xs sm:text-sm font-medium mt-1 sm:mt-0">
-                    @ {parseFloat(exchangeRequest.desiredRate).toLocaleString()} rate
+                    @ {parseFloat(exchangeRequest.desiredRate).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} rate
                   </span>
                 )}
               </CardDescription>
@@ -337,13 +337,13 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                             <div>
                               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Offered Rate</p>
                               <p className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white">
-                                {parseFloat(offer.rate).toLocaleString()} {exchangeRequest.toCurrency}
+                                {parseFloat(offer.rate).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} {exchangeRequest.toCurrency}
                               </p>
                             </div>
                             <div className="sm:text-right">
                               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">You'll receive</p>
                               <p className="text-sm sm:text-lg font-bold text-success-600">
-                                {(parseFloat(exchangeRequest.amount) * parseFloat(offer.rate)).toLocaleString()} {exchangeRequest.toCurrency}
+                                {(parseFloat(exchangeRequest.amount) * parseFloat(offer.rate)).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} {exchangeRequest.toCurrency}
                               </p>
                             </div>
                           </div>
@@ -503,10 +503,10 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
               <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                 <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Original Offer</div>
                 <div className="font-semibold text-sm sm:text-base">
-                  Rate: {parseFloat(counterOfferTargetOffer.rate).toLocaleString()} {exchangeRequest.toCurrency}
+                  Rate: {parseFloat(counterOfferTargetOffer.rate).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} {exchangeRequest.toCurrency}
                 </div>
                 <div className="text-xs sm:text-sm text-gray-600">
-                  Total: {(parseFloat(exchangeRequest.amount) * parseFloat(counterOfferTargetOffer.rate)).toLocaleString()} {exchangeRequest.toCurrency}
+                  Total: {(parseFloat(exchangeRequest.amount) * parseFloat(counterOfferTargetOffer.rate)).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} {exchangeRequest.toCurrency}
                 </div>
               </div>
               
