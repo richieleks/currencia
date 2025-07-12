@@ -29,6 +29,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { User } from "@shared/schema";
 import { format } from "date-fns";
+import UserManagement from "@/components/user-management";
+import RoleManagement from "@/components/role-management";
 
 interface SystemStats {
   totalUsers: number;
@@ -233,7 +235,9 @@ export default function AdminDashboard() {
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="roles">Role Management</TabsTrigger>
           <TabsTrigger value="activity">Activity Monitor</TabsTrigger>
+          <TabsTrigger value="audit">Audit Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-4">

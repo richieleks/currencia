@@ -718,5 +718,265 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // RBAC Admin Routes
+  // User management routes
+  app.get("/api/admin/users", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const userId = req.params.id;
+      const updates = req.body;
+      
+      const user = await storage.updateUserProfile(userId, updates);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "user_update",
+        resource: "user",
+        resourceId: userId,
+        details: { updates },
+        success: true,
+      });
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.post("/api/admin/users/:id/suspend", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const userId = req.params.id;
+      await storage.suspendUser(userId);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "user_suspend",
+        resource: "user",
+        resourceId: userId,
+        success: true,
+      });
+      
+      res.json({ message: "User suspended successfully" });
+    } catch (error) {
+      console.error("Error suspending user:", error);
+      res.status(500).json({ message: "Failed to suspend user" });
+    }
+  });
+
+  app.post("/api/admin/users/:id/unsuspend", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const userId = req.params.id;
+      await storage.unsuspendUser(userId);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "user_unsuspend",
+        resource: "user",
+        resourceId: userId,
+        success: true,
+      });
+      
+      res.json({ message: "User unsuspended successfully" });
+    } catch (error) {
+      console.error("Error unsuspending user:", error);
+      res.status(500).json({ message: "Failed to unsuspend user" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const userId = req.params.id;
+      
+      // Note: In a real system, you'd want soft delete and cleanup of related data
+      // For now, we'll just update the user status to inactive
+      await storage.updateUserProfile(userId, { status: "inactive" });
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "user_delete",
+        resource: "user",
+        resourceId: userId,
+        success: true,
+      });
+      
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  // Role management routes
+  app.get("/api/admin/roles", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const roles = await storage.getRoles();
+      res.json(roles);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      res.status(500).json({ message: "Failed to fetch roles" });
+    }
+  });
+
+  app.post("/api/admin/roles", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const roleData = req.body;
+      const role = await storage.createRole(roleData);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "role_create",
+        resource: "role",
+        resourceId: role.id.toString(),
+        details: roleData,
+        success: true,
+      });
+      
+      res.json(role);
+    } catch (error) {
+      console.error("Error creating role:", error);
+      res.status(500).json({ message: "Failed to create role" });
+    }
+  });
+
+  app.patch("/api/admin/roles/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const roleId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const role = await storage.updateRole(roleId, updates);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "role_update",
+        resource: "role",
+        resourceId: roleId.toString(),
+        details: { updates },
+        success: true,
+      });
+      
+      res.json(role);
+    } catch (error) {
+      console.error("Error updating role:", error);
+      res.status(500).json({ message: "Failed to update role" });
+    }
+  });
+
+  app.delete("/api/admin/roles/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const roleId = parseInt(req.params.id);
+      
+      // Check if role is system role
+      const role = await storage.getRoleById(roleId);
+      if (role?.isSystemRole) {
+        return res.status(400).json({ message: "Cannot delete system role" });
+      }
+      
+      await storage.deleteRole(roleId);
+      
+      // Log audit trail
+      await storage.createAuditLog({
+        userId: req.user.claims.sub,
+        action: "role_delete",
+        resource: "role",
+        resourceId: roleId.toString(),
+        success: true,
+      });
+      
+      res.json({ message: "Role deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting role:", error);
+      res.status(500).json({ message: "Failed to delete role" });
+    }
+  });
+
+  // Permission management routes
+  app.get("/api/admin/permissions", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const permissions = await storage.getPermissions();
+      res.json(permissions);
+    } catch (error) {
+      console.error("Error fetching permissions:", error);
+      res.status(500).json({ message: "Failed to fetch permissions" });
+    }
+  });
+
+  // Audit log routes
+  app.get("/api/admin/audit-logs", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const { userId, action, resource } = req.query;
+      const filters: any = {};
+      
+      if (userId) filters.userId = userId as string;
+      if (action) filters.action = action as string;
+      if (resource) filters.resource = resource as string;
+      
+      const logs = await storage.getAuditLogs(filters);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+
   return httpServer;
 }
