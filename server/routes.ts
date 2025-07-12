@@ -1357,7 +1357,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const settingId = parseInt(req.params.id);
+      console.log("Setting default layout setting:", settingId);
+      
+      if (isNaN(settingId)) {
+        return res.status(400).json({ message: "Invalid layout setting ID" });
+      }
+      
       await storage.setDefaultLayoutSetting(settingId);
+      console.log("Successfully set default layout setting:", settingId);
       
       // Log audit trail
       await storage.createAuditLog({
@@ -1371,7 +1378,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Default layout setting updated successfully" });
     } catch (error) {
       console.error("Error setting default layout setting:", error);
-      res.status(500).json({ message: "Failed to set default layout setting" });
+      res.status(500).json({ 
+        message: "Failed to set default layout setting", 
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
