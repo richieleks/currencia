@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import UserManagement from "@/components/user-management";
 import RoleManagement from "@/components/role-management";
+import AuditLogViewer from "@/components/audit-log-viewer";
 
 interface SystemStats {
   totalUsers: number;
@@ -100,6 +101,7 @@ export default function AdminDashboard() {
         <TabsList>
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="roles">Role Management</TabsTrigger>
+          <TabsTrigger value="audit">Audit Logs</TabsTrigger>
           <TabsTrigger value="activity">Activity Monitor</TabsTrigger>
         </TabsList>
 
@@ -109,6 +111,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="roles" className="space-y-4">
           <RoleManagement />
+        </TabsContent>
+
+        <TabsContent value="audit" className="space-y-4">
+          <AuditLogViewer />
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-4">

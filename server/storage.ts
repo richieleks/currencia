@@ -4,6 +4,10 @@ import {
   rateOffers,
   chatMessages,
   transactions,
+  userSessions,
+  auditLogs,
+  roles,
+  permissions,
   type User,
   type UpsertUser,
   type ExchangeRequest,
@@ -14,6 +18,14 @@ import {
   type InsertChatMessage,
   type Transaction,
   type InsertTransaction,
+  type UserSession,
+  type InsertUserSession,
+  type AuditLog,
+  type InsertAuditLog,
+  type Role,
+  type InsertRole,
+  type Permission,
+  type InsertPermission,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, sql, count, avg, sum, isNull, isNotNull } from "drizzle-orm";

@@ -8,6 +8,7 @@ import {
   insertRateOfferSchema,
   insertChatMessageSchema,
 } from "@shared/schema";
+import { AuditLogger, SecurityAuditLogger, BusinessAuditLogger, auditMiddleware } from "./auditLogger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -953,6 +954,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching permissions:", error);
       res.status(500).json({ message: "Failed to fetch permissions" });
+    }
+  });
+
+  // Audit logs routes
+  app.get("/api/admin/audit-logs", isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.claims.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      
+      const filters: any = {};
+      if (req.query.userId) filters.userId = req.query.userId;
+      if (req.query.action) filters.action = req.query.action;
+      if (req.query.resource) filters.resource = req.query.resource;
+      
+      const auditLogs = await storage.getAuditLogs(filters);
+      res.json(auditLogs);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ message: "Failed to fetch audit logs" });
     }
   });
 
