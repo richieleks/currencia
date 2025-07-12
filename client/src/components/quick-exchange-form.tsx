@@ -235,21 +235,48 @@ export default function QuickExchangeForm() {
             <FormField
               control={form.control}
               name="desiredRate"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">Desired Rate (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Enter your preferred exchange rate"
-                      className="h-11"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value)}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const amount = form.watch("amount");
+                const toCurrency = form.watch("toCurrency");
+                const fromCurrency = form.watch("fromCurrency");
+                
+                // Calculate total amount desired
+                const parsedAmount = parseFloat(amount?.toString() || "0");
+                const parsedRate = parseFloat(field.value || "0");
+                const totalAmountDesired = parsedAmount && parsedRate ? parsedAmount * parsedRate : 0;
+                
+                return (
+                  <FormItem className="space-y-2">
+                    <FormLabel className="text-sm font-medium">
+                      Desired Rate (Optional)
+                      {fromCurrency && toCurrency && ` - ${fromCurrency} to ${toCurrency}`}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Enter your preferred exchange rate"
+                        className="h-11"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                    </FormControl>
+                    {totalAmountDesired > 0 && toCurrency && (
+                      <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                        <div className="flex items-center justify-between">
+                          <span>Total amount desired:</span>
+                          <span className="font-medium text-green-600">
+                            {formatCurrency(totalAmountDesired, toCurrency)}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {formatCurrency(parsedAmount, fromCurrency || "")} × {parsedRate} = {formatCurrency(totalAmountDesired, toCurrency)}
+                        </div>
+                      </div>
+                    )}
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
