@@ -115,8 +115,10 @@ export default function Layout({ children, user }: LayoutProps) {
 
       {/* Main Content */}
       <div className="lg:pl-64 pt-16">
-        <main className="min-h-screen">
-          {children}
+        <main className="min-h-screen px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
 

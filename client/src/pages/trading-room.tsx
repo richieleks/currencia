@@ -40,25 +40,27 @@ export default function TradingRoom() {
       <DemoBanner />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="py-4 sm:py-6">
         {/* Currency Balance Dashboard */}
         <CurrencyBalanceDashboard />
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 mt-6">
           {/* Chat Section */}
-          <div className="xl:col-span-2" data-demo="chat-room">
+          <div className="lg:col-span-3 order-2 lg:order-1" data-demo="chat-room">
             {/* Offers Card - appears above chat when a request is selected */}
             {selectedRequestForOffers && (
-              <OffersCard
-                exchangeRequest={selectedRequestForOffers}
-                onClose={() => setSelectedRequestForOffers(null)}
-              />
+              <div className="mb-4">
+                <OffersCard
+                  exchangeRequest={selectedRequestForOffers}
+                  onClose={() => setSelectedRequestForOffers(null)}
+                />
+              </div>
             )}
             <ChatRoomThreaded />
           </div>
 
           {/* Sidebar Section */}
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6 order-1 lg:order-2">
             {/* Active Offers */}
             <div data-demo="active-requests">
               <ActiveOffers onRequestSelect={setSelectedRequestForOffers} />
@@ -70,7 +72,9 @@ export default function TradingRoom() {
             </div>
             
             {/* Rate Comparison Slider */}
-            <RateComparisonSlider />
+            <div className="hidden sm:block">
+              <RateComparisonSlider />
+            </div>
             
             {/* Market Stats */}
             <div data-demo="market-stats">

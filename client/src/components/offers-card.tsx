@@ -258,18 +258,20 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
 
   return (
     <>
-      <Card className="mb-6 border-2 border-primary-200 shadow-lg">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Eye className="h-5 w-5 text-primary-600" />
-                Offers for Exchange Request
+      <Card className="border-2 border-primary-200 shadow-lg">
+        <CardHeader className="pb-3 px-4 sm:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-primary-600 flex-shrink-0" />
+                <span className="truncate">Offers for Exchange Request</span>
               </CardTitle>
-              <CardDescription className="mt-1">
-                {exchangeRequest.amount} {exchangeRequest.fromCurrency} → {exchangeRequest.toCurrency}
+              <CardDescription className="mt-1 text-sm">
+                <span className="font-medium">
+                  {exchangeRequest.amount} {exchangeRequest.fromCurrency} → {exchangeRequest.toCurrency}
+                </span>
                 {exchangeRequest.desiredRate && (
-                  <span className="ml-2 text-sm font-medium">
+                  <span className="block sm:inline sm:ml-2 text-xs sm:text-sm font-medium mt-1 sm:mt-0">
                     @ {parseFloat(exchangeRequest.desiredRate).toLocaleString()} rate
                   </span>
                 )}
@@ -279,13 +281,13 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 flex-shrink-0"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <div className="space-y-4">
             {isLoading ? (
               <div className="text-center py-8">
@@ -306,24 +308,24 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                     `${offers.length} offer${offers.length !== 1 ? 's' : ''} received`}
                 </h4>
                 
-                <div className="grid gap-3 max-h-80 overflow-y-auto">
+                <div className="space-y-3 max-h-96 overflow-y-auto">
                   {offers.map((offer) => (
                     <Card key={offer.id} className="border transition-all duration-200 hover:shadow-md">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-success-100 rounded-full flex items-center justify-center">
-                              <User className="w-5 h-5 text-success-600" />
+                      <CardContent className="p-3 sm:p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center space-x-3 min-w-0 flex-1">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-success-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <User className="w-4 h-4 sm:w-5 sm:h-5 text-success-600" />
                             </div>
-                            <div>
-                              <h5 className="font-medium text-gray-900">
+                            <div className="min-w-0 flex-1">
+                              <h5 className="font-medium text-gray-900 text-sm sm:text-base truncate">
                                 {offer.bidder?.companyName || offer.bidder?.firstName || "Anonymous Bidder"}
                               </h5>
                               <p className="text-xs text-gray-500">Submitted {formatTime(offer.createdAt || "")}</p>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge className={getStatusColor(offer.status || 'pending')}>
+                          <div className="flex items-center justify-end">
+                            <Badge className={`${getStatusColor(offer.status || 'pending')} text-xs`}>
                               {getStatusIcon(offer.status || 'pending')}
                               <span className="ml-1 capitalize">{offer.status || 'pending'}</span>
                             </Badge>
@@ -331,16 +333,16 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                         </div>
 
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mb-3">
-                          <div className="flex items-center justify-between">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">Offered Rate</p>
-                              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Offered Rate</p>
+                              <p className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white">
                                 {parseFloat(offer.rate).toLocaleString()} {exchangeRequest.toCurrency}
                               </p>
                             </div>
-                            <div className="text-right">
-                              <p className="text-sm text-gray-600 dark:text-gray-400">You'll receive</p>
-                              <p className="text-lg font-bold text-success-600">
+                            <div className="sm:text-right">
+                              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">You'll receive</p>
+                              <p className="text-sm sm:text-lg font-bold text-success-600">
                                 {(parseFloat(exchangeRequest.amount) * parseFloat(offer.rate)).toLocaleString()} {exchangeRequest.toCurrency}
                               </p>
                             </div>
@@ -358,21 +360,21 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
 
                         {exchangeRequest.status !== 'completed' && offer.status === 'pending' && (
                           <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                               <Button
                                 size="sm"
                                 onClick={() => handleAcceptOffer(offer.id)}
                                 disabled={acceptOfferMutation.isPending}
-                                className="flex-1 bg-success-600 hover:bg-success-700 text-white"
+                                className="bg-success-600 hover:bg-success-700 text-white text-xs sm:text-sm"
                               >
-                                {acceptOfferMutation.isPending ? "Accepting..." : "Accept Offer"}
+                                {acceptOfferMutation.isPending ? "Accepting..." : "Accept"}
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleDeclineOffer(offer.id)}
                                 disabled={declineOfferMutation.isPending}
-                                className="border-red-300 text-red-600 hover:bg-red-50"
+                                className="border-red-300 text-red-600 hover:bg-red-50 text-xs sm:text-sm"
                               >
                                 Decline
                               </Button>
@@ -380,9 +382,11 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleSendMessage(offer.bidderId, offer.bidder?.companyName || offer.bidder?.firstName || "Bidder")}
-                                className="border-gray-300 hover:bg-gray-50"
+                                className="border-gray-300 hover:bg-gray-50 text-xs sm:text-sm"
                               >
-                                <MessageSquare className="w-4 h-4" />
+                                <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                                <span className="hidden sm:inline">Message</span>
+                                <span className="sm:hidden">Msg</span>
                               </Button>
                             </div>
                             <Button
@@ -390,9 +394,9 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                               variant="outline"
                               onClick={() => handleCounterOffer(offer)}
                               disabled={createCounterOfferMutation.isPending}
-                              className="w-full border-blue-300 text-blue-600 hover:bg-blue-50"
+                              className="w-full border-blue-300 text-blue-600 hover:bg-blue-50 text-xs sm:text-sm"
                             >
-                              <ArrowUpDown className="w-4 h-4 mr-2" />
+                              <ArrowUpDown className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                               Counter Offer
                             </Button>
                           </div>
@@ -483,25 +487,25 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
 
       {/* Counter Offer Dialog */}
       <Dialog open={showCounterOfferDialog} onOpenChange={setShowCounterOfferDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[95vw] max-w-md mx-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ArrowUpDown className="h-5 w-5 text-blue-600" />
-              Counter Offer
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <ArrowUpDown className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
+              <span className="truncate">Counter Offer</span>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               Propose a different rate to {counterOfferTargetOffer?.bidder?.companyName || counterOfferTargetOffer?.bidder?.firstName || "the bidder"}
             </DialogDescription>
           </DialogHeader>
           
           {counterOfferTargetOffer && exchangeRequest && (
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto">
               <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                <div className="text-sm text-gray-600 dark:text-gray-400">Original Offer</div>
-                <div className="font-semibold">
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Original Offer</div>
+                <div className="font-semibold text-sm sm:text-base">
                   Rate: {parseFloat(counterOfferTargetOffer.rate).toLocaleString()} {exchangeRequest.toCurrency}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-xs sm:text-sm text-gray-600">
                   Total: {(parseFloat(exchangeRequest.amount) * parseFloat(counterOfferTargetOffer.rate)).toLocaleString()} {exchangeRequest.toCurrency}
                 </div>
               </div>
@@ -513,10 +517,11 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                     name="rate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Your Counter Rate</FormLabel>
+                        <FormLabel className="text-sm">Your Counter Rate</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="e.g., 3750.00" 
+                            className="text-sm"
                             {...field}
                           />
                         </FormControl>
@@ -530,10 +535,11 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                     name="totalAmount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Total Amount ({exchangeRequest.toCurrency})</FormLabel>
+                        <FormLabel className="text-sm">Total Amount ({exchangeRequest.toCurrency})</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="e.g., 18750000.00" 
+                            className="text-sm"
                             {...field}
                           />
                         </FormControl>
@@ -547,12 +553,13 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                     name="note"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Message (Optional)</FormLabel>
+                        <FormLabel className="text-sm">Message (Optional)</FormLabel>
                         <FormControl>
                           <Textarea 
                             placeholder="Add a note to explain your counter offer..." 
+                            className="text-sm resize-none"
                             {...field}
-                            rows={3}
+                            rows={2}
                           />
                         </FormControl>
                         <FormMessage />
@@ -560,11 +567,11 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                     )}
                   />
                   
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex gap-2 pt-4">
                     <Button
                       type="button"
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 text-xs sm:text-sm"
                       onClick={() => {
                         setShowCounterOfferDialog(false);
                         setCounterOfferTargetOffer(null);
@@ -575,10 +582,10 @@ export default function OffersCard({ exchangeRequest, onClose }: OffersCardProps
                     </Button>
                     <Button
                       type="submit"
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm"
                       disabled={createCounterOfferMutation.isPending}
                     >
-                      {createCounterOfferMutation.isPending ? "Submitting..." : "Submit Counter Offer"}
+                      {createCounterOfferMutation.isPending ? "Submitting..." : "Submit"}
                     </Button>
                   </div>
                 </form>
