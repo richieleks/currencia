@@ -190,15 +190,17 @@ export default function LayoutSettingsManager() {
       name: layout.name,
       displayName: layout.displayName,
       description: layout.description || "",
-      chatColumnSpan: layout.chatColumnSpan,
-      sidebarColumnSpan: layout.sidebarColumnSpan,
+      chatColumnSpan: parseFloat(layout.chatColumnSpan.toString()),
+      sidebarColumnSpan: parseFloat(layout.sidebarColumnSpan.toString()),
     });
     setIsCreateDialogOpen(true);
   };
 
-  const getLayoutPreview = (chatSpan: number, sidebarSpan: number) => {
-    const chatPercentage = (chatSpan / (chatSpan + sidebarSpan)) * 100;
-    const sidebarPercentage = (sidebarSpan / (chatSpan + sidebarSpan)) * 100;
+  const getLayoutPreview = (chatSpan: number | string, sidebarSpan: number | string) => {
+    const chatNum = parseFloat(chatSpan.toString());
+    const sidebarNum = parseFloat(sidebarSpan.toString());
+    const chatPercentage = (chatNum / (chatNum + sidebarNum)) * 100;
+    const sidebarPercentage = (sidebarNum / (chatNum + sidebarNum)) * 100;
     
     return (
       <div className="flex h-8 rounded border overflow-hidden">
@@ -482,10 +484,10 @@ export default function LayoutSettingsManager() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium">Chat Columns:</span> {layout.chatColumnSpan}/4
+                    <span className="font-medium">Chat Columns:</span> {parseFloat(layout.chatColumnSpan.toString()).toFixed(1)}/4
                   </div>
                   <div>
-                    <span className="font-medium">Sidebar Columns:</span> {layout.sidebarColumnSpan}/4
+                    <span className="font-medium">Sidebar Columns:</span> {parseFloat(layout.sidebarColumnSpan.toString()).toFixed(1)}/4
                   </div>
                 </div>
               </div>

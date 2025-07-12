@@ -24,8 +24,8 @@ export default function TradingRoom() {
   });
 
   // Use default 50/50 layout if no setting is found
-  const chatSpan = layoutSetting?.chatColumnSpan || 2;
-  const sidebarSpan = layoutSetting?.sidebarColumnSpan || 2;
+  const chatSpan = layoutSetting ? parseFloat(layoutSetting.chatColumnSpan.toString()) : 2;
+  const sidebarSpan = layoutSetting ? parseFloat(layoutSetting.sidebarColumnSpan.toString()) : 2;
 
   // Debug layout values
   console.log("Layout setting:", layoutSetting);
