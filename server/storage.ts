@@ -95,9 +95,29 @@ export interface IStorage {
     activeRequests: number;
     pendingOffers: number;
   }>;
-  updateUserRole(userId: string, role: "trader" | "admin"): Promise<User>;
+  updateUserRole(userId: string, role: "trader" | "admin" | "moderator"): Promise<User>;
   suspendUser(userId: string): Promise<void>;
   unsuspendUser(userId: string): Promise<void>;
+  
+  // RBAC operations
+  createRole(role: InsertRole): Promise<Role>;
+  getRoles(): Promise<Role[]>;
+  getRoleById(id: number): Promise<Role | undefined>;
+  updateRole(id: number, updates: Partial<Role>): Promise<Role>;
+  deleteRole(id: number): Promise<void>;
+  
+  createPermission(permission: InsertPermission): Promise<Permission>;
+  getPermissions(): Promise<Permission[]>;
+  
+  createUserSession(session: InsertUserSession): Promise<UserSession>;
+  getUserSessions(userId: string): Promise<UserSession[]>;
+  updateUserSession(sessionToken: string, updates: Partial<UserSession>): Promise<void>;
+  deleteUserSession(sessionToken: string): Promise<void>;
+  
+  createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
+  getAuditLogs(filters?: { userId?: string; action?: string; resource?: string }): Promise<AuditLog[]>;
+  
+  updateUserPermissions(userId: string, permissions: string[]): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -870,7 +890,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateUserRole(userId: string, role: "trader" | "admin"): Promise<User> {
+  async updateUserRole(userId: string, role: "trader" | "admin" | "moderator"): Promise<User> {
     const [user] = await db
       .update(users)
       .set({ role, updatedAt: new Date() })
@@ -894,9 +914,126 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         role: "trader",
+        status: "active" as any,
         updatedAt: new Date() 
       })
       .where(eq(users.id, userId));
+  }
+
+  // RBAC operations
+  async createRole(roleData: InsertRole): Promise<Role> {
+    const [role] = await db
+      .insert(roles)
+      .values(roleData)
+      .returning();
+    return role;
+  }
+
+  async getRoles(): Promise<Role[]> {
+    return await db
+      .select()
+      .from(roles)
+      .orderBy(desc(roles.createdAt));
+  }
+
+  async getRoleById(id: number): Promise<Role | undefined> {
+    const [role] = await db
+      .select()
+      .from(roles)
+      .where(eq(roles.id, id));
+    return role;
+  }
+
+  async updateRole(id: number, updates: Partial<Role>): Promise<Role> {
+    const [role] = await db
+      .update(roles)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(roles.id, id))
+      .returning();
+    return role;
+  }
+
+  async deleteRole(id: number): Promise<void> {
+    await db
+      .delete(roles)
+      .where(eq(roles.id, id));
+  }
+
+  async createPermission(permissionData: InsertPermission): Promise<Permission> {
+    const [permission] = await db
+      .insert(permissions)
+      .values(permissionData)
+      .returning();
+    return permission;
+  }
+
+  async getPermissions(): Promise<Permission[]> {
+    return await db
+      .select()
+      .from(permissions)
+      .orderBy(permissions.category, permissions.name);
+  }
+
+  async createUserSession(sessionData: InsertUserSession): Promise<UserSession> {
+    const [session] = await db
+      .insert(userSessions)
+      .values(sessionData)
+      .returning();
+    return session;
+  }
+
+  async getUserSessions(userId: string): Promise<UserSession[]> {
+    return await db
+      .select()
+      .from(userSessions)
+      .where(eq(userSessions.userId, userId))
+      .orderBy(desc(userSessions.lastActivity));
+  }
+
+  async updateUserSession(sessionToken: string, updates: Partial<UserSession>): Promise<void> {
+    await db
+      .update(userSessions)
+      .set(updates)
+      .where(eq(userSessions.sessionToken, sessionToken));
+  }
+
+  async deleteUserSession(sessionToken: string): Promise<void> {
+    await db
+      .delete(userSessions)
+      .where(eq(userSessions.sessionToken, sessionToken));
+  }
+
+  async createAuditLog(logData: InsertAuditLog): Promise<AuditLog> {
+    const [log] = await db
+      .insert(auditLogs)
+      .values(logData)
+      .returning();
+    return log;
+  }
+
+  async getAuditLogs(filters?: { userId?: string; action?: string; resource?: string }): Promise<AuditLog[]> {
+    let query = db.select().from(auditLogs);
+    
+    if (filters?.userId) {
+      query = query.where(eq(auditLogs.userId, filters.userId));
+    }
+    if (filters?.action) {
+      query = query.where(eq(auditLogs.action, filters.action));
+    }
+    if (filters?.resource) {
+      query = query.where(eq(auditLogs.resource, filters.resource));
+    }
+    
+    return await query.orderBy(desc(auditLogs.createdAt));
+  }
+
+  async updateUserPermissions(userId: string, permissions: string[]): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ permissions, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
   }
 }
 

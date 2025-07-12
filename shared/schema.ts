@@ -32,8 +32,9 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role", { enum: ["trader", "admin", "suspended"] }).notNull().default("trader"),
-  status: varchar("status", { enum: ["active", "inactive"] }).notNull().default("active"),
+  role: varchar("role", { enum: ["trader", "admin", "moderator", "suspended"] }).notNull().default("trader"),
+  status: varchar("status", { enum: ["active", "inactive", "pending", "suspended"] }).notNull().default("active"),
+  permissions: text("permissions").array().default([]),
   lastActiveAt: timestamp("last_active_at").defaultNow(),
   
   // Registration fields
@@ -42,7 +43,7 @@ export const users = pgTable("users", {
   address: text("address"),
   businessType: varchar("business_type", { enum: ["individual", "company", "financial_institution"] }),
   tradingExperience: varchar("trading_experience", { enum: ["beginner", "intermediate", "advanced"] }),
-  specializedCurrencies: varchar("specialized_currencies"),
+  specializedCurrencies: text("specialized_currencies").array(),
   isRegistrationComplete: boolean("is_registration_complete").default(false),
   
   balance: numeric("balance", { precision: 15, scale: 2 }).default("10000.00"),
@@ -56,10 +57,8 @@ export const users = pgTable("users", {
   activeCurrencies: text("active_currencies").array().default(["UGX", "USD", "KES", "EUR", "GBP"]),
   
   // Bidder profile fields
-  companyName: varchar("company_name"),
   licenseNumber: varchar("license_number"),
   yearsOfExperience: integer("years_of_experience"),
-  specializedCurrencies: text("specialized_currencies").array(),
   minimumTransactionAmount: numeric("minimum_transaction_amount", { precision: 15, scale: 2 }),
   maximumTransactionAmount: numeric("maximum_transaction_amount", { precision: 15, scale: 2 }),
   operatingHours: varchar("operating_hours"),
@@ -68,12 +67,63 @@ export const users = pgTable("users", {
   isVerified: boolean("is_verified").default(false),
   verificationDocuments: text("verification_documents").array(),
   bio: text("bio"),
-  phoneNumber: varchar("phone_number"),
   businessAddress: text("business_address"),
   website: varchar("website"),
   
+  // RBAC fields
+  lastLoginAt: timestamp("last_login_at"),
+  loginAttempts: integer("login_attempts").default(0),
+  isLocked: boolean("is_locked").default(false),
+  lockedUntil: timestamp("locked_until"),
+  passwordResetToken: varchar("password_reset_token"),
+  passwordResetExpires: timestamp("password_reset_expires"),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// RBAC tables
+export const roles = pgTable("roles", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull().unique(),
+  description: text("description"),
+  permissions: text("permissions").array().notNull().default([]),
+  isSystemRole: boolean("is_system_role").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const permissions = pgTable("permissions", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  description: text("description"),
+  category: varchar("category", { length: 50 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userSessions = pgTable("user_sessions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionToken: varchar("session_token").notNull().unique(),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  isActive: boolean("is_active").default(true),
+  lastActivity: timestamp("last_activity").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  action: varchar("action", { length: 100 }).notNull(),
+  resource: varchar("resource", { length: 100 }),
+  resourceId: varchar("resource_id"),
+  details: jsonb("details"),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  success: boolean("success").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const exchangeRequests = pgTable("exchange_requests", {
@@ -132,6 +182,26 @@ export const usersRelations = relations(users, ({ many }) => ({
   rateOffers: many(rateOffers),
   chatMessages: many(chatMessages),
   transactions: many(transactions),
+  userSessions: many(userSessions),
+  auditLogs: many(auditLogs),
+}));
+
+export const rolesRelations = relations(roles, ({ many }) => ({
+  //
+}));
+
+export const userSessionsRelations = relations(userSessions, ({ one }) => ({
+  user: one(users, {
+    fields: [userSessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [auditLogs.userId],
+    references: [users.id],
+  }),
 }));
 
 export const exchangeRequestsRelations = relations(exchangeRequests, ({ one, many }) => ({
@@ -188,6 +258,27 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const insertRoleSchema = createInsertSchema(roles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPermissionSchema = createInsertSchema(permissions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertExchangeRequestSchema = createInsertSchema(exchangeRequests).omit({
   id: true,
   selectedOfferId: true,
@@ -212,6 +303,14 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = z.infer<typeof insertRoleSchema>;
+export type Permission = typeof permissions.$inferSelect;
+export type InsertPermission = z.infer<typeof insertPermissionSchema>;
+export type UserSession = typeof userSessions.$inferSelect;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
 export type ExchangeRequest = typeof exchangeRequests.$inferSelect;
 export type InsertExchangeRequest = z.infer<typeof insertExchangeRequestSchema>;
 export type RateOffer = typeof rateOffers.$inferSelect;

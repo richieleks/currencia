@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import AdminDashboard from "@/components/admin-dashboard";
+import AdminDashboard from "@/components/admin-dashboard-new";
 
 export default function AdminPage() {
   const { user, isLoading } = useAuth();
