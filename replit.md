@@ -169,6 +169,11 @@ Changelog:
 - January 12, 2025. Updated authentication flow to check for existing users and reject login attempts from unregistered users
 - January 12, 2025. Made sidebar scrollable with overflow-y-auto to handle content overflow properly
 - January 12, 2025. Updated all decimal precision to exactly 2 decimal places across entire application for consistent professional financial presentation
+- January 12, 2025. Enhanced layout settings system with dynamic decimal precision support and compact modal design
+- January 12, 2025. Fixed database schema to support NUMERIC types for precise layout calculations with decimal values
+- January 12, 2025. Added dynamic currency indication to quick exchange form amount field showing selected "from currency"
+- January 12, 2025. Implemented real-time total amount calculation in exchange form when desired rate is entered
+- January 12, 2025. Created professional currency converter widget with live exchange rates, swap functionality, and trend indicators
 
 ## User Preferences
 
