@@ -63,10 +63,7 @@ export default function LayoutSettingsManager() {
   // Create layout setting mutation
   const createMutation = useMutation({
     mutationFn: async (data: InsertLayoutSetting) => {
-      return apiRequest("/api/admin/layout-settings", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("POST", "/api/admin/layout-settings", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/layout-settings"] });
@@ -89,10 +86,7 @@ export default function LayoutSettingsManager() {
   // Update layout setting mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertLayoutSetting> }) => {
-      return apiRequest(`/api/admin/layout-settings/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("PATCH", `/api/admin/layout-settings/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/layout-settings"] });
@@ -114,21 +108,25 @@ export default function LayoutSettingsManager() {
   // Set default layout mutation
   const setDefaultMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/admin/layout-settings/${id}/set-default`, {
-        method: "POST",
-      });
+      console.log("Setting default layout for ID:", id);
+      const response = await apiRequest("POST", `/api/admin/layout-settings/${id}/set-default`);
+      console.log("Set default response:", response);
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/layout-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/layout-settings/active"] });
       toast({
         title: "Success",
         description: "Default layout setting updated",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Set default layout error:", error);
+      const errorMessage = error?.message || error?.error || "Failed to set default layout";
       toast({
         title: "Error",
-        description: "Failed to set default layout",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -137,9 +135,7 @@ export default function LayoutSettingsManager() {
   // Delete layout setting mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/admin/layout-settings/${id}`, {
-        method: "DELETE",
-      });
+      return apiRequest("DELETE", `/api/admin/layout-settings/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/layout-settings"] });
