@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { Menu, Bell, TrendingUp } from "lucide-react";
+import { Menu, Bell, TrendingUp, PanelLeftClose, PanelLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import Sidebar from "@/components/sidebar";
 import NotificationsDropdown from "@/components/notifications-dropdown";
@@ -16,6 +16,7 @@ interface LayoutProps {
 
 export default function Layout({ children, user }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [location] = useLocation();
 
   const getPageTitle = () => {
@@ -56,6 +57,17 @@ export default function Layout({ children, user }: LayoutProps) {
                 </div>
                 <span className="text-xl font-bold text-gray-900 dark:text-white">Currencia</span>
               </Link>
+              
+              {/* Desktop sidebar toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="hidden lg:flex ml-2"
+                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              </Button>
               
               <span className="hidden lg:block text-gray-500 dark:text-gray-400">|</span>
               <h1 className="hidden lg:block text-lg font-medium text-gray-900 dark:text-white">
@@ -111,10 +123,16 @@ export default function Layout({ children, user }: LayoutProps) {
       </nav>
 
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} user={user || { id: '', role: 'trader', email: '', firstName: '', lastName: '', companyName: '' }} />
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+        user={user || { id: '', role: 'trader', email: '', firstName: '', lastName: '', companyName: '' }}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
 
       {/* Main Content */}
-      <div className="lg:pl-64 pt-16">
+      <div className={`pt-16 transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'}`}>
         <main className="min-h-screen px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             {children}
