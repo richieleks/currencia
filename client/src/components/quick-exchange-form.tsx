@@ -210,21 +210,26 @@ export default function QuickExchangeForm() {
             <FormField
               control={form.control}
               name="amount"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">Amount</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Enter amount to exchange"
-                      className="h-11"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value)}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const fromCurrency = form.watch("fromCurrency");
+                return (
+                  <FormItem className="space-y-2">
+                    <FormLabel className="text-sm font-medium">
+                      Amount {fromCurrency ? `(${fromCurrency})` : ""}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={fromCurrency ? `Enter ${fromCurrency} amount to exchange` : "Enter amount to exchange"}
+                        className="h-11"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                    </FormControl>
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
