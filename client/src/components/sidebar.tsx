@@ -104,9 +104,6 @@ export default function Sidebar({ isOpen, onClose, user, collapsed = false, onTo
             <NavLink href="/verification" icon={CheckCircle}>
               Verification
             </NavLink>
-            <NavLink href="/bank-accounts" icon={CreditCard}>
-              Bank Accounts
-            </NavLink>
             <NavLink href="/forex-rates" icon={DollarSign}>
               Forex Rates
             </NavLink>

@@ -13,6 +13,7 @@ import { ArrowRightLeft, Wallet, CreditCard, Settings, User, Shield } from "luci
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import BankAccountManager from "@/components/bank-account-manager";
 
 const currencies = [
   { code: "UGX", name: "Ugandan Shilling", flag: "🇺🇬" },
@@ -131,8 +132,9 @@ export default function SettingsPage() {
         </div>
 
         <Tabs defaultValue="transfers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="transfers">Money Transfers</TabsTrigger>
+            <TabsTrigger value="bank-accounts">Bank Accounts</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="appearance">Appearance</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
@@ -299,6 +301,10 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="bank-accounts" className="space-y-6">
+            <BankAccountManager />
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">
