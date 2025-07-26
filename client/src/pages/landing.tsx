@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Shield, Clock, Users } from "lucide-react";
+import { TrendingUp, Shield, Clock, Users, AlertCircle } from "lucide-react";
 import RateComparisonSlider from "@/components/rate-comparison-slider";
 
 export default function Landing() {
+  // Check for unauthorized access message
+  const urlParams = new URLSearchParams(window.location.search);
+  const unauthorizedMessage = urlParams.get('message');
+  
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -27,6 +31,21 @@ export default function Landing() {
       </nav>
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        {/* Show unauthorized access message if redirected from failed auth */}
+        {unauthorizedMessage && (
+          <div className="mb-8 max-w-2xl mx-auto">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium">Access Denied</span>
+              </div>
+              <p className="text-sm text-red-700 dark:text-red-300">
+                {decodeURIComponent(unauthorizedMessage)}
+              </p>
+            </div>
+          </div>
+        )}
+        
         <div className="text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Professional Currency Exchange Platform

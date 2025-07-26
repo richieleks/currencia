@@ -32,12 +32,15 @@ export default function UnauthorizedAccess() {
           
           <div className="pt-4">
             <Button 
-              onClick={() => window.location.href = '/api/logout'} 
+              onClick={() => {
+                // Clear the error parameters and go back to landing page
+                window.location.href = '/';
+              }} 
               className="w-full"
               variant="outline"
             >
               <Home className="w-4 h-4 mr-2" />
-              Return to Login
+              Return to Home
             </Button>
           </div>
           
