@@ -125,10 +125,8 @@ export default function BankAccountManager() {
 
   const createAccountMutation = useMutation({
     mutationFn: async (data: BankAccountFormData) => {
-      return await apiRequest("/api/bank-accounts", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      const response = await apiRequest("POST", "/api/bank-accounts", data);
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bank-accounts"] });
@@ -151,9 +149,8 @@ export default function BankAccountManager() {
 
   const syncAccountMutation = useMutation({
     mutationFn: async (accountId: number) => {
-      return await apiRequest(`/api/bank-accounts/${accountId}/sync`, {
-        method: "POST",
-      });
+      const response = await apiRequest("POST", `/api/bank-accounts/${accountId}/sync`);
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bank-accounts"] });
@@ -174,9 +171,8 @@ export default function BankAccountManager() {
 
   const syncAllAccountsMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("/api/bank-accounts/sync-all", {
-        method: "POST",
-      });
+      const response = await apiRequest("POST", "/api/bank-accounts/sync-all");
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bank-accounts"] });
@@ -197,9 +193,8 @@ export default function BankAccountManager() {
 
   const deleteAccountMutation = useMutation({
     mutationFn: async (accountId: number) => {
-      return await apiRequest(`/api/bank-accounts/${accountId}`, {
-        method: "DELETE",
-      });
+      const response = await apiRequest("DELETE", `/api/bank-accounts/${accountId}`);
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bank-accounts"] });
