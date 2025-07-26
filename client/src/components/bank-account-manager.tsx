@@ -511,78 +511,117 @@ export default function BankAccountManager() {
     </div>
   );
 
-  const renderCurrencyHoldings = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold">Currency Holdings</h3>
-        <p className="text-sm text-muted-foreground">
-          Aggregated view of your currency balances across all bank accounts
-        </p>
-      </div>
+  // Calculate aggregated currency holdings from bank accounts
+  const getAggregatedCurrencies = () => {
+    const currencyMap = new Map<string, {
+      currency: string;
+      totalBalance: number;
+      availableBalance: number;
+      accountCount: number;
+      lastUpdated: string | null;
+    }>();
 
-      {holdingsLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-4">
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-full"></div>
-              </CardContent>
-            </Card>
-          ))}
+    bankAccounts.forEach(account => {
+      const currency = account.currency;
+      const existing = currencyMap.get(currency);
+      
+      if (existing) {
+        existing.totalBalance += parseFloat(account.balance);
+        existing.availableBalance += parseFloat(account.availableBalance);
+        existing.accountCount += 1;
+        // Use the most recent update time
+        if (account.lastSyncedAt && (!existing.lastUpdated || account.lastSyncedAt > existing.lastUpdated)) {
+          existing.lastUpdated = account.lastSyncedAt;
+        }
+      } else {
+        currencyMap.set(currency, {
+          currency,
+          totalBalance: parseFloat(account.balance),
+          availableBalance: parseFloat(account.availableBalance),
+          accountCount: 1,
+          lastUpdated: account.lastSyncedAt
+        });
+      }
+    });
+
+    return Array.from(currencyMap.values()).sort((a, b) => a.currency.localeCompare(b.currency));
+  };
+
+  const renderCurrencyHoldings = () => {
+    const aggregatedCurrencies = getAggregatedCurrencies();
+    
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold">Currency Portfolio</h3>
+          <p className="text-sm text-muted-foreground">
+            Aggregated view of your currency balances across all bank accounts
+          </p>
         </div>
-      ) : currencyHoldings.length === 0 ? (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">No Currency Holdings</h3>
-            <p className="text-muted-foreground">
-              Add bank accounts to see your currency portfolio.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {currencyHoldings.map((holding) => (
-            <Card key={holding.id}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-lg">{holding.currency}</h4>
-                  <Badge variant="secondary">{holding.accountCount} accounts</Badge>
-                </div>
-                <div className="space-y-2">
-                  <div>
-                    <span className="text-sm text-muted-foreground">Total Balance</span>
-                    <p className="text-xl font-bold">
-                      {showBalances ? formatCurrency(holding.totalBalance, holding.currency) : "••••••"}
-                    </p>
+
+        {accountsLoading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-4">
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : aggregatedCurrencies.length === 0 ? (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">No Currency Holdings</h3>
+              <p className="text-muted-foreground">
+                Add bank accounts to see your currency portfolio.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {aggregatedCurrencies.map((holding) => (
+              <Card key={holding.currency} className="relative">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-lg flex items-center gap-2">
+                      <DollarSign className="h-5 w-5 text-muted-foreground" />
+                      {holding.currency}
+                    </h4>
+                    <Badge variant="secondary" className="text-xs">
+                      {holding.accountCount} {holding.accountCount === 1 ? 'account' : 'accounts'}
+                    </Badge>
                   </div>
-                  <div>
-                    <span className="text-sm text-muted-foreground">Available</span>
-                    <p className="text-sm font-semibold text-green-600">
-                      {showBalances ? formatCurrency(holding.availableBalance, holding.currency) : "••••••"}
-                    </p>
-                  </div>
-                  {parseFloat(holding.reservedBalance) > 0 && (
+                  <div className="space-y-2">
                     <div>
-                      <span className="text-sm text-muted-foreground">Reserved</span>
-                      <p className="text-sm font-semibold text-yellow-600">
-                        {showBalances ? formatCurrency(holding.reservedBalance, holding.currency) : "••••••"}
+                      <span className="text-sm text-muted-foreground">Total Balance</span>
+                      <p className="text-xl font-bold">
+                        {showBalances ? formatCurrency(holding.totalBalance, holding.currency) : "••••••"}
                       </p>
                     </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Updated: {formatLastSync(holding.lastUpdated)}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+                    <div>
+                      <span className="text-sm text-muted-foreground">Available</span>
+                      <p className="text-sm font-semibold text-green-600">
+                        {showBalances ? formatCurrency(holding.availableBalance, holding.currency) : "••••••"}
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-100">
+                      <p className="text-xs text-muted-foreground">
+                        Last updated: {holding.lastUpdated ? formatLastSync(holding.lastUpdated) : 'Never'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderTransactions = () => (
     <div className="space-y-6">
