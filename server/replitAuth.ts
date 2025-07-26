@@ -101,10 +101,26 @@ export async function setupAuth(app: Express) {
       return verified(new Error("No claims found in token"), null);
     }
     
-    const existingUser = await storage.getUser(claims["sub"]);
+    const replotUserId = claims["sub"] as string;
+    const userEmail = claims["email"] as string;
+    
+    console.log("Authentication attempt:", { replotUserId, userEmail });
+    
+    const existingUser = await storage.getUser(replotUserId);
     
     if (!existingUser) {
+      // Check if user exists by email (for legacy users with different IDs)
+      const userByEmail = await storage.getUserByEmail(userEmail);
+      if (userByEmail) {
+        console.log("Found user by email, updating ID:", { oldId: userByEmail.id, newId: replotUserId, email: userEmail });
+        // Update the user's ID to match their current Replit ID
+        await storage.updateUserId(userByEmail.id, replotUserId);
+        await storage.updateUserActivity(replotUserId);
+        return verified(null, user);
+      }
+      
       // User is not registered - reject authentication
+      console.log("User not found by ID or email:", { replotUserId, userEmail });
       return verified(new Error("User not registered. Please contact an administrator."), null);
     }
     
@@ -153,7 +169,7 @@ export async function setupAuth(app: Express) {
     console.log("OAuth callback received for hostname:", req.hostname, "using domain:", domain);
     console.log("Callback query params:", req.query);
     
-    passport.authenticate(`replitauth:${domain}`, (err, user, info) => {
+    passport.authenticate(`replitauth:${domain}`, (err: any, user: any, info: any) => {
       if (err) {
         console.error("Authentication error:", err);
         

@@ -52,6 +52,8 @@ import { alias } from "drizzle-orm/pg-core";
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  updateUserId(oldId: string, newId: string): Promise<void>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserProfile(id: string, updates: Partial<UpsertUser>): Promise<User>;
   updateUserActivity(id: string): Promise<void>;
@@ -192,6 +194,28 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async updateUserId(oldId: string, newId: string): Promise<void> {
+    // Update the user's ID and all related references
+    await db.transaction(async (tx) => {
+      // Update users table
+      await tx.update(users).set({ id: newId }).where(eq(users.id, oldId));
+      
+      // Update related tables
+      await tx.update(exchangeRequests).set({ userId: newId }).where(eq(exchangeRequests.userId, oldId));
+      await tx.update(rateOffers).set({ bidderId: newId }).where(eq(rateOffers.bidderId, oldId));
+      await tx.update(chatMessages).set({ userId: newId }).where(eq(chatMessages.userId, oldId));
+      await tx.update(chatMessages).set({ targetUserId: newId }).where(eq(chatMessages.targetUserId, oldId));
+      await tx.update(transactions).set({ buyerId: newId }).where(eq(transactions.buyerId, oldId));
+      await tx.update(transactions).set({ sellerId: newId }).where(eq(transactions.sellerId, oldId));
+      await tx.update(auditLogs).set({ userId: newId }).where(eq(auditLogs.userId, oldId));
+    });
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
