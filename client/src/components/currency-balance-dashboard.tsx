@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,27 +41,76 @@ export default function CurrencyBalanceDashboard() {
   const { user } = useAuth();
   const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
 
+  // Fetch bank accounts data
+  const { data: bankAccounts = [] } = useQuery({
+    queryKey: ["/api/bank-accounts"],
+    enabled: !!user,
+  });
+
   if (!user) return null;
 
+  // Calculate aggregated currency holdings from bank accounts
+  const getAggregatedCurrencies = () => {
+    const currencyMap = new Map<string, {
+      currency: string;
+      totalBalance: number;
+      availableBalance: number;
+      accountCount: number;
+    }>();
+
+    bankAccounts.forEach((account: any) => {
+      const currency = account.currency;
+      const existing = currencyMap.get(currency);
+      
+      if (existing) {
+        existing.totalBalance += parseFloat(account.balance);
+        existing.availableBalance += parseFloat(account.availableBalance);
+        existing.accountCount += 1;
+      } else {
+        currencyMap.set(currency, {
+          currency,
+          totalBalance: parseFloat(account.balance),
+          availableBalance: parseFloat(account.availableBalance),
+          accountCount: 1,
+        });
+      }
+    });
+
+    return Array.from(currencyMap.values()).sort((a, b) => a.currency.localeCompare(b.currency));
+  };
+
+  const aggregatedCurrencies = getAggregatedCurrencies();
   const activeCurrencies = user.activeCurrencies || ["UGX", "USD", "KES", "EUR", "GBP"];
   
-  const currencies: CurrencyData[] = activeCurrencies
-    .map(code => {
-      const currencyInfo = ALL_CURRENCIES[code as keyof typeof ALL_CURRENCIES];
-      if (!currencyInfo) return null;
-      
-      const balanceValue = user[currencyInfo.balanceField as keyof typeof user] as string || "0.00";
-      
-      return {
-        code,
-        name: currencyInfo.name,
-        balance: balanceValue,
-        trend: "up" as const,
-        change: "+2.5%",
-        flag: currencyInfo.flag
-      };
-    })
-    .filter(Boolean) as CurrencyData[];
+  // Filter aggregated currencies to only show active ones, or fallback to user balance fields if no bank accounts
+  const currencies: CurrencyData[] = aggregatedCurrencies.length > 0 
+    ? aggregatedCurrencies
+        .filter(curr => activeCurrencies.includes(curr.currency))
+        .map(curr => ({
+          code: curr.currency,
+          name: ALL_CURRENCIES[curr.currency as keyof typeof ALL_CURRENCIES]?.name || curr.currency,
+          balance: curr.totalBalance.toString(),
+          trend: "up" as const,
+          change: "+2.5%",
+          flag: ALL_CURRENCIES[curr.currency as keyof typeof ALL_CURRENCIES]?.flag || "💱"
+        }))
+    : activeCurrencies
+        .map(code => {
+          const currencyInfo = ALL_CURRENCIES[code as keyof typeof ALL_CURRENCIES];
+          if (!currencyInfo) return null;
+          
+          const balanceValue = user[currencyInfo.balanceField as keyof typeof user] as string || "0.00";
+          
+          return {
+            code,
+            name: currencyInfo.name,
+            balance: balanceValue,
+            trend: "up" as const,
+            change: "+2.5%",
+            flag: currencyInfo.flag
+          };
+        })
+        .filter(Boolean) as CurrencyData[];
 
   const formatBalance = (balance: string) => {
     const num = parseFloat(balance);
