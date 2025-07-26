@@ -2063,5 +2063,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bank Account Management endpoints
+  app.get("/api/bank-accounts", isAuthenticated, async (req: any, res) => {
+    try {
+      const bankAccounts = await storage.getBankAccountsByUserId(req.user.claims.sub);
+      res.json(bankAccounts);
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/bank-accounts", isAuthenticated, async (req: any, res) => {
+    try {
+      const accountData = { ...req.body, userId: req.user.claims.sub };
+      const bankAccount = await storage.createBankAccount(accountData);
+      res.status(201).json(bankAccount);
+    } catch (error) {
+      console.error("Error creating bank account:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.put("/api/bank-accounts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      
+      // Verify account ownership
+      const account = await storage.getBankAccountById(accountId);
+      if (!account || account.userId !== req.user.claims.sub) {
+        return res.status(404).json({ message: "Bank account not found" });
+      }
+
+      await storage.updateBankAccount(accountId, req.body);
+      res.json({ message: "Bank account updated successfully" });
+    } catch (error) {
+      console.error("Error updating bank account:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/bank-accounts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      
+      // Verify account ownership
+      const account = await storage.getBankAccountById(accountId);
+      if (!account || account.userId !== req.user.claims.sub) {
+        return res.status(404).json({ message: "Bank account not found" });
+      }
+
+      await storage.deleteBankAccount(accountId);
+      res.json({ message: "Bank account deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting bank account:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/bank-accounts/:id/sync", isAuthenticated, async (req: any, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      
+      // Verify account ownership
+      const account = await storage.getBankAccountById(accountId);
+      if (!account || account.userId !== req.user.claims.sub) {
+        return res.status(404).json({ message: "Bank account not found" });
+      }
+
+      const updatedAccount = await storage.syncBankAccountBalance(accountId);
+      res.json(updatedAccount);
+    } catch (error) {
+      console.error("Error syncing bank account:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/bank-accounts/sync-all", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.syncAllUserBalances(req.user.claims.sub);
+      res.json({ message: "All bank accounts synced successfully" });
+    } catch (error) {
+      console.error("Error syncing all bank accounts:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/currency-holdings", isAuthenticated, async (req: any, res) => {
+    try {
+      const holdings = await storage.getCurrencyHoldingsByUserId(req.user.claims.sub);
+      res.json(holdings);
+    } catch (error) {
+      console.error("Error fetching currency holdings:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/bank-transactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const transactions = await storage.getBankTransactionsByUserId(req.user.claims.sub);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching bank transactions:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/bank-sync-logs", isAuthenticated, async (req: any, res) => {
+    try {
+      const logs = await storage.getBankSyncLogsByUserId(req.user.claims.sub);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching sync logs:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Mock Bank API simulation endpoints
+  app.get("/api/mock-bank/balance/:accountNumber", isAuthenticated, async (req: any, res) => {
+    try {
+      const accountNumber = req.params.accountNumber;
+      
+      // Simulate bank API response with realistic balance
+      const mockBalance = {
+        accountNumber,
+        balance: (Math.random() * 100000 + 10000).toFixed(2),
+        availableBalance: (Math.random() * 90000 + 9000).toFixed(2),
+        currency: req.query.currency || "USD",
+        lastUpdated: new Date().toISOString(),
+        status: "active"
+      };
+
+      res.json(mockBalance);
+    } catch (error) {
+      console.error("Error in mock bank API:", error);
+      res.status(500).json({ message: "Bank API service unavailable" });
+    }
+  });
+
+  app.get("/api/mock-bank/transactions/:accountNumber", isAuthenticated, async (req: any, res) => {
+    try {
+      const accountNumber = req.params.accountNumber;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      // Generate mock transaction history
+      const mockTransactions = Array.from({ length: limit }, (_, i) => ({
+        id: `TXN${Date.now()}-${i}`,
+        accountNumber,
+        amount: (Math.random() * 5000 - 2500).toFixed(2),
+        type: Math.random() > 0.5 ? "credit" : "debit",
+        description: ["Forex trading", "Wire transfer", "Fee payment", "Interest payment"][Math.floor(Math.random() * 4)],
+        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+        reference: `REF${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+      }));
+
+      res.json(mockTransactions);
+    } catch (error) {
+      console.error("Error in mock bank API:", error);
+      res.status(500).json({ message: "Bank API service unavailable" });
+    }
+  });
+
   return httpServer;
 }

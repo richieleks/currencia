@@ -15,6 +15,7 @@ import AdminPage from "@/pages/admin";
 import ForexRatesPage from "@/pages/forex-rates";
 import ReportsPage from "@/pages/reports";
 import VerificationPage from "@/pages/VerificationPage";
+import BankAccountsPage from "@/pages/BankAccountsPage";
 import RoleSelector from "@/components/role-selector";
 import Layout from "@/components/layout";
 import UnauthorizedAccess from "@/components/unauthorized-access";
@@ -61,6 +62,7 @@ function Router() {
           <Route path="/settings" component={SettingsPage} />
           <Route path="/forex-rates" component={ForexRatesPage} />
           <Route path="/verification" component={VerificationPage} />
+          <Route path="/bank-accounts" component={BankAccountsPage} />
           <Route path="/admin" component={AdminPage} />
           <Route path="/reports" component={ReportsPage} />
         </Layout>

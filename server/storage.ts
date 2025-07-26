@@ -17,6 +17,10 @@ import {
   verificationRequests,
   verificationDocuments,
   verificationChecks,
+  bankAccounts,
+  bankTransactions,
+  currencyHoldings,
+  bankSyncLogs,
   type User,
   type UpsertUser,
   type ExchangeRequest,
@@ -53,6 +57,14 @@ import {
   type InsertVerificationDocument,
   type VerificationCheck,
   type InsertVerificationCheck,
+  type BankAccount,
+  type InsertBankAccount,
+  type BankTransaction,
+  type InsertBankTransaction,
+  type CurrencyHolding,
+  type InsertCurrencyHolding,
+  type BankSyncLog,
+  type InsertBankSyncLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, sql, count, avg, sum, isNull, isNotNull, gte, lte } from "drizzle-orm";
@@ -236,6 +248,28 @@ export interface IStorage {
     rejectedRequests: number;
     averageProcessingTime: string;
   }>;
+
+  // Bank account methods
+  getBankAccountsByUserId(userId: string): Promise<BankAccount[]>;
+  getBankAccountById(id: number): Promise<BankAccount | undefined>;
+  createBankAccount(data: InsertBankAccount): Promise<BankAccount>;
+  updateBankAccount(id: number, data: Partial<BankAccount>): Promise<void>;
+  deleteBankAccount(id: number): Promise<void>;
+  syncBankAccountBalance(accountId: number): Promise<BankAccount>;
+  
+  // Bank transaction methods
+  getBankTransactionsByAccountId(accountId: number): Promise<BankTransaction[]>;
+  getBankTransactionsByUserId(userId: string): Promise<BankTransaction[]>;
+  createBankTransaction(data: InsertBankTransaction): Promise<BankTransaction>;
+  
+  // Currency holdings methods
+  getCurrencyHoldingsByUserId(userId: string): Promise<CurrencyHolding[]>;
+  updateCurrencyHolding(userId: string, currency: string, data: Partial<CurrencyHolding>): Promise<void>;
+  syncAllUserBalances(userId: string): Promise<void>;
+  
+  // Bank sync logs
+  createBankSyncLog(data: InsertBankSyncLog): Promise<BankSyncLog>;
+  getBankSyncLogsByUserId(userId: string): Promise<BankSyncLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2045,6 +2079,181 @@ export class DatabaseStorage implements IStorage {
       rejectedRequests: rejectedResult?.count || 0,
       averageProcessingTime: "3.2 days",
     };
+  }
+
+  // Bank account methods
+  async getBankAccountsByUserId(userId: string): Promise<BankAccount[]> {
+    return await db.select().from(bankAccounts).where(eq(bankAccounts.userId, userId));
+  }
+
+  async getBankAccountById(id: number): Promise<BankAccount | undefined> {
+    const [account] = await db.select().from(bankAccounts).where(eq(bankAccounts.id, id));
+    return account;
+  }
+
+  async createBankAccount(data: InsertBankAccount): Promise<BankAccount> {
+    const [account] = await db.insert(bankAccounts).values(data).returning();
+    
+    // Sync with mock bank API after creation
+    setTimeout(() => this.syncBankAccountBalance(account.id), 1000);
+    
+    return account;
+  }
+
+  async updateBankAccount(id: number, data: Partial<BankAccount>): Promise<void> {
+    await db.update(bankAccounts).set({ ...data, updatedAt: new Date() }).where(eq(bankAccounts.id, id));
+  }
+
+  async deleteBankAccount(id: number): Promise<void> {
+    await db.delete(bankAccounts).where(eq(bankAccounts.id, id));
+  }
+
+  async syncBankAccountBalance(accountId: number): Promise<BankAccount> {
+    const account = await this.getBankAccountById(accountId);
+    if (!account) {
+      throw new Error('Bank account not found');
+    }
+
+    // Mock bank API call
+    const mockBankBalance = await this.getMockBankBalance(account);
+    
+    // Update account with real balance
+    await this.updateBankAccount(accountId, {
+      balance: mockBankBalance.balance,
+      availableBalance: mockBankBalance.availableBalance,
+      lastSyncedAt: new Date()
+    });
+
+    // Update currency holdings
+    await this.updateUserCurrencyHoldings(account.userId);
+
+    const updatedAccount = await this.getBankAccountById(accountId);
+    return updatedAccount!;
+  }
+
+  private async getMockBankBalance(account: BankAccount): Promise<{ balance: string; availableBalance: string }> {
+    // Simulate bank API call with realistic balance fluctuations
+    const baseBalance = parseFloat(account.balance || "0");
+    const variation = (Math.random() - 0.5) * 0.02; // ±1% variation
+    const newBalance = baseBalance + (baseBalance * variation);
+    const availableBalance = newBalance * 0.95; // 95% available
+    
+    return {
+      balance: newBalance.toFixed(2),
+      availableBalance: availableBalance.toFixed(2)
+    };
+  }
+
+  async getBankTransactionsByAccountId(accountId: number): Promise<BankTransaction[]> {
+    return await db.select().from(bankTransactions).where(eq(bankTransactions.bankAccountId, accountId));
+  }
+
+  async getBankTransactionsByUserId(userId: string): Promise<BankTransaction[]> {
+    return await db.select().from(bankTransactions).where(eq(bankTransactions.userId, userId));
+  }
+
+  async createBankTransaction(data: InsertBankTransaction): Promise<BankTransaction> {
+    const [transaction] = await db.insert(bankTransactions).values(data).returning();
+    
+    // Update account balance after transaction
+    const account = await this.getBankAccountById(data.bankAccountId);
+    if (account) {
+      const newBalance = parseFloat(account.balance || "0") + parseFloat(data.amount);
+      await this.updateBankAccount(data.bankAccountId, {
+        balance: newBalance.toFixed(2),
+        lastSyncedAt: new Date()
+      });
+    }
+
+    return transaction;
+  }
+
+  async getCurrencyHoldingsByUserId(userId: string): Promise<CurrencyHolding[]> {
+    return await db.select().from(currencyHoldings).where(eq(currencyHoldings.userId, userId));
+  }
+
+  async updateCurrencyHolding(userId: string, currency: string, data: Partial<CurrencyHolding>): Promise<void> {
+    const [existing] = await db
+      .select()
+      .from(currencyHoldings)
+      .where(and(eq(currencyHoldings.userId, userId), eq(currencyHoldings.currency, currency)));
+
+    if (existing) {
+      await db
+        .update(currencyHoldings)
+        .set({ ...data, lastUpdated: new Date() })
+        .where(and(eq(currencyHoldings.userId, userId), eq(currencyHoldings.currency, currency)));
+    } else {
+      await db.insert(currencyHoldings).values({
+        userId,
+        currency,
+        ...data,
+        lastUpdated: new Date(),
+      });
+    }
+  }
+
+  private async updateUserCurrencyHoldings(userId: string): Promise<void> {
+    const userAccounts = await this.getBankAccountsByUserId(userId);
+    
+    // Group accounts by currency and calculate totals
+    const currencyTotals = userAccounts.reduce((acc, account) => {
+      const currency = account.currency;
+      if (!acc[currency]) {
+        acc[currency] = {
+          totalBalance: 0,
+          availableBalance: 0,
+          accountCount: 0
+        };
+      }
+      
+      acc[currency].totalBalance += parseFloat(account.balance || "0");
+      acc[currency].availableBalance += parseFloat(account.availableBalance || "0");
+      acc[currency].accountCount += 1;
+      
+      return acc;
+    }, {} as Record<string, { totalBalance: number; availableBalance: number; accountCount: number }>);
+
+    // Update currency holdings
+    for (const [currency, totals] of Object.entries(currencyTotals)) {
+      await this.updateCurrencyHolding(userId, currency, {
+        totalBalance: totals.totalBalance.toFixed(2),
+        availableBalance: totals.availableBalance.toFixed(2),
+        accountCount: totals.accountCount
+      });
+    }
+  }
+
+  async syncAllUserBalances(userId: string): Promise<void> {
+    const userAccounts = await this.getBankAccountsByUserId(userId);
+    
+    // Sync all accounts
+    for (const account of userAccounts) {
+      await this.syncBankAccountBalance(account.id);
+    }
+
+    // Log sync operation
+    await this.createBankSyncLog({
+      userId,
+      syncType: "full_sync",
+      status: "success",
+      recordsProcessed: userAccounts.length,
+      completedAt: new Date(),
+      metadata: { accountCount: userAccounts.length }
+    });
+  }
+
+  async createBankSyncLog(data: InsertBankSyncLog): Promise<BankSyncLog> {
+    const [log] = await db.insert(bankSyncLogs).values(data).returning();
+    return log;
+  }
+
+  async getBankSyncLogsByUserId(userId: string): Promise<BankSyncLog[]> {
+    return await db
+      .select()
+      .from(bankSyncLogs)
+      .where(eq(bankSyncLogs.userId, userId))
+      .orderBy(desc(bankSyncLogs.startedAt));
   }
 }
 
