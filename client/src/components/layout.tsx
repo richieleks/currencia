@@ -27,6 +27,16 @@ export default function Layout({ children, user }: LayoutProps) {
         return "My Trades";
       case "/profile":
         return "Trader Profile";
+      case "/bank-accounts":
+        return "Bank Accounts";
+      case "/verification":
+        return "Verification";
+      case "/forex-rates":
+        return "Forex Rates";
+      case "/admin":
+        return "Admin Panel";
+      case "/reports":
+        return "Reports";
       case "/settings":
         return "Settings";
       default:

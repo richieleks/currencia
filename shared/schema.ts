@@ -224,7 +224,10 @@ export const usersRelations = relations(users, ({ many }) => ({
   userSessions: many(userSessions),
   auditLogs: many(auditLogs),
   forexRates: many(forexRates),
-
+  bankAccounts: many(bankAccounts),
+  bankTransactions: many(bankTransactions),
+  currencyHoldings: many(currencyHoldings),
+  bankSyncLogs: many(bankSyncLogs),
 }));
 
 export const forexRatesRelations = relations(forexRates, ({ one }) => ({
@@ -453,6 +456,132 @@ export const verificationChecks = pgTable("verification_checks", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Bank Accounts table
+export const bankAccounts = pgTable("bank_accounts", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  accountName: varchar("account_name").notNull(),
+  accountNumber: varchar("account_number").notNull(),
+  bankName: varchar("bank_name").notNull(),
+  bankCode: varchar("bank_code"),
+  swiftCode: varchar("swift_code"),
+  routingNumber: varchar("routing_number"),
+  iban: varchar("iban"),
+  accountType: varchar("account_type", { 
+    enum: ["checking", "savings", "business", "investment", "forex"] 
+  }).notNull().default("checking"),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  balance: numeric("balance", { precision: 15, scale: 2 }).default("0.00"),
+  availableBalance: numeric("available_balance", { precision: 15, scale: 2 }).default("0.00"),
+  isActive: boolean("is_active").default(true),
+  isPrimary: boolean("is_primary").default(false),
+  lastSyncedAt: timestamp("last_synced_at"),
+  bankApiId: varchar("bank_api_id"), // External bank API identifier
+  bankApiToken: varchar("bank_api_token"), // Encrypted token for bank API
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Bank Account Transactions table (synced from bank)
+export const bankTransactions = pgTable("bank_transactions", {
+  id: serial("id").primaryKey(),
+  bankAccountId: integer("bank_account_id").notNull().references(() => bankAccounts.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  externalTransactionId: varchar("external_transaction_id").notNull(), // Bank's transaction ID
+  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  transactionType: varchar("transaction_type", { 
+    enum: ["debit", "credit", "transfer", "fee", "interest", "dividend", "forex"] 
+  }).notNull(),
+  description: text("description"),
+  reference: varchar("reference"),
+  counterpartyName: varchar("counterparty_name"),
+  counterpartyAccount: varchar("counterparty_account"),
+  category: varchar("category"), // e.g., "forex_trading", "business", "personal"
+  balanceAfter: numeric("balance_after", { precision: 15, scale: 2 }),
+  transactionDate: timestamp("transaction_date").notNull(),
+  processedAt: timestamp("processed_at"),
+  isForexRelated: boolean("is_forex_related").default(false),
+  exchangeRequestId: integer("exchange_request_id").references(() => exchangeRequests.id),
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Currency Holdings table (aggregated view)
+export const currencyHoldings = pgTable("currency_holdings", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  totalBalance: numeric("total_balance", { precision: 15, scale: 2 }).default("0.00"),
+  availableBalance: numeric("available_balance", { precision: 15, scale: 2 }).default("0.00"),
+  reservedBalance: numeric("reserved_balance", { precision: 15, scale: 2 }).default("0.00"), // For pending trades
+  accountCount: integer("account_count").default(0), // Number of bank accounts for this currency
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Bank API Sync Log table
+export const bankSyncLogs = pgTable("bank_sync_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  bankAccountId: integer("bank_account_id").references(() => bankAccounts.id),
+  syncType: varchar("sync_type", { 
+    enum: ["balance", "transactions", "account_info", "full_sync"] 
+  }).notNull(),
+  status: varchar("status", { 
+    enum: ["pending", "in_progress", "success", "failed", "partial"] 
+  }).notNull().default("pending"),
+  recordsProcessed: integer("records_processed").default(0),
+  errorMessage: text("error_message"),
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  metadata: jsonb("metadata").default({}),
+});
+
+// Bank Account Relations
+export const bankAccountsRelations = relations(bankAccounts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [bankAccounts.userId],
+    references: [users.id],
+  }),
+  transactions: many(bankTransactions),
+  syncLogs: many(bankSyncLogs),
+}));
+
+export const bankTransactionsRelations = relations(bankTransactions, ({ one }) => ({
+  user: one(users, {
+    fields: [bankTransactions.userId],
+    references: [users.id],
+  }),
+  bankAccount: one(bankAccounts, {
+    fields: [bankTransactions.bankAccountId],
+    references: [bankAccounts.id],
+  }),
+  exchangeRequest: one(exchangeRequests, {
+    fields: [bankTransactions.exchangeRequestId],
+    references: [exchangeRequests.id],
+  }),
+}));
+
+export const currencyHoldingsRelations = relations(currencyHoldings, ({ one }) => ({
+  user: one(users, {
+    fields: [currencyHoldings.userId],
+    references: [users.id],
+  }),
+}));
+
+export const bankSyncLogsRelations = relations(bankSyncLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [bankSyncLogs.userId],
+    references: [users.id],
+  }),
+  bankAccount: one(bankAccounts, {
+    fields: [bankSyncLogs.bankAccountId],
+    references: [bankAccounts.id],
+  }),
+}));
+
 export const reportExports = pgTable("report_exports", {
   id: serial("id").primaryKey(),
   reportInstanceId: integer("report_instance_id").references(() => reportInstances.id),
@@ -571,6 +700,27 @@ export const insertVerificationCheckSchema = createInsertSchema(verificationChec
   updatedAt: true,
 });
 
+export const insertBankAccountSchema = createInsertSchema(bankAccounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBankTransactionSchema = createInsertSchema(bankTransactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCurrencyHoldingSchema = createInsertSchema(currencyHoldings).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertBankSyncLogSchema = createInsertSchema(bankSyncLogs).omit({
+  id: true,
+  startedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -608,3 +758,11 @@ export type VerificationDocument = typeof verificationDocuments.$inferSelect;
 export type InsertVerificationDocument = z.infer<typeof insertVerificationDocumentSchema>;
 export type VerificationCheck = typeof verificationChecks.$inferSelect;
 export type InsertVerificationCheck = z.infer<typeof insertVerificationCheckSchema>;
+export type BankAccount = typeof bankAccounts.$inferSelect;
+export type InsertBankAccount = z.infer<typeof insertBankAccountSchema>;
+export type BankTransaction = typeof bankTransactions.$inferSelect;
+export type InsertBankTransaction = z.infer<typeof insertBankTransactionSchema>;
+export type CurrencyHolding = typeof currencyHoldings.$inferSelect;
+export type InsertCurrencyHolding = z.infer<typeof insertCurrencyHoldingSchema>;
+export type BankSyncLog = typeof bankSyncLogs.$inferSelect;
+export type InsertBankSyncLog = z.infer<typeof insertBankSyncLogSchema>;

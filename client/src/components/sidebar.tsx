@@ -1,6 +1,6 @@
 import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home, Shield, DollarSign, ChevronLeft, ChevronRight, FileText, CheckCircle } from "lucide-react";
+import { TrendingUp, History, Settings, MessageSquare, X, UserCog, Home, Shield, DollarSign, ChevronLeft, ChevronRight, FileText, CheckCircle, CreditCard } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -103,6 +103,9 @@ export default function Sidebar({ isOpen, onClose, user, collapsed = false, onTo
             </NavLink>
             <NavLink href="/verification" icon={CheckCircle}>
               Verification
+            </NavLink>
+            <NavLink href="/bank-accounts" icon={CreditCard}>
+              Bank Accounts
             </NavLink>
             <NavLink href="/forex-rates" icon={DollarSign}>
               Forex Rates
