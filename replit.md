@@ -175,6 +175,9 @@ Changelog:
 - January 12, 2025. Implemented real-time total amount calculation in exchange form when desired rate is entered
 - January 12, 2025. Created professional currency converter widget with live exchange rates, swap functionality, and trend indicators
 - July 12, 2025. Fixed critical application startup errors: resolved SelectItem empty value validation errors in forex rates manager, portfolio manager, and quick exchange form components; stabilized WebSocket connections and resolved controlled/uncontrolled input warnings
+- July 26, 2025. Updated Node.js to v22 and resolved database connection timeout issues by improving Neon WebSocket configuration with secure connections and optimized pool settings
+- July 26, 2025. Updated core dependencies: @neondatabase/serverless@1.0.1, drizzle-orm@0.44.3, drizzle-kit@0.31.4, TypeScript@5.8.3, TanStack Query@5.83.0, framer-motion@12.23.9, and react-hook-form@7.61.1
+- July 26, 2025. Fixed authentication middleware TypeScript errors and improved error handling across routes
 
 ## User Preferences
 
