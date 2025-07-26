@@ -90,6 +90,10 @@ export async function setupAuth(app: Express) {
     
     // Check if user exists in database - don't auto-create
     const claims = tokens.claims();
+    if (!claims) {
+      return verified(new Error("No claims found in token"), null);
+    }
+    
     const existingUser = await storage.getUser(claims["sub"]);
     
     if (!existingUser) {
