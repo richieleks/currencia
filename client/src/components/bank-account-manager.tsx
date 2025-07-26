@@ -531,7 +531,7 @@ export default function BankAccountManager() {
         existing.accountCount += 1;
         // Use the most recent update time
         if (account.lastSyncedAt && (!existing.lastUpdated || account.lastSyncedAt > existing.lastUpdated)) {
-          existing.lastUpdated = account.lastSyncedAt;
+          existing.lastUpdated = account.lastSyncedAt || null;
         }
       } else {
         currencyMap.set(currency, {
@@ -539,7 +539,7 @@ export default function BankAccountManager() {
           totalBalance: parseFloat(account.balance),
           availableBalance: parseFloat(account.availableBalance),
           accountCount: 1,
-          lastUpdated: account.lastSyncedAt
+          lastUpdated: account.lastSyncedAt || null
         });
       }
     });
@@ -582,41 +582,117 @@ export default function BankAccountManager() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {aggregatedCurrencies.map((holding) => (
-              <Card key={holding.currency} className="relative">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-lg flex items-center gap-2">
-                      <DollarSign className="h-5 w-5 text-muted-foreground" />
-                      {holding.currency}
-                    </h4>
-                    <Badge variant="secondary" className="text-xs">
-                      {holding.accountCount} {holding.accountCount === 1 ? 'account' : 'accounts'}
-                    </Badge>
-                  </div>
-                  <div className="space-y-2">
-                    <div>
-                      <span className="text-sm text-muted-foreground">Total Balance</span>
-                      <p className="text-xl font-bold">
-                        {showBalances ? formatCurrency(holding.totalBalance, holding.currency) : "••••••"}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Available</span>
-                      <p className="text-sm font-semibold text-green-600">
-                        {showBalances ? formatCurrency(holding.availableBalance, holding.currency) : "••••••"}
-                      </p>
-                    </div>
-                    <div className="pt-2 border-t border-gray-100">
-                      <p className="text-xs text-muted-foreground">
-                        Last updated: {holding.lastUpdated ? formatLastSync(holding.lastUpdated) : 'Never'}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="space-y-4">
+            {/* Total Portfolio Value Header */}
+            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-lg border">
+              <div>
+                <h3 className="text-lg font-semibold">Total Portfolio Value</h3>
+                <p className="text-sm text-muted-foreground">Aggregated across all currencies</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold">
+                  {showBalances ? 
+                    `${aggregatedCurrencies.reduce((total, curr) => total + curr.totalBalance, 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Multi-Currency` : 
+                    "••••••••••"
+                  }
+                </p>
+                <Button variant="ghost" size="sm" className="text-xs">
+                  <Settings className="h-3 w-3 mr-1" />
+                  Manage
+                </Button>
+              </div>
+            </div>
+
+            {/* Currency Holdings Grid - matching the attached image layout */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {aggregatedCurrencies.map((holding, index) => {
+                const totalPortfolioValue = aggregatedCurrencies.reduce((total, curr) => total + curr.totalBalance, 0);
+                const percentage = totalPortfolioValue > 0 ? (holding.totalBalance / totalPortfolioValue) * 100 : 0;
+                
+                // Generate mock percentage gains (in a real app, this would come from historical data)
+                const gainPercentages = [2.5, 2.9, 2.9, 2.5, 2.5];
+                const gainPercentage = gainPercentages[index % 5] || 2.5;
+                
+                // Currency full names
+                const getCurrencyName = (code: string) => {
+                  const names: Record<string, string> = {
+                    'UGX': 'Ugandan Shilling',
+                    'USD': 'US Dollar', 
+                    'KES': 'Kenyan Shilling',
+                    'EUR': 'Euro',
+                    'GBP': 'British Pound'
+                  };
+                  return names[code] || code;
+                };
+
+                // Currency symbols for display
+                const getCurrencySymbol = (code: string) => {
+                  const symbols: Record<string, string> = {
+                    'UGX': 'UG',
+                    'USD': 'US', 
+                    'KES': 'KE',
+                    'EUR': 'EU',
+                    'GBP': 'GB'
+                  };
+                  return symbols[code] || code.substring(0, 2);
+                };
+                
+                return (
+                  <Card key={holding.currency} className="relative overflow-hidden">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        {/* Currency Header */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                              <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                                {getCurrencySymbol(holding.currency)}
+                              </span>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm">{holding.currency}</h4>
+                              <p className="text-xs text-muted-foreground">
+                                {getCurrencyName(holding.currency)}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                            +{gainPercentage.toFixed(1)}%
+                          </div>
+                        </div>
+
+                        {/* Balance */}
+                        <div>
+                          <p className="text-lg font-bold">
+                            {showBalances ? 
+                              holding.totalBalance.toLocaleString('en-US', { 
+                                minimumFractionDigits: 2, maximumFractionDigits: 2 
+                              }) : 
+                              "••••••••"
+                            }
+                          </p>
+                        </div>
+
+                        {/* Progress Bar - matching the blue progress bars in the image */}
+                        <div className="space-y-1">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${Math.min(percentage, 100)}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>{percentage.toFixed(1)}% of portfolio</span>
+                            <span>{holding.accountCount} {holding.accountCount === 1 ? 'account' : 'accounts'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
