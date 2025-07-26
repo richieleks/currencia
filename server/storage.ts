@@ -212,8 +212,7 @@ export class DatabaseStorage implements IStorage {
       await tx.update(rateOffers).set({ bidderId: newId }).where(eq(rateOffers.bidderId, oldId));
       await tx.update(chatMessages).set({ userId: newId }).where(eq(chatMessages.userId, oldId));
       await tx.update(chatMessages).set({ targetUserId: newId }).where(eq(chatMessages.targetUserId, oldId));
-      await tx.update(transactions).set({ buyerId: newId }).where(eq(transactions.buyerId, oldId));
-      await tx.update(transactions).set({ sellerId: newId }).where(eq(transactions.sellerId, oldId));
+      await tx.update(transactions).set({ userId: newId }).where(eq(transactions.userId, oldId));
       await tx.update(auditLogs).set({ userId: newId }).where(eq(auditLogs.userId, oldId));
     });
   }
@@ -634,7 +633,7 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(chatMessages)
         .innerJoin(users, eq(chatMessages.userId, users.id))
-        .where(eq(chatMessages.conversationId, conv.conversationId))
+        .where(eq(chatMessages.conversationId, conv.conversationId || ""))
         .orderBy(desc(chatMessages.createdAt))
         .limit(1);
       
@@ -651,7 +650,7 @@ export class DatabaseStorage implements IStorage {
         .from(chatMessages)
         .where(
           and(
-            eq(chatMessages.conversationId, conv.conversationId),
+            eq(chatMessages.conversationId, conv.conversationId || ""),
             eq(chatMessages.targetUserId, userId),
             eq(chatMessages.isRead, false)
           )
@@ -667,7 +666,8 @@ export class DatabaseStorage implements IStorage {
     }
     
     return results.sort((a, b) => 
-      new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime()
+      (b.lastMessage.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0) - 
+      (a.lastMessage.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0)
     );
   }
 
@@ -906,10 +906,7 @@ export class DatabaseStorage implements IStorage {
     const [transactionsResult] = await db
       .select({ count: sql<number>`count(*)` })
       .from(transactions)
-      .where(or(
-        eq(transactions.requesterId, userId),
-        eq(transactions.bidderId, userId)
-      ));
+      .where(eq(transactions.userId, userId));
 
     const [lastActivityResult] = await db
       .select({ lastActive: chatMessages.createdAt })
@@ -1103,18 +1100,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAuditLogs(filters?: { userId?: string; action?: string; resource?: string }): Promise<AuditLog[]> {
-    let query = db.select().from(auditLogs);
+    const conditions = [];
     
     if (filters?.userId) {
-      query = query.where(eq(auditLogs.userId, filters.userId));
+      conditions.push(eq(auditLogs.userId, filters.userId));
     }
     if (filters?.action) {
-      query = query.where(eq(auditLogs.action, filters.action));
+      conditions.push(eq(auditLogs.action, filters.action));
     }
     if (filters?.resource) {
-      query = query.where(eq(auditLogs.resource, filters.resource));
+      conditions.push(eq(auditLogs.resource, filters.resource));
     }
     
+    const query = db.select().from(auditLogs);
+    if (conditions.length > 0) {
+      return await query.where(and(...conditions)).orderBy(desc(auditLogs.createdAt));
+    }
     return await query.orderBy(desc(auditLogs.createdAt));
   }
 
@@ -1142,7 +1143,22 @@ export class DatabaseStorage implements IStorage {
     toCurrency?: string; 
     date?: string;
   }): Promise<ForexRate[]> {
-    let query = db
+    const conditions = [];
+    
+    if (filters?.traderId) {
+      conditions.push(eq(forexRates.traderId, filters.traderId));
+    }
+    if (filters?.fromCurrency) {
+      conditions.push(eq(forexRates.fromCurrency, filters.fromCurrency));
+    }
+    if (filters?.toCurrency) {
+      conditions.push(eq(forexRates.toCurrency, filters.toCurrency));
+    }
+    if (filters?.date) {
+      conditions.push(eq(forexRates.date, filters.date));
+    }
+
+    const query = db
       .select({
         id: forexRates.id,
         traderId: forexRates.traderId,
@@ -1159,19 +1175,9 @@ export class DatabaseStorage implements IStorage {
       .from(forexRates)
       .leftJoin(users, eq(forexRates.traderId, users.id));
 
-    if (filters?.traderId) {
-      query = query.where(eq(forexRates.traderId, filters.traderId));
+    if (conditions.length > 0) {
+      return await query.where(and(...conditions)).orderBy(desc(forexRates.createdAt));
     }
-    if (filters?.fromCurrency) {
-      query = query.where(eq(forexRates.fromCurrency, filters.fromCurrency));
-    }
-    if (filters?.toCurrency) {
-      query = query.where(eq(forexRates.toCurrency, filters.toCurrency));
-    }
-    if (filters?.date) {
-      query = query.where(eq(forexRates.date, filters.date));
-    }
-
     return await query.orderBy(desc(forexRates.createdAt));
   }
 
