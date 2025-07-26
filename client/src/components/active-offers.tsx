@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import RateOfferModal from "./rate-offer-modal";
 import OffersViewer from "./offers-viewer";
 import { formatCurrency, formatRate } from "@/lib/utils";
@@ -38,10 +38,31 @@ export default function ActiveOffers({ onRequestSelect }: ActiveOffersProps) {
   const [isOffersViewerOpen, setIsOffersViewerOpen] = useState(false);
   const [viewingRequestId, setViewingRequestId] = useState<number | null>(null);
 
-  const { data: exchangeRequests = [], isLoading, error } = useQuery<ExchangeRequest[]>({
+  const { data: exchangeRequests = [], isLoading, error, refetch } = useQuery<ExchangeRequest[]>({
     queryKey: ["/api/exchange-requests"],
     refetchInterval: 10000, // Refetch every 10 seconds
   });
+
+  // Listen for WebSocket messages to update requests in real-time
+  useEffect(() => {
+    const ws = new WebSocket(`wss://${window.location.host}/ws`);
+    
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'exchange_request_completed') {
+          // Refetch exchange requests when one is completed
+          refetch();
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [refetch]);
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
