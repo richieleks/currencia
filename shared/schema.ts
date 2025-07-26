@@ -176,7 +176,7 @@ export const chatMessages = pgTable("chat_messages", {
   actionType: varchar("action_type", { enum: ["accept", "reject"] }),
   targetUserId: varchar("target_user_id").references(() => users.id),
   conversationId: varchar("conversation_id"),
-  parentMessageId: integer("parent_message_id").references(() => chatMessages.id),
+  parentMessageId: integer("parent_message_id"),
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
