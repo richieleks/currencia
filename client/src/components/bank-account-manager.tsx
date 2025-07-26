@@ -652,17 +652,7 @@ export default function BankAccountManager() {
   );
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <CreditCard className="h-8 w-8" />
-          Bank Account Management
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Connect and manage your bank accounts with real-time balance synchronization.
-        </p>
-      </div>
-
+    <div className="space-y-6">
       <Tabs defaultValue="accounts" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="accounts">Bank Accounts</TabsTrigger>
