@@ -17,6 +17,7 @@ import SystemActivityMonitor from "@/components/system-activity-monitor";
 import ForexRatesManager from "@/components/forex-rates-manager";
 import MarketRatesWidget from "@/components/market-rates-widget";
 import LayoutSettingsManager from "@/components/layout-settings-manager";
+import AdminVerificationManagement from "@/components/admin-verification-management";
 
 interface SystemStats {
   totalUsers: number;
@@ -105,6 +106,7 @@ export default function AdminDashboard() {
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="verification">Verification</TabsTrigger>
           <TabsTrigger value="roles">Role Management</TabsTrigger>
           <TabsTrigger value="forex">Forex Rates</TabsTrigger>
           <TabsTrigger value="audit">Audit Logs</TabsTrigger>
@@ -114,6 +116,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="users" className="space-y-4">
           <UserManagement />
+        </TabsContent>
+
+        <TabsContent value="verification" className="space-y-4">
+          <AdminVerificationManagement />
         </TabsContent>
 
         <TabsContent value="roles" className="space-y-4">

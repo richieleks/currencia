@@ -68,7 +68,26 @@ export const users = pgTable("users", {
   responseTimeMinutes: integer("response_time_minutes").default(30),
   commission: numeric("commission", { precision: 5, scale: 2 }),
   isVerified: boolean("is_verified").default(false),
+  verificationStatus: varchar("verification_status", { 
+    enum: ["unverified", "pending_documents", "under_review", "verified", "rejected", "suspended"] 
+  }).default("unverified"),
+  verificationLevel: varchar("verification_level", { 
+    enum: ["basic", "enhanced", "premium"] 
+  }),
   verificationDocuments: text("verification_documents").array(),
+  verificationNotes: text("verification_notes"),
+  verificationCompletedAt: timestamp("verification_completed_at"),
+  verificationCompletedBy: varchar("verification_completed_by"),
+  lastVerificationUpdate: timestamp("last_verification_update"),
+  
+  // Enhanced verification fields
+  nationalIdNumber: varchar("national_id_number"),
+  passportNumber: varchar("passport_number"),
+  taxIdentificationNumber: varchar("tax_identification_number"),
+  businessRegistrationNumber: varchar("business_registration_number"),
+  bankAccountVerified: boolean("bank_account_verified").default(false),
+  complianceScore: integer("compliance_score").default(0),
+  riskLevel: varchar("risk_level", { enum: ["low", "medium", "high"] }).default("medium"),
   bio: text("bio"),
   businessAddress: text("business_address"),
   website: varchar("website"),
@@ -188,10 +207,13 @@ export const transactions = pgTable("transactions", {
   amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
   description: text("description").notNull(),
   exchangeRequestId: integer("exchange_request_id").references(() => exchangeRequests.id),
+  rateOfferId: integer("rate_offer_id").references(() => rateOffers.id),
   termsAccepted: boolean("terms_accepted").notNull().default(false),
   termsAcceptedAt: timestamp("terms_accepted_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Verification tables already defined above, removing duplicates
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -202,6 +224,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   userSessions: many(userSessions),
   auditLogs: many(auditLogs),
   forexRates: many(forexRates),
+
 }));
 
 export const forexRatesRelations = relations(forexRates, ({ one }) => ({
@@ -266,6 +289,8 @@ export const chatMessagesRelations: any = relations(chatMessages, ({ one }) => (
   }),
 }));
 
+
+
 export const transactionsRelations = relations(transactions, ({ one }) => ({
   user: one(users, {
     fields: [transactions.userId],
@@ -275,7 +300,13 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
     fields: [transactions.exchangeRequestId],
     references: [exchangeRequests.id],
   }),
+  rateOffer: one(rateOffers, {
+    fields: [transactions.rateOfferId],
+    references: [rateOffers.id],
+  }),
 }));
+
+// Verification relations will be added after table definitions
 
 // Layout Settings table
 export const layoutSettings = pgTable("layout_settings", {
@@ -342,6 +373,82 @@ export const reportSchedules = pgTable("report_schedules", {
   lastRun: timestamp("last_run"),
   nextRun: timestamp("next_run"),
   createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Verification system tables
+export const verificationRequests = pgTable("verification_requests", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  requestType: varchar("request_type", { 
+    enum: ["initial", "document_update", "level_upgrade", "re_verification"] 
+  }).notNull(),
+  status: varchar("status", { 
+    enum: ["pending", "in_progress", "approved", "rejected", "requires_additional_info"] 
+  }).default("pending"),
+  submittedDocuments: jsonb("submitted_documents").notNull().default([]),
+  adminNotes: text("admin_notes"),
+  rejectionReason: text("rejection_reason"),
+  assignedTo: varchar("assigned_to").references(() => users.id),
+  reviewStartedAt: timestamp("review_started_at"),
+  reviewCompletedAt: timestamp("review_completed_at"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const verificationDocuments = pgTable("verification_documents", {
+  id: serial("id").primaryKey(),
+  verificationRequestId: integer("verification_request_id").notNull().references(() => verificationRequests.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  documentType: varchar("document_type", { 
+    enum: [
+      "national_id", "passport", "drivers_license", "business_registration", 
+      "tax_certificate", "bank_statement", "utility_bill", "professional_license",
+      "financial_statement", "compliance_certificate", "other"
+    ] 
+  }).notNull(),
+  documentSubtype: varchar("document_subtype"),
+  fileName: varchar("file_name").notNull(),
+  originalFileName: varchar("original_file_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  mimeType: varchar("mime_type").notNull(),
+  documentHash: varchar("document_hash").notNull(),
+  uploadedBy: varchar("uploaded_by").notNull().references(() => users.id),
+  verificationStatus: varchar("verification_status", { 
+    enum: ["pending", "verified", "rejected", "expired"] 
+  }).default("pending"),
+  verifiedBy: varchar("verified_by").references(() => users.id),
+  verifiedAt: timestamp("verified_at"),
+  expiryDate: date("expiry_date"),
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const verificationChecks = pgTable("verification_checks", {
+  id: serial("id").primaryKey(),
+  verificationRequestId: integer("verification_request_id").notNull().references(() => verificationRequests.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  checkType: varchar("check_type", { 
+    enum: [
+      "identity_verification", "document_authenticity", "address_verification",
+      "business_verification", "financial_background", "criminal_background",
+      "sanctions_screening", "pep_screening", "credit_check", "references"
+    ] 
+  }).notNull(),
+  checkProvider: varchar("check_provider"),
+  checkReference: varchar("check_reference"),
+  status: varchar("status", { 
+    enum: ["pending", "in_progress", "passed", "failed", "inconclusive", "manual_review"] 
+  }).default("pending"),
+  score: integer("score"),
+  maxScore: integer("max_score"),
+  details: jsonb("details").default({}),
+  performedBy: varchar("performed_by").references(() => users.id),
+  performedAt: timestamp("performed_at"),
+  validUntil: timestamp("valid_until"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -445,6 +552,25 @@ export const insertReportExportSchema = createInsertSchema(reportExports).omit({
   createdAt: true,
 });
 
+// Verification schemas
+export const insertVerificationRequestSchema = createInsertSchema(verificationRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertVerificationDocumentSchema = createInsertSchema(verificationDocuments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertVerificationCheckSchema = createInsertSchema(verificationChecks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -476,3 +602,9 @@ export type ReportSchedule = typeof reportSchedules.$inferSelect;
 export type InsertReportSchedule = z.infer<typeof insertReportScheduleSchema>;
 export type ReportExport = typeof reportExports.$inferSelect;
 export type InsertReportExport = z.infer<typeof insertReportExportSchema>;
+export type VerificationRequest = typeof verificationRequests.$inferSelect;
+export type InsertVerificationRequest = z.infer<typeof insertVerificationRequestSchema>;
+export type VerificationDocument = typeof verificationDocuments.$inferSelect;
+export type InsertVerificationDocument = z.infer<typeof insertVerificationDocumentSchema>;
+export type VerificationCheck = typeof verificationChecks.$inferSelect;
+export type InsertVerificationCheck = z.infer<typeof insertVerificationCheckSchema>;
