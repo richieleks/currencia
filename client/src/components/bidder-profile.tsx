@@ -44,7 +44,7 @@ export default function BidderProfile() {
   const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([]);
 
   const { data: user, isLoading: userLoading } = useQuery<UserType>({
-    queryKey: ["/api/auth/user"],
+    queryKey: ["/api/auth/user/profile"],
   });
 
   const form = useForm<BidderProfileData>({
@@ -92,9 +92,14 @@ export default function BidderProfile() {
     }
   }, [user, form]);
 
+  // Check if user is admin (only admins can edit profiles)
+  const isAdmin = user?.role === "admin";
+
   const updateProfileMutation = useMutation({
     mutationFn: async (data: BidderProfileData) => {
-      const response = await fetch("/api/auth/user/profile", {
+      // This endpoint no longer exists for regular users - only admins can update profiles
+      // This mutation is kept for potential admin functionality
+      const response = await fetch(`/api/admin/user/${user?.id}/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -105,16 +110,16 @@ export default function BidderProfile() {
         }),
       });
       if (!response.ok) {
-        throw new Error("Failed to update profile");
+        throw new Error("Only administrators can update user profiles");
       }
       return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Profile updated",
-        description: "Your bidder profile has been successfully updated.",
+        description: "User profile has been successfully updated.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user/profile"] });
     },
     onError: (error: any) => {
       toast({
@@ -126,6 +131,14 @@ export default function BidderProfile() {
   });
 
   const onSubmit = (data: BidderProfileData) => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can update user profiles. Contact your administrator for profile changes.",
+        variant: "destructive",
+      });
+      return;
+    }
     updateProfileMutation.mutate(data);
   };
 
@@ -160,8 +173,19 @@ export default function BidderProfile() {
           Trader Profile
         </h1>
         <p className="text-muted-foreground mt-2">
-          Complete your professional profile to build trust with other traders and showcase your expertise.
+          {isAdmin ? 
+            "Manage user profiles and professional information." : 
+            "View your professional profile. Contact your administrator for profile changes."
+          }
         </p>
+        {!isAdmin && (
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-sm text-blue-800 dark:text-blue-200 flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Profile editing is restricted to administrators for security and compliance purposes.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -184,7 +208,7 @@ export default function BidderProfile() {
                         <FormItem>
                           <FormLabel>First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="John" {...field} />
+                            <Input placeholder="John" {...field} disabled={!isAdmin} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -197,7 +221,7 @@ export default function BidderProfile() {
                         <FormItem>
                           <FormLabel>Last Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Doe" {...field} />
+                            <Input placeholder="Doe" {...field} disabled={!isAdmin} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -212,7 +236,7 @@ export default function BidderProfile() {
                       <FormItem>
                         <FormLabel>Company Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="ABC Forex Trading Ltd." {...field} />
+                          <Input placeholder="ABC Forex Trading Ltd." {...field} disabled={!isAdmin} />
                         </FormControl>
                         <FormDescription>
                           Your registered business name (optional)
@@ -230,7 +254,7 @@ export default function BidderProfile() {
                         <FormItem>
                           <FormLabel>License Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="FX123456" {...field} />
+                            <Input placeholder="FX123456" {...field} disabled={!isAdmin} />
                           </FormControl>
                           <FormDescription>
                             Your trading license or registration number
@@ -250,6 +274,7 @@ export default function BidderProfile() {
                               type="number" 
                               placeholder="5" 
                               {...field}
+                              disabled={!isAdmin}
                               onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                             />
                           </FormControl>
@@ -262,7 +287,7 @@ export default function BidderProfile() {
                   <div>
                     <FormLabel>Specialized Currencies</FormLabel>
                     <div className="mt-2 space-y-3">
-                      <Select onValueChange={addCurrency}>
+                      <Select onValueChange={addCurrency} disabled={!isAdmin}>
                         <SelectTrigger>
                           <SelectValue placeholder="Add currency specialization" />
                         </SelectTrigger>
@@ -447,13 +472,15 @@ export default function BidderProfile() {
                     )}
                   />
 
-                  <Button 
-                    type="submit" 
-                    disabled={updateProfileMutation.isPending}
-                    className="w-full"
-                  >
-                    {updateProfileMutation.isPending ? "Updating..." : "Update Profile"}
-                  </Button>
+                  {isAdmin && (
+                    <Button 
+                      type="submit" 
+                      disabled={updateProfileMutation.isPending}
+                      className="w-full"
+                    >
+                      {updateProfileMutation.isPending ? "Updating..." : "Update Profile"}
+                    </Button>
+                  )}
                 </form>
               </Form>
             </CardContent>

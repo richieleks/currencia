@@ -10,6 +10,26 @@ import {
 } from "@shared/schema";
 import { AuditLogger, SecurityAuditLogger, BusinessAuditLogger, auditMiddleware } from "./auditLogger";
 
+// Admin access middleware
+const isAdmin = async (req: any, res: any, next: any) => {
+  try {
+    const userId = req.user?.claims?.sub;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const user = await storage.getUser(userId);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Error checking admin role:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   try {
@@ -33,26 +53,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  app.patch('/api/auth/user/profile', isAuthenticated, async (req: any, res) => {
+  // Admin-only user profile update endpoint
+  app.patch('/api/admin/user/:targetUserId/profile', isAuthenticated, isAdmin, auditMiddleware, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const adminUserId = req.user.claims.sub;
+      const targetUserId = req.params.targetUserId;
       const updates = req.body;
       
-      console.log("Profile update request for user:", userId);
+      console.log("Admin profile update request by:", adminUserId, "for user:", targetUserId);
       console.log("Profile update data:", updates);
 
-      const user = await storage.getUser(userId);
-      if (!user) {
-        console.log("User not found:", userId);
+      const targetUser = await storage.getUser(targetUserId);
+      if (!targetUser) {
+        await SecurityAuditLogger.logSecurityEvent(
+          adminUserId,
+          "ADMIN_ACTION_FAILED",
+          `Failed to update profile for non-existent user: ${targetUserId}`,
+          { targetUserId, updates: Object.keys(updates) }
+        );
         return res.status(404).json({ message: "User not found" });
       }
 
-      const updatedUser = await storage.updateUserProfile(userId, updates);
-      console.log("Profile updated successfully:", updatedUser);
+      const updatedUser = await storage.updateUserProfile(targetUserId, updates);
+      
+      // Log successful admin profile update
+      await AuditLogger.logAction(
+        adminUserId,
+        "USER_PROFILE_UPDATED_BY_ADMIN",
+        `Admin updated user profile for ${targetUser.email}`,
+        { 
+          targetUserId, 
+          targetUserEmail: targetUser.email,
+          updatedFields: Object.keys(updates),
+          previousValues: {
+            firstName: targetUser.firstName,
+            lastName: targetUser.lastName,
+            companyName: targetUser.companyName,
+            businessType: targetUser.businessType,
+            licenseNumber: targetUser.licenseNumber
+          },
+          newValues: updates
+        }
+      );
+      
+      console.log("Profile updated successfully by admin:", updatedUser);
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating user profile:", error);
       res.status(500).json({ message: "Failed to update user profile", error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Read-only user profile endpoint for traders
+  app.get('/api/auth/user/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return only profile data (excluding sensitive admin fields)
+      const profileData = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        companyName: user.companyName,
+        businessType: user.businessType,
+        licenseNumber: user.licenseNumber,
+        specializations: user.specializations,
+        status: user.status,
+        role: user.role,
+        createdAt: user.createdAt,
+        lastActiveAt: user.lastActiveAt
+      };
+      
+      res.json(profileData);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
     }
   });
 
@@ -477,25 +559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin middleware
-  const isAdmin = async (req: any, res: any, next: any) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
 
-      const user = await storage.getUser(userId);
-      if (!user || user.role !== "admin") {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      next();
-    } catch (error) {
-      console.error("Error checking admin role:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  };
 
   // Admin routes
   app.get("/api/admin/users", isAuthenticated, isAdmin, async (req, res) => {

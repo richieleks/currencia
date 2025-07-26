@@ -178,6 +178,7 @@ Changelog:
 - July 26, 2025. Updated Node.js to v22 and resolved database connection timeout issues by improving Neon WebSocket configuration with secure connections and optimized pool settings
 - July 26, 2025. Updated core dependencies: @neondatabase/serverless@1.0.1, drizzle-orm@0.44.3, drizzle-kit@0.31.4, TypeScript@5.8.3, TanStack Query@5.83.0, framer-motion@12.23.9, and react-hook-form@7.61.1
 - July 26, 2025. Fixed authentication middleware TypeScript errors and improved error handling across routes
+- July 26, 2025. Implemented admin-only user profile editing restrictions: traders can now only view their profiles, while only admins can update user profile details through dedicated admin endpoints with comprehensive audit logging
 
 ## User Preferences
 
