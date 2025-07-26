@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Shield, Clock, Users, AlertCircle, ArrowRight, CheckCircle, Globe, Mail, Phone, MapPin } from "lucide-react";
-import RateComparisonSlider from "@/components/rate-comparison-slider";
 import Logo from "@/components/logo";
 
 export default function Landing() {
@@ -108,17 +107,6 @@ export default function Landing() {
               24/7 support
             </div>
           </div>
-        </div>
-
-        {/* Rate Comparison Slider */}
-        <div className="mt-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Live Exchange Rates</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              See real-time competitive rates from our verified forex bureau network
-            </p>
-          </div>
-          <RateComparisonSlider />
         </div>
 
         {/* Features */}

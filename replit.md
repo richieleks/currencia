@@ -179,6 +179,8 @@ Changelog:
 - July 26, 2025. Updated core dependencies: @neondatabase/serverless@1.0.1, drizzle-orm@0.44.3, drizzle-kit@0.31.4, TypeScript@5.8.3, TanStack Query@5.83.0, framer-motion@12.23.9, and react-hook-form@7.61.1
 - July 26, 2025. Fixed authentication middleware TypeScript errors and improved error handling across routes
 - July 26, 2025. Implemented admin-only user profile editing restrictions: traders can now only view their profiles, while only admins can update user profile details through dedicated admin endpoints with comprehensive audit logging
+- July 26, 2025. Enhanced landing page with professional visual design including comprehensive footer, gradient backgrounds, animated feature cards, statistics section, and improved responsive design for better user experience
+- July 26, 2025. Improved authentication error handling for unregistered users with user-friendly messaging and proper redirection to informative access denied pages instead of technical JSON errors
 
 ## User Preferences
 
