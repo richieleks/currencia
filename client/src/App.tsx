@@ -16,15 +16,25 @@ import ForexRatesPage from "@/pages/forex-rates";
 import ReportsPage from "@/pages/reports";
 import RoleSelector from "@/components/role-selector";
 import Layout from "@/components/layout";
+import UnauthorizedAccess from "@/components/unauthorized-access";
 import { useState } from "react";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [roleSelected, setRoleSelected] = useState(false);
 
+  // Check for unauthorized access error in URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const isUnauthorized = urlParams.get('error') === 'unauthorized';
+
   // Debug logging
   if (process.env.NODE_ENV === 'development') {
     console.log("Auth state:", { isAuthenticated, isLoading, user: user ? { id: user.id, role: user.role } : null, roleSelected });
+  }
+
+  // Show unauthorized access page if user is not registered
+  if (isUnauthorized) {
+    return <UnauthorizedAccess />;
   }
 
   return (

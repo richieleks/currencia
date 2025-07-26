@@ -156,6 +156,13 @@ export async function setupAuth(app: Express) {
     passport.authenticate(`replitauth:${domain}`, (err, user, info) => {
       if (err) {
         console.error("Authentication error:", err);
+        
+        // Check if this is an unregistered user error
+        if (err.message && err.message.includes("User not registered")) {
+          // Redirect to a user-friendly unauthorized access page
+          return res.redirect("/?error=unauthorized&message=" + encodeURIComponent("You are not registered in the system. Please contact an administrator to create an account for you."));
+        }
+        
         return res.status(400).json({ 
           message: "Authentication failed", 
           error: err.message,
