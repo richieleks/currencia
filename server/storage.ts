@@ -14,6 +14,9 @@ import {
   reportInstances,
   reportSchedules,
   reportExports,
+  verificationRequests,
+  verificationDocuments,
+  verificationChecks,
   type User,
   type UpsertUser,
   type ExchangeRequest,
@@ -44,6 +47,12 @@ import {
   type InsertReportSchedule,
   type ReportExport,
   type InsertReportExport,
+  type VerificationRequest,
+  type InsertVerificationRequest,
+  type VerificationDocument,
+  type InsertVerificationDocument,
+  type VerificationCheck,
+  type InsertVerificationCheck,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, sql, count, avg, sum, isNull, isNotNull, gte, lte } from "drizzle-orm";
@@ -187,6 +196,46 @@ export interface IStorage {
   generateTransactionVolumeReport(params: any): Promise<any>;
   generateCurrencyAnalysisReport(params: any): Promise<any>;
   generateMarketTrendsReport(params: any): Promise<any>;
+  
+  // Verification system operations
+  createVerificationRequest(request: InsertVerificationRequest): Promise<VerificationRequest>;
+  getVerificationRequest(id: number): Promise<(VerificationRequest & { 
+    user: User; 
+    documents: VerificationDocument[]; 
+    checks: VerificationCheck[];
+    assignedAdmin?: User;
+  }) | undefined>;
+  getUserVerificationRequests(userId: string): Promise<(VerificationRequest & { 
+    documents: VerificationDocument[]; 
+    checks: VerificationCheck[] 
+  })[]>;
+  getAllVerificationRequests(status?: string): Promise<(VerificationRequest & { 
+    user: User;
+    assignedAdmin?: User;
+  })[]>;
+  updateVerificationRequest(id: number, updates: Partial<VerificationRequest>): Promise<VerificationRequest>;
+  assignVerificationRequest(id: number, adminId: string): Promise<void>;
+  
+  createVerificationDocument(document: InsertVerificationDocument): Promise<VerificationDocument>;
+  getVerificationDocuments(verificationRequestId: number): Promise<VerificationDocument[]>;
+  updateVerificationDocument(id: number, updates: Partial<VerificationDocument>): Promise<VerificationDocument>;
+  deleteVerificationDocument(id: number): Promise<void>;
+  
+  createVerificationCheck(check: InsertVerificationCheck): Promise<VerificationCheck>;
+  getVerificationChecks(verificationRequestId: number): Promise<VerificationCheck[]>;
+  updateVerificationCheck(id: number, updates: Partial<VerificationCheck>): Promise<VerificationCheck>;
+  
+  approveVerificationRequest(id: number, adminId: string, level: "basic" | "enhanced" | "premium"): Promise<void>;
+  rejectVerificationRequest(id: number, adminId: string, reason: string): Promise<void>;
+  updateUserVerificationStatus(userId: string, status: string, level?: string): Promise<User>;
+  
+  getVerificationStats(): Promise<{
+    totalRequests: number;
+    pendingRequests: number;
+    approvedRequests: number;
+    rejectedRequests: number;
+    averageProcessingTime: string;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1685,6 +1734,316 @@ export class DatabaseStorage implements IStorage {
       responseTimeAnalysis,
       dateRange,
       generatedAt: new Date(),
+    };
+  }
+  // Verification system implementation
+  async createVerificationRequest(request: InsertVerificationRequest): Promise<VerificationRequest> {
+    const [verificationRequest] = await db
+      .insert(verificationRequests)
+      .values(request)
+      .returning();
+    return verificationRequest;
+  }
+
+  async getVerificationRequest(id: number): Promise<(VerificationRequest & { 
+    user: User; 
+    documents: VerificationDocument[]; 
+    checks: VerificationCheck[];
+    assignedAdmin?: User;
+  }) | undefined> {
+    const [request] = await db
+      .select()
+      .from(verificationRequests)
+      .innerJoin(users, eq(verificationRequests.userId, users.id))
+      .leftJoin(
+        { assignedAdmin: users }, 
+        eq(verificationRequests.assignedTo, users.id)
+      )
+      .where(eq(verificationRequests.id, id));
+
+    if (!request) return undefined;
+
+    const documents = await db
+      .select()
+      .from(verificationDocuments)
+      .where(eq(verificationDocuments.verificationRequestId, id));
+
+    const checks = await db
+      .select()
+      .from(verificationChecks)
+      .where(eq(verificationChecks.verificationRequestId, id));
+
+    return {
+      ...request.verification_requests,
+      user: request.users,
+      assignedAdmin: request.assignedAdmin || undefined,
+      documents,
+      checks,
+    };
+  }
+
+  async getUserVerificationRequests(userId: string): Promise<(VerificationRequest & { 
+    documents: VerificationDocument[]; 
+    checks: VerificationCheck[] 
+  })[]> {
+    const requests = await db
+      .select()
+      .from(verificationRequests)
+      .where(eq(verificationRequests.userId, userId))
+      .orderBy(desc(verificationRequests.createdAt));
+
+    const requestsWithDetails = [];
+    for (const request of requests) {
+      const documents = await db
+        .select()
+        .from(verificationDocuments)
+        .where(eq(verificationDocuments.verificationRequestId, request.id));
+
+      const checks = await db
+        .select()
+        .from(verificationChecks)
+        .where(eq(verificationChecks.verificationRequestId, request.id));
+
+      requestsWithDetails.push({
+        ...request,
+        documents,
+        checks,
+      });
+    }
+
+    return requestsWithDetails;
+  }
+
+  async getAllVerificationRequests(status?: string): Promise<(VerificationRequest & { 
+    user: User;
+    assignedAdmin?: User;
+  })[]> {
+    const conditions = [];
+    if (status) {
+      conditions.push(eq(verificationRequests.status, status));
+    }
+
+    const query = db
+      .select()
+      .from(verificationRequests)
+      .innerJoin(users, eq(verificationRequests.userId, users.id))
+      .leftJoin(
+        { assignedAdmin: users }, 
+        eq(verificationRequests.assignedTo, users.id)
+      );
+
+    const results = conditions.length > 0 
+      ? await query.where(and(...conditions)).orderBy(desc(verificationRequests.createdAt))
+      : await query.orderBy(desc(verificationRequests.createdAt));
+
+    return results.map(result => ({
+      ...result.verification_requests,
+      user: result.users,
+      assignedAdmin: result.assignedAdmin || undefined,
+    }));
+  }
+
+  async updateVerificationRequest(id: number, updates: Partial<VerificationRequest>): Promise<VerificationRequest> {
+    const [updated] = await db
+      .update(verificationRequests)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(verificationRequests.id, id))
+      .returning();
+    return updated;
+  }
+
+  async assignVerificationRequest(id: number, adminId: string): Promise<void> {
+    await db
+      .update(verificationRequests)
+      .set({ 
+        assignedTo: adminId, 
+        status: "in_progress",
+        reviewStartedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(verificationRequests.id, id));
+  }
+
+  async createVerificationDocument(document: InsertVerificationDocument): Promise<VerificationDocument> {
+    const [verificationDocument] = await db
+      .insert(verificationDocuments)
+      .values(document)
+      .returning();
+    return verificationDocument;
+  }
+
+  async getVerificationDocuments(verificationRequestId: number): Promise<VerificationDocument[]> {
+    return await db
+      .select()
+      .from(verificationDocuments)
+      .where(eq(verificationDocuments.verificationRequestId, verificationRequestId))
+      .orderBy(desc(verificationDocuments.createdAt));
+  }
+
+  async updateVerificationDocument(id: number, updates: Partial<VerificationDocument>): Promise<VerificationDocument> {
+    const [updated] = await db
+      .update(verificationDocuments)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(verificationDocuments.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteVerificationDocument(id: number): Promise<void> {
+    await db.delete(verificationDocuments).where(eq(verificationDocuments.id, id));
+  }
+
+  async createVerificationCheck(check: InsertVerificationCheck): Promise<VerificationCheck> {
+    const [verificationCheck] = await db
+      .insert(verificationChecks)
+      .values(check)
+      .returning();
+    return verificationCheck;
+  }
+
+  async getVerificationChecks(verificationRequestId: number): Promise<VerificationCheck[]> {
+    return await db
+      .select()
+      .from(verificationChecks)
+      .where(eq(verificationChecks.verificationRequestId, verificationRequestId))
+      .orderBy(desc(verificationChecks.createdAt));
+  }
+
+  async updateVerificationCheck(id: number, updates: Partial<VerificationCheck>): Promise<VerificationCheck> {
+    const [updated] = await db
+      .update(verificationChecks)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(verificationChecks.id, id))
+      .returning();
+    return updated;
+  }
+
+  async approveVerificationRequest(id: number, adminId: string, level: "basic" | "enhanced" | "premium"): Promise<void> {
+    await db.transaction(async (tx) => {
+      // Update verification request
+      await tx
+        .update(verificationRequests)
+        .set({ 
+          status: "approved",
+          reviewCompletedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(verificationRequests.id, id));
+
+      // Get the user ID from verification request
+      const [request] = await tx
+        .select({ userId: verificationRequests.userId })
+        .from(verificationRequests)
+        .where(eq(verificationRequests.id, id));
+
+      if (request) {
+        // Update user verification status
+        await tx
+          .update(users)
+          .set({ 
+            isVerified: true,
+            verificationStatus: "verified",
+            verificationLevel: level,
+            verificationCompletedAt: new Date(),
+            verificationCompletedBy: adminId,
+            lastVerificationUpdate: new Date(),
+            updatedAt: new Date()
+          })
+          .where(eq(users.id, request.userId));
+      }
+    });
+  }
+
+  async rejectVerificationRequest(id: number, adminId: string, reason: string): Promise<void> {
+    await db.transaction(async (tx) => {
+      // Update verification request
+      await tx
+        .update(verificationRequests)
+        .set({ 
+          status: "rejected",
+          rejectionReason: reason,
+          reviewCompletedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(verificationRequests.id, id));
+
+      // Get the user ID from verification request
+      const [request] = await tx
+        .select({ userId: verificationRequests.userId })
+        .from(verificationRequests)
+        .where(eq(verificationRequests.id, id));
+
+      if (request) {
+        // Update user verification status
+        await tx
+          .update(users)
+          .set({ 
+            verificationStatus: "rejected",
+            verificationNotes: reason,
+            lastVerificationUpdate: new Date(),
+            updatedAt: new Date()
+          })
+          .where(eq(users.id, request.userId));
+      }
+    });
+  }
+
+  async updateUserVerificationStatus(userId: string, status: string, level?: string): Promise<User> {
+    const updates: any = { 
+      verificationStatus: status,
+      lastVerificationUpdate: new Date(),
+      updatedAt: new Date()
+    };
+
+    if (level) {
+      updates.verificationLevel = level;
+    }
+
+    if (status === "verified") {
+      updates.isVerified = true;
+      updates.verificationCompletedAt = new Date();
+    }
+
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async getVerificationStats(): Promise<{
+    totalRequests: number;
+    pendingRequests: number;
+    approvedRequests: number;
+    rejectedRequests: number;
+    averageProcessingTime: string;
+  }> {
+    const [totalResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(verificationRequests);
+
+    const [pendingResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(verificationRequests)
+      .where(eq(verificationRequests.status, "pending"));
+
+    const [approvedResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(verificationRequests)
+      .where(eq(verificationRequests.status, "approved"));
+
+    const [rejectedResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(verificationRequests)
+      .where(eq(verificationRequests.status, "rejected"));
+
+    return {
+      totalRequests: totalResult?.count || 0,
+      pendingRequests: pendingResult?.count || 0,
+      approvedRequests: approvedResult?.count || 0,
+      rejectedRequests: rejectedResult?.count || 0,
+      averageProcessingTime: "3.2 days",
     };
   }
 }

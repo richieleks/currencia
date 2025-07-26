@@ -7,6 +7,9 @@ import {
   insertExchangeRequestSchema,
   insertRateOfferSchema,
   insertChatMessageSchema,
+  insertVerificationRequestSchema,
+  insertVerificationDocumentSchema,
+  insertVerificationCheckSchema,
 } from "@shared/schema";
 import { AuditLogger, SecurityAuditLogger, BusinessAuditLogger, auditMiddleware } from "./auditLogger";
 
@@ -1929,6 +1932,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting report schedule:", error);
       res.status(500).json({ message: "Failed to delete report schedule" });
+    }
+  });
+
+  // Verification system routes
+  app.post('/api/verification/request', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const requestData = insertVerificationRequestSchema.parse({
+        ...req.body,
+        userId,
+      });
+
+      const verificationRequest = await storage.createVerificationRequest(requestData);
+      
+      await AuditLogger.log({
+        action: "verification_request_created",
+        userId,
+        resourceType: "verification_request",
+        resourceId: verificationRequest.id.toString(),
+        details: { requestType: requestData.requestType },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json(verificationRequest);
+    } catch (error) {
+      console.error("Error creating verification request:", error);
+      res.status(500).json({ message: "Failed to create verification request" });
+    }
+  });
+
+  app.get('/api/verification/requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const requests = await storage.getUserVerificationRequests(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching verification requests:", error);
+      res.status(500).json({ message: "Failed to fetch verification requests" });
+    }
+  });
+
+  app.get('/api/admin/verification/requests', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const requests = await storage.getAllVerificationRequests(status);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching admin verification requests:", error);
+      res.status(500).json({ message: "Failed to fetch verification requests" });
+    }
+  });
+
+  app.patch('/api/admin/verification/request/:id/approve', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      const adminId = req.user.claims.sub;
+      const { level } = req.body;
+      
+      if (!["basic", "enhanced", "premium"].includes(level)) {
+        return res.status(400).json({ message: "Invalid verification level" });
+      }
+
+      await storage.approveVerificationRequest(requestId, adminId, level);
+      
+      await AuditLogger.log({
+        action: "verification_request_approved",
+        userId: adminId,
+        resourceType: "verification_request",
+        resourceId: requestId.toString(),
+        details: { level },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json({ message: "Verification request approved successfully" });
+    } catch (error) {
+      console.error("Error approving verification request:", error);
+      res.status(500).json({ message: "Failed to approve verification request" });
+    }
+  });
+
+  app.patch('/api/admin/verification/request/:id/reject', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      const adminId = req.user.claims.sub;
+      const { reason } = req.body;
+      
+      if (!reason) {
+        return res.status(400).json({ message: "Rejection reason is required" });
+      }
+
+      await storage.rejectVerificationRequest(requestId, adminId, reason);
+      
+      await AuditLogger.log({
+        action: "verification_request_rejected",
+        userId: adminId,
+        resourceType: "verification_request",
+        resourceId: requestId.toString(),
+        details: { reason },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json({ message: "Verification request rejected successfully" });
+    } catch (error) {
+      console.error("Error rejecting verification request:", error);
+      res.status(500).json({ message: "Failed to reject verification request" });
+    }
+  });
+
+  app.get('/api/admin/verification/stats', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const stats = await storage.getVerificationStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching verification stats:", error);
+      res.status(500).json({ message: "Failed to fetch verification stats" });
     }
   });
 

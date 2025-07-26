@@ -484,16 +484,38 @@ export default function BidderProfile() {
                 ) : (
                   <CheckCircle className="h-5 w-5 text-gray-300" />
                 )}
-                <span className={userData?.isVerified ? "text-green-600" : "text-gray-500"}>
-                  {userData?.isVerified ? "Verified Bidder" : "Unverified"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={userData?.isVerified ? "text-green-600" : "text-gray-500"}>
+                    {userData?.isVerified ? "Verified Trader" : "Unverified"}
+                  </span>
+                  {userData?.verificationLevel && userData?.isVerified && (
+                    <Badge variant="secondary" className="text-xs">
+                      {userData.verificationLevel} level
+                    </Badge>
+                  )}
+                </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                {userData?.isVerified 
+                {userData?.verificationStatus === "verified" 
                   ? "Your profile has been verified by our team."
+                  : userData?.verificationStatus === "under_review"
+                  ? "Your verification is currently under review."
+                  : userData?.verificationStatus === "pending_documents"
+                  ? "Please submit required documents for verification."
+                  : userData?.verificationStatus === "rejected"
+                  ? "Your verification was rejected. Please check feedback."
                   : "Complete your profile to apply for verification."
                 }
               </p>
+              {!userData?.isVerified && (
+                <Button 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => window.location.href = '/verification'}
+                >
+                  Start Verification
+                </Button>
+              )}
             </CardContent>
           </Card>
 
