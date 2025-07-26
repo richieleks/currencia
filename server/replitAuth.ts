@@ -14,10 +14,17 @@ if (!process.env.REPLIT_DOMAINS) {
 
 const getOidcConfig = memoize(
   async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
+    try {
+      const issuerUrl = process.env.ISSUER_URL ?? "https://replit.com/oidc";
+      console.log("Configuring OIDC with issuer:", issuerUrl, "client_id:", process.env.REPL_ID);
+      return await client.discovery(
+        new URL(issuerUrl),
+        process.env.REPL_ID!
+      );
+    } catch (error) {
+      console.error("OIDC configuration failed:", error);
+      throw error;
+    }
   },
   { maxAge: 3600 * 1000 }
 );
@@ -38,7 +45,7 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       maxAge: sessionTtl,
     },
   });
@@ -124,16 +131,51 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    // Use the first available domain in development
+    const domain = req.hostname === 'localhost' ? 
+      process.env.REPLIT_DOMAINS!.split(",")[0] : 
+      req.hostname;
+    
+    console.log("Login request for hostname:", req.hostname, "using domain:", domain);
+    
+    passport.authenticate(`replitauth:${domain}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
+    // Use the first available domain in development
+    const domain = req.hostname === 'localhost' ? 
+      process.env.REPLIT_DOMAINS!.split(",")[0] : 
+      req.hostname;
+      
+    console.log("OAuth callback received for hostname:", req.hostname, "using domain:", domain);
+    console.log("Callback query params:", req.query);
+    
+    passport.authenticate(`replitauth:${domain}`, (err, user, info) => {
+      if (err) {
+        console.error("Authentication error:", err);
+        return res.status(400).json({ 
+          message: "Authentication failed", 
+          error: err.message,
+          details: err.cause || err
+        });
+      }
+      
+      if (!user) {
+        console.log("Authentication failed - no user:", info);
+        return res.redirect("/api/login");
+      }
+      
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          console.error("Login error:", loginErr);
+          return res.status(500).json({ message: "Login failed" });
+        }
+        console.log("User logged in successfully");
+        return res.redirect("/");
+      });
     })(req, res, next);
   });
 
