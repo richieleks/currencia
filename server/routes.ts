@@ -408,6 +408,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
+      // Broadcast exchange request removal to all clients
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'exchange_request_completed',
+            data: { exchangeRequestId: offer.exchangeRequestId }
+          }));
+        }
+      });
+
       res.json({ message: "Rate offer accepted successfully" });
     } catch (error) {
       console.error("Error accepting rate offer:", error);
