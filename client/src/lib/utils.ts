@@ -5,17 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Major currencies with 2 decimal places
+// Major currencies with 6 decimal places
 const MAJOR_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'];
 
-// Minor currencies with 6 decimal places (typically African and developing market currencies)
+// Minor currencies with 2 decimal places (typically African and developing market currencies)
 const MINOR_CURRENCIES = ['UGX', 'KES', 'NGN', 'EGP', 'MAD', 'TZS', 'GHS', 'RWF', 'ZAR', 'INR'];
 
 export function getCurrencyPrecision(currency: string): number {
   if (MAJOR_CURRENCIES.includes(currency.toUpperCase())) {
-    return 2;
-  } else if (MINOR_CURRENCIES.includes(currency.toUpperCase())) {
     return 6;
+  } else if (MINOR_CURRENCIES.includes(currency.toUpperCase())) {
+    return 2;
   }
   // Default to 2 for unknown currencies
   return 2;
