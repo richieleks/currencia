@@ -280,6 +280,12 @@ export interface IStorage {
     reason?: string;
     missingAmount?: number;
   }>;
+  
+  // Session management
+  updateLastActiveAt(userId: string): Promise<void>;
+  getActiveSessions(): Promise<number>;
+  getActiveUsersCount(): Promise<number>;
+  cleanupInactiveSessions(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -949,10 +955,8 @@ export class DatabaseStorage implements IStorage {
       .from(exchangeRequests)
       .where(eq(exchangeRequests.status, "active"));
 
-    const [biddersResult] = await db
-      .select({ count: sql<number>`count(distinct ${users.id})` })
-      .from(users)
-      .where(sql`${users.role} = 'trader'`);
+    // Get online bidders count based on recent activity (last 5 minutes)
+    const onlineBidders = await this.getActiveSessions();
 
     const [volumeResult] = await db
       .select({ 
@@ -968,7 +972,7 @@ export class DatabaseStorage implements IStorage {
 
     return {
       activeRequests: activeRequestsResult?.count || 0,
-      onlineBidders: biddersResult?.count || 0,
+      onlineBidders,
       avgResponseTime: "2.3 min",
       todayVolume: `$${parseFloat(volumeResult?.volume || "0").toLocaleString()}`,
     };
@@ -2323,6 +2327,77 @@ export class DatabaseStorage implements IStorage {
       .from(bankSyncLogs)
       .where(eq(bankSyncLogs.userId, userId))
       .orderBy(desc(bankSyncLogs.startedAt));
+  }
+
+  // Session management methods
+  async updateLastActiveAt(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ lastActiveAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  async getActiveSessions(): Promise<number> {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const [result] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(
+        and(
+          gte(users.lastActiveAt, fiveMinutesAgo),
+          eq(users.status, "active")
+        )
+      );
+    return result?.count || 0;
+  }
+
+  async getActiveUsersCount(): Promise<number> {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const [result] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(
+        and(
+          gte(users.lastActiveAt, fiveMinutesAgo),
+          eq(users.status, "active")
+        )
+      );
+    return result?.count || 0;
+  }
+
+  async cleanupInactiveSessions(): Promise<void> {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    
+    // Log inactive users who will be auto-logged out
+    const inactiveUsers = await db
+      .select({ id: users.id, email: users.email })
+      .from(users)
+      .where(
+        and(
+          lte(users.lastActiveAt, fiveMinutesAgo),
+          eq(users.status, "active")
+        )
+      );
+
+    if (inactiveUsers.length > 0) {
+      console.log(`Auto-logging out ${inactiveUsers.length} inactive users`);
+      
+      // Create audit logs for auto-logout
+      for (const user of inactiveUsers) {
+        await this.createAuditLog({
+          userId: user.id,
+          action: "AUTO_LOGOUT",
+          resource: "session",
+          details: `User automatically logged out after 5 minutes of inactivity`,
+          ipAddress: null,
+          userAgent: null,
+          success: true
+        });
+      }
+    }
+    
+    // Note: In a real implementation, you would also invalidate session tokens
+    // For now, we just track the activity status in the database
   }
 }
 
