@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Wallet, Settings } from "lucide-react";
-import PortfolioManager from "./portfolio-manager";
 
 interface CurrencyData {
   code: string;
@@ -39,7 +39,7 @@ const ALL_CURRENCIES = {
 
 export default function CurrencyBalanceDashboard() {
   const { user } = useAuth();
-  const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
+  const [, setLocation] = useLocation();
 
   // Fetch bank accounts data
   const { data: bankAccounts = [] } = useQuery({
@@ -133,7 +133,7 @@ export default function CurrencyBalanceDashboard() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsPortfolioOpen(true)}
+              onClick={() => setLocation("/settings")}
               className="flex items-center gap-2"
             >
               <Settings className="h-4 w-4" />
@@ -155,7 +155,7 @@ export default function CurrencyBalanceDashboard() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => setIsPortfolioOpen(true)}
+                onClick={() => setLocation("/settings")}
               >
                 Get Started
               </Button>
@@ -205,11 +205,6 @@ export default function CurrencyBalanceDashboard() {
           </div>
         )}
       </div>
-      
-      <PortfolioManager 
-        isOpen={isPortfolioOpen} 
-        onClose={() => setIsPortfolioOpen(false)} 
-      />
     </>
   );
 }
