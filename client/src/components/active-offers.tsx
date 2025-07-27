@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, TrendingUp } from "lucide-react";
+import { MessageSquare, TrendingUp, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
 import RateOfferModal from "./rate-offer-modal";
 import OffersViewer from "./offers-viewer";
@@ -41,6 +41,11 @@ export default function ActiveOffers({ onRequestSelect }: ActiveOffersProps) {
   const { data: exchangeRequests = [], isLoading, error, refetch } = useQuery<ExchangeRequest[]>({
     queryKey: ["/api/exchange-requests"],
     refetchInterval: 10000, // Refetch every 10 seconds
+    retry: (failureCount, error: any) => {
+      // Don't retry on bank account requirement errors
+      if (error?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
   // Listen for WebSocket messages to update requests in real-time
@@ -117,7 +122,22 @@ export default function ActiveOffers({ onRequestSelect }: ActiveOffersProps) {
         <CardTitle>Active Requests</CardTitle>
       </CardHeader>
       <CardContent>
-        {exchangeRequests.length === 0 ? (
+        {error && (error as any)?.status === 403 ? (
+          <div className="text-center py-8">
+            <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-orange-400" />
+            <p className="text-gray-800 font-medium mb-2">Bank Account Required</p>
+            <p className="text-sm text-gray-600 mb-4">
+              You need an active bank account to view exchange requests.
+            </p>
+            <Button 
+              onClick={() => window.location.href = "/settings"}
+              variant="outline"
+              size="sm"
+            >
+              Go to Settings → Bank Accounts
+            </Button>
+          </div>
+        ) : exchangeRequests.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             <TrendingUp className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>No active requests</p>
