@@ -180,7 +180,7 @@ export default function ForexRatesManager() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Summary Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>

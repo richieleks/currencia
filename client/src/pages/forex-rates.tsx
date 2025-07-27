@@ -44,7 +44,7 @@ export default function ForexRatesPage() {
 
   return (
     <Layout user={user}>
-      <div className="space-y-6">
+      <div className="space-y-6 -mx-4 sm:-mx-6 lg:-mx-8 px-2 sm:px-3 lg:px-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Forex Rates Management</h1>
@@ -54,7 +54,7 @@ export default function ForexRatesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 lg:gap-6">
           <div className="xl:col-span-3">
             <ForexRatesManager />
           </div>
