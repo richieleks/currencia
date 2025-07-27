@@ -189,6 +189,7 @@ Changelog:
 - July 27, 2025. Applied Reports page professional layout to Forex Rates Management page: implemented consistent header styling with text-3xl font and tracking-tight, added 4 quick stats cards (Active Rates, Currency Pairs, Average Spread, Last Updated) with standardized pb-2 headers and text-2xl values, restructured grid to 3 columns with better space utilization, applied space-y-6 for main sections
 - July 27, 2025. Updated Currency Portfolio to show empty state when no bank accounts exist: removed default currency balances from user profile display, added "No currencies added yet" message with helpful instructions, implemented "Get Started" and "Manage" buttons that redirect to Settings → Bank Accounts page for proper onboarding flow
 - July 27, 2025. Removed automatic scroll-to-bottom functionality from all chatroom components: eliminated useEffect auto-scroll behavior, removed messagesEndRef references, and cleaned up unused imports - users now have full control over chat scrolling behavior
+- July 27, 2025. Implemented enhanced currency precision system: major currencies (USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY) display 2 decimal places, minor currencies (UGX, KES, NGN, EGP, MAD, TZS, GHS, RWF, ZAR, INR) display 6 decimal places for improved financial accuracy - centralized formatCurrency function with getCurrencyPrecision utility
 
 ## User Preferences
 
