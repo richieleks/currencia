@@ -16,6 +16,16 @@ interface CurrencyData {
   flag: string;
 }
 
+interface BankAccount {
+  id: number;
+  currency: string;
+  balance: string;
+  availableBalance: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+}
+
 const ALL_CURRENCIES = {
   UGX: { name: "Ugandan Shilling", flag: "🇺🇬", balanceField: "ugxBalance" },
   USD: { name: "US Dollar", flag: "🇺🇸", balanceField: "usdBalance" },
@@ -42,7 +52,7 @@ export default function CurrencyBalanceDashboard() {
   const [, setLocation] = useLocation();
 
   // Fetch bank accounts data
-  const { data: bankAccounts = [] } = useQuery({
+  const { data: bankAccounts = [] } = useQuery<BankAccount[]>({
     queryKey: ["/api/bank-accounts"],
     enabled: !!user,
   });
@@ -58,7 +68,7 @@ export default function CurrencyBalanceDashboard() {
       accountCount: number;
     }>();
 
-    bankAccounts.forEach((account: any) => {
+    bankAccounts.forEach((account) => {
       const currency = account.currency;
       const existing = currencyMap.get(currency);
       
