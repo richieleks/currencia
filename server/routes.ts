@@ -224,8 +224,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/exchange-requests", isAuthenticated, async (req, res) => {
+  app.get("/api/exchange-requests", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Admins can always view exchange requests
+      if (user.role !== "admin") {
+        // Check if user has active bank accounts
+        const hasActiveAccounts = await storage.hasActiveBankAccounts(userId);
+        if (!hasActiveAccounts) {
+          return res.status(403).json({ 
+            message: "You need an active bank account to view exchange requests.",
+            requiresBankAccount: true
+          });
+        }
+      }
+      
       const requests = await storage.getExchangeRequests();
       res.json(requests);
     } catch (error) {

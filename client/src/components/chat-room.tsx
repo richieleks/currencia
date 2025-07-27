@@ -84,9 +84,14 @@ export default function ChatRoom() {
   });
 
   // Fetch active exchange requests
-  const { data: exchangeRequests = [] } = useQuery<(ExchangeRequestData & { user: any })[]>({
+  const { data: exchangeRequests = [], error: exchangeRequestsError } = useQuery<(ExchangeRequestData & { user: any })[]>({
     queryKey: ["/api/exchange-requests"],
     refetchInterval: 10000,
+    retry: (failureCount, error: any) => {
+      // Don't retry on bank account requirement errors
+      if (error?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
   // Quick offer form
