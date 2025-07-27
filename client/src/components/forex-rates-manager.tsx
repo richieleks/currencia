@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, DollarSign, Activity } from "lucide-react";
+import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -180,69 +181,87 @@ export default function ForexRatesManager() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Summary Stats Row */}
-      <div className="grid grid-cols-3 gap-3">
+    <div className="space-y-6">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">Active Rates</p>
-                <p className="text-xl font-bold">{forexRates.length}</p>
-              </div>
-              <TrendingUp className="h-6 w-6 text-green-500" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Rates</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{forexRates.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Today's rates
+            </p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">Currency Pairs</p>
-                <p className="text-xl font-bold">
-                  {new Set(forexRates.map(rate => `${rate.fromCurrency}/${rate.toCurrency}`)).size}
-                </p>
-              </div>
-              <DollarSign className="h-6 w-6 text-blue-500" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Currency Pairs</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {new Set(forexRates.map(rate => `${rate.fromCurrency}/${rate.toCurrency}`)).size}
             </div>
+            <p className="text-xs text-muted-foreground">
+              Active pairs
+            </p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">Avg. Spread</p>
-                <p className="text-xl font-bold">
-                  {forexRates.length > 0 
-                    ? (forexRates.reduce((sum, rate) => sum + ((parseFloat(rate.sellRate) - parseFloat(rate.buyRate)) / parseFloat(rate.buyRate) * 100), 0) / forexRates.length).toFixed(2)
-                    : '0.00'
-                  }%
-                </p>
-              </div>
-              <TrendingDown className="h-6 w-6 text-orange-500" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Spread</CardTitle>
+            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {forexRates.length > 0 
+                ? (forexRates.reduce((sum, rate) => sum + ((parseFloat(rate.sellRate) - parseFloat(rate.buyRate)) / parseFloat(rate.buyRate) * 100), 0) / forexRates.length).toFixed(2)
+                : '0.00'
+              }%
             </div>
+            <p className="text-xs text-muted-foreground">
+              Buy/Sell difference
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Last Updated</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {forexRates.length > 0 
+                ? format(new Date(forexRates[0].createdAt || new Date()), "HH:mm")
+                : "N/A"
+              }
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Latest rate entry
+            </p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                My Forex Rates
-              </CardTitle>
-              <CardDescription className="text-xs">
+              <CardTitle>My Forex Rates</CardTitle>
+              <CardDescription>
                 Manage your daily forex rates for different currency pairs
               </CardDescription>
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="h-3 w-3 mr-1" />
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
                   Add Rate
                 </Button>
               </DialogTrigger>
@@ -348,60 +367,59 @@ export default function ForexRatesManager() {
               <div className="hidden md:block">
                 <Table>
                   <TableHeader>
-                    <TableRow className="h-10">
-                      <TableHead className="text-xs">Currency Pair</TableHead>
-                      <TableHead className="text-xs">Buy Rate</TableHead>
-                      <TableHead className="text-xs">Sell Rate</TableHead>
-                      <TableHead className="text-xs">Spread</TableHead>
-                      <TableHead className="text-xs">Date</TableHead>
-                      <TableHead className="text-xs">Actions</TableHead>
+                    <TableRow>
+                      <TableHead>Currency Pair</TableHead>
+                      <TableHead>Buy Rate</TableHead>
+                      <TableHead>Sell Rate</TableHead>
+                      <TableHead>Spread</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {forexRates.map((rate) => {
                       const spread = ((parseFloat(rate.sellRate) - parseFloat(rate.buyRate)) / parseFloat(rate.buyRate) * 100);
                       return (
-                        <TableRow key={rate.id} className="h-12">
-                          <TableCell className="py-2">
-                            <Badge variant="outline" className="font-semibold text-xs">
+                        <TableRow key={rate.id}>
+                          <TableCell>
+                            <Badge variant="outline" className="font-semibold">
                               {rate.fromCurrency}/{rate.toCurrency}
                             </Badge>
                           </TableCell>
-                          <TableCell className="py-2 font-mono text-green-600 dark:text-green-400 font-semibold text-sm">
+                          <TableCell className="font-mono text-green-600 dark:text-green-400 font-semibold">
                             <div className="flex items-center gap-1">
-                              <TrendingUp className="h-3 w-3" />
+                              <TrendingUp className="h-4 w-4" />
                               {formatRate(rate.buyRate)}
                             </div>
                           </TableCell>
-                          <TableCell className="py-2 font-mono text-red-600 dark:text-red-400 font-semibold text-sm">
+                          <TableCell className="font-mono text-red-600 dark:text-red-400 font-semibold">
                             <div className="flex items-center gap-1">
-                              <TrendingDown className="h-3 w-3" />
+                              <TrendingDown className="h-4 w-4" />
                               {formatRate(rate.sellRate)}
                             </div>
                           </TableCell>
-                          <TableCell className="py-2">
-                            <Badge variant={spread > 2 ? "destructive" : spread > 1 ? "secondary" : "default"} className="text-xs">
+                          <TableCell>
+                            <Badge variant={spread > 2 ? "destructive" : spread > 1 ? "secondary" : "default"}>
                               {spread.toFixed(2)}%
                             </Badge>
                           </TableCell>
-                          <TableCell className="py-2 text-xs text-muted-foreground">
+                          <TableCell className="text-sm text-muted-foreground">
                             {formatDate((rate.date || rate.createdAt || "").toString())}
                           </TableCell>
-                          <TableCell className="py-2">
-                            <div className="flex items-center gap-1">
+                          <TableCell>
+                            <div className="flex items-center gap-2">
                               <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
                                 onClick={() => handleEditRate(rate)}
-                                className="h-7 w-7 p-0"
                               >
-                                <Edit2 className="h-3 w-3" />
+                                <Edit2 className="h-3 w-3 mr-1" />
+                                Edit
                               </Button>
                               <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteRate(rate.id)}
-                                className="h-7 w-7 p-0 text-red-500 hover:text-red-700"
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
