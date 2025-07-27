@@ -190,6 +190,7 @@ Changelog:
 - July 27, 2025. Updated Currency Portfolio to show empty state when no bank accounts exist: removed default currency balances from user profile display, added "No currencies added yet" message with helpful instructions, implemented "Get Started" and "Manage" buttons that redirect to Settings → Bank Accounts page for proper onboarding flow
 - July 27, 2025. Removed automatic scroll-to-bottom functionality from all chatroom components: eliminated useEffect auto-scroll behavior, removed messagesEndRef references, and cleaned up unused imports - users now have full control over chat scrolling behavior
 - July 27, 2025. Implemented enhanced currency precision system: major currencies (USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY) display 6 decimal places, minor currencies (UGX, KES, NGN, EGP, MAD, TZS, GHS, RWF, ZAR, INR) display 2 decimal places for improved financial accuracy - centralized formatCurrency function with getCurrencyPrecision utility
+- July 27, 2025. Enhanced quick exchange form with automatic live rate defaulting: desired rate field now auto-populates with live exchange rates when "to currency" changes, includes visual indicator showing "Live rate auto-filled" badge, improved step precision to 6 decimal places for accurate rate entry, and maintains real-time calculation of total amount desired
 
 ## User Preferences
 
