@@ -33,16 +33,16 @@ const priorities = [
 const exchangeFormSchema = z.object({
   fromCurrency: z.string().min(1, "Please select source currency"),
   toCurrency: z.string().min(1, "Please select target currency"),
-  amount: z.string().min(1, "Please enter amount").transform((val) => parseFloat(val)),
-  desiredRate: z.string().optional().transform((val) => val ? parseFloat(val) : undefined),
+  amount: z.string().min(1, "Please enter amount"),
+  desiredRate: z.string().optional(),
   priority: z.string().min(1, "Please select priority"),
 }).refine((data) => data.fromCurrency !== data.toCurrency, {
   message: "Source and target currencies must be different",
   path: ["toCurrency"],
-}).refine((data) => data.amount > 0, {
+}).refine((data) => parseFloat(data.amount) > 0, {
   message: "Amount must be greater than 0",
   path: ["amount"],
-}).refine((data) => !data.desiredRate || data.desiredRate > 0, {
+}).refine((data) => !data.desiredRate || parseFloat(data.desiredRate) > 0, {
   message: "Rate must be greater than 0",
   path: ["desiredRate"],
 });
@@ -72,7 +72,7 @@ export default function QuickExchangeForm() {
     defaultValues: {
       fromCurrency: "UGX",
       toCurrency: "USD",
-      amount: 0,
+      amount: "",
       desiredRate: (exchangeRates["UGX"]?.["USD"] || 0).toString(),
       priority: "standard",
     },
@@ -96,8 +96,8 @@ export default function QuickExchangeForm() {
       await apiRequest("POST", "/api/exchange-requests", {
         fromCurrency: data.fromCurrency,
         toCurrency: data.toCurrency,
-        amount: data.amount.toString(),
-        desiredRate: data.desiredRate?.toString(),
+        amount: data.amount,
+        desiredRate: data.desiredRate,
         priority: data.priority,
       });
     },
@@ -265,7 +265,7 @@ export default function QuickExchangeForm() {
                 const fromCurrency = form.watch("fromCurrency");
                 
                 // Calculate total amount desired
-                const parsedAmount = parseFloat(amount?.toString() || "0");
+                const parsedAmount = parseFloat(amount || "0");
                 const parsedRate = parseFloat(field.value || "0");
                 const totalAmountDesired = parsedAmount && parsedRate ? parsedAmount * parsedRate : 0;
                 
@@ -448,7 +448,7 @@ export default function QuickExchangeForm() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Amount:</span>
                 <span className="font-medium">
-                  {formatCurrency(pendingData.amount, pendingData.fromCurrency)}
+                  {formatCurrency(parseFloat(pendingData.amount), pendingData.fromCurrency)}
                 </span>
               </div>
               
@@ -465,7 +465,7 @@ export default function QuickExchangeForm() {
                   <span className="text-green-700 font-semibold">
                     {(() => {
                       const rate = exchangeRates[pendingData.fromCurrency]?.[pendingData.toCurrency] || 0;
-                      const convertedAmount = pendingData.amount * rate;
+                      const convertedAmount = parseFloat(pendingData.amount) * rate;
                       return formatCurrency(convertedAmount, pendingData.toCurrency);
                     })()}
                   </span>
@@ -476,7 +476,7 @@ export default function QuickExchangeForm() {
                 <>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Desired Rate:</span>
-                    <span className="font-medium">{formatRate(pendingData.desiredRate)}</span>
+                    <span className="font-medium">{formatRate(parseFloat(pendingData.desiredRate || "0"))}</span>
                   </div>
                   
                   {/* Desired Rate Conversion */}
@@ -484,14 +484,14 @@ export default function QuickExchangeForm() {
                     <div className="flex justify-between items-center">
                       <span className="text-blue-700 text-sm font-medium">With your desired rate:</span>
                       <span className="text-blue-700 font-semibold">
-                        {formatCurrency(pendingData.amount * pendingData.desiredRate, pendingData.toCurrency)}
+                        {formatCurrency(parseFloat(pendingData.amount) * parseFloat(pendingData.desiredRate || "0"), pendingData.toCurrency)}
                       </span>
                     </div>
                     <div className="text-xs text-blue-600 mt-1">
                       Difference: {(() => {
                         const marketRate = exchangeRates[pendingData.fromCurrency]?.[pendingData.toCurrency] || 0;
-                        const marketAmount = pendingData.amount * marketRate;
-                        const desiredAmount = pendingData.amount * pendingData.desiredRate;
+                        const marketAmount = parseFloat(pendingData.amount) * marketRate;
+                        const desiredAmount = parseFloat(pendingData.amount) * parseFloat(pendingData.desiredRate || "0");
                         const difference = desiredAmount - marketAmount;
                         const sign = difference >= 0 ? "+" : "";
                         return `${sign}${formatCurrency(Math.abs(difference), pendingData.toCurrency)}`;
