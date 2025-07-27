@@ -156,6 +156,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
       });
 
+      // Check bank account and balance requirements
+      const balanceCheck = await storage.canMakeExchangeRequest(
+        userId, 
+        requestData.fromCurrency, 
+        parseFloat(requestData.amount)
+      );
+
+      if (!balanceCheck.canMake) {
+        return res.status(400).json({ 
+          message: balanceCheck.reason,
+          missingAmount: balanceCheck.missingAmount 
+        });
+      }
+
       // Check for existing active request with same currency pair
       const existingRequest = await storage.getExistingCurrencyRequest(
         userId, 
@@ -278,14 +292,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/rate-offers/:requestId", isAuthenticated, async (req, res) => {
+  app.get("/api/rate-offers/:requestId", isAuthenticated, async (req: any, res) => {
     try {
       const requestId = parseInt(req.params.requestId);
+      const userId = req.user.claims.sub;
+      
+      // Get the exchange request to check ownership and currency details
+      const exchangeRequest = await storage.getExchangeRequestById(requestId);
+      if (!exchangeRequest) {
+        return res.status(404).json({ message: "Exchange request not found" });
+      }
+      
+      // If user is the request owner, they can always view offers
+      const isRequestOwner = exchangeRequest.userId === userId;
+      
+      // If not the owner, check balance requirements to view offers
+      if (!isRequestOwner) {
+        const balanceCheck = await storage.canMakeExchangeRequest(
+          userId, 
+          exchangeRequest.fromCurrency, 
+          parseFloat(exchangeRequest.amount)
+        );
+
+        if (!balanceCheck.canMake) {
+          return res.status(403).json({ 
+            message: "You need an active bank account with sufficient balance to view offers.",
+            requirementDetails: balanceCheck.reason
+          });
+        }
+      }
+      
       const offers = await storage.getRateOffersByRequestId(requestId);
       res.json(offers);
     } catch (error) {
       console.error("Error fetching rate offers:", error);
       res.status(500).json({ message: "Failed to fetch rate offers" });
+    }
+  });
+
+  // Check balance requirements for exchange request
+  app.post("/api/balance-check", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { fromCurrency, amount } = req.body;
+      
+      if (!fromCurrency || !amount) {
+        return res.status(400).json({ message: "Currency and amount are required" });
+      }
+      
+      const balanceCheck = await storage.canMakeExchangeRequest(
+        userId, 
+        fromCurrency, 
+        parseFloat(amount)
+      );
+      
+      res.json(balanceCheck);
+    } catch (error) {
+      console.error("Error checking balance:", error);
+      res.status(500).json({ message: "Failed to check balance" });
     }
   });
 
