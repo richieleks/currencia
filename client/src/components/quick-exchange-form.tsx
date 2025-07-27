@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
@@ -73,10 +73,23 @@ export default function QuickExchangeForm() {
       fromCurrency: "UGX",
       toCurrency: "USD",
       amount: 0,
-      desiredRate: undefined,
+      desiredRate: (exchangeRates["UGX"]?.["USD"] || 0).toString(),
       priority: "standard",
     },
   });
+
+  // Watch for changes in currency selection to update desired rate
+  const fromCurrency = form.watch("fromCurrency");
+  const toCurrency = form.watch("toCurrency");
+
+  useEffect(() => {
+    if (fromCurrency && toCurrency && fromCurrency !== toCurrency) {
+      const liveRate = exchangeRates[fromCurrency]?.[toCurrency];
+      if (liveRate) {
+        form.setValue("desiredRate", liveRate.toString());
+      }
+    }
+  }, [fromCurrency, toCurrency, form]);
 
   const createExchangeRequestMutation = useMutation({
     mutationFn: async (data: ExchangeFormData) => {
@@ -258,14 +271,18 @@ export default function QuickExchangeForm() {
                 
                 return (
                   <FormItem className="space-y-2">
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-sm font-medium flex items-center gap-2">
                       Desired Rate (Optional)
                       {fromCurrency && toCurrency && ` - ${fromCurrency} to ${toCurrency}`}
+                      <div className="flex items-center text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        Live rate auto-filled
+                      </div>
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        step="0.01"
+                        step="0.000001"
                         placeholder="Enter your preferred exchange rate"
                         className="h-11"
                         {...field}
