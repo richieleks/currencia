@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -75,7 +75,7 @@ export default function ChatRoom() {
   const [showQuickOffer, setShowQuickOffer] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<ExchangeRequestData | null>(null);
   const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+
 
   // Fetch chat messages
   const { data: messages = [], isLoading } = useQuery<ChatMessageWithUser[]>({
@@ -203,10 +203,7 @@ export default function ChatRoom() {
     },
   });
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -595,7 +592,7 @@ export default function ChatRoom() {
               );
             })
           )}
-          <div ref={messagesEndRef} />
+
         </div>
 
         {/* Facebook-like Message Input */}

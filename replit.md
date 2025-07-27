@@ -188,6 +188,7 @@ Changelog:
 - July 26, 2025. Enhanced chatroom currency portfolio to display aggregated bank account balances: modified currency balance dashboard component to fetch and aggregate data from connected bank accounts, displays real-time balances from bank account system with fallback to user profile balance fields when no accounts are connected, maintains all existing portfolio functionality while providing unified data source across the application
 - July 27, 2025. Applied Reports page professional layout to Forex Rates Management page: implemented consistent header styling with text-3xl font and tracking-tight, added 4 quick stats cards (Active Rates, Currency Pairs, Average Spread, Last Updated) with standardized pb-2 headers and text-2xl values, restructured grid to 3 columns with better space utilization, applied space-y-6 for main sections
 - July 27, 2025. Updated Currency Portfolio to show empty state when no bank accounts exist: removed default currency balances from user profile display, added "No currencies added yet" message with helpful instructions, implemented "Get Started" and "Manage" buttons that redirect to Settings → Bank Accounts page for proper onboarding flow
+- July 27, 2025. Removed automatic scroll-to-bottom functionality from all chatroom components: eliminated useEffect auto-scroll behavior, removed messagesEndRef references, and cleaned up unused imports - users now have full control over chat scrolling behavior
 
 ## User Preferences
 
