@@ -51,10 +51,15 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [offerToAccept, setOfferToAccept] = useState<number | null>(null);
 
-  const { data: allOffers = [], isLoading } = useQuery<RateOffer[]>({
+  const { data: allOffers = [], isLoading, error } = useQuery<RateOffer[]>({
     queryKey: [`/api/rate-offers/${exchangeRequestId}`],
     enabled: !!exchangeRequestId && isOpen,
     refetchInterval: 5000,
+    retry: (failureCount, error: any) => {
+      // Don't retry on balance requirement errors
+      if (error?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
   // Filter offers based on exchange request status
@@ -181,7 +186,7 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
 
   const handleMessageBidder = (offer: RateOffer) => {
     setSelectedBidderId(offer.bidder.id);
-    setInitialMessageContent(`Hi! I'd like to discuss your offer of ${formatRate(offer.rate)} for ${formatCurrency(offer.totalAmount)} ${exchangeRequestData?.fromCurrency || ''}.`);
+    setInitialMessageContent(`Hi! I'd like to discuss your offer of ${formatRate(offer.rate)} for ${formatCurrency(offer.totalAmount, exchangeRequestData?.toCurrency || '')}.`);
     setPrivateMessagesOpen(true);
   };
 
@@ -205,7 +210,22 @@ export default function OffersViewer({ isOpen, onClose, exchangeRequestId, excha
         </DialogHeader>
 
         <div className="space-y-4">
-          {isLoading ? (
+          {error && (error as any)?.status === 403 ? (
+            <div className="text-center py-8">
+              <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-orange-400" />
+              <p className="text-gray-800 font-medium mb-2">Bank Account Required</p>
+              <p className="text-sm text-gray-600 mb-4">
+                You need an active bank account with sufficient balance to view offers on this exchange request.
+              </p>
+              <Button 
+                onClick={() => window.location.href = "/settings"}
+                variant="outline"
+                size="sm"
+              >
+                Go to Settings → Bank Accounts
+              </Button>
+            </div>
+          ) : isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
               <p className="text-gray-600">Loading offers...</p>

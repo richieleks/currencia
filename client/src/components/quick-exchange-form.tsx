@@ -66,6 +66,7 @@ export default function QuickExchangeForm() {
   const [pendingData, setPendingData] = useState<ExchangeFormData | null>(null);
   const [showConverter, setShowConverter] = useState(false);
   const [converterAmount, setConverterAmount] = useState("1");
+  const [balanceWarning, setBalanceWarning] = useState<string | null>(null);
 
   const form = useForm<ExchangeFormData>({
     resolver: zodResolver(exchangeFormSchema),
@@ -90,6 +91,46 @@ export default function QuickExchangeForm() {
       }
     }
   }, [fromCurrency, toCurrency, form]);
+
+  // Balance check mutation
+  const balanceCheckMutation = useMutation({
+    mutationFn: async (data: { fromCurrency: string; amount: string }) => {
+      return await apiRequest("POST", "/api/balance-check", {
+        fromCurrency: data.fromCurrency,
+        amount: data.amount,
+      });
+    },
+  });
+
+  // Watch form values and check balance automatically
+  const amount = form.watch("amount");
+  
+  useEffect(() => {
+    const checkBalance = async () => {
+      if (fromCurrency && amount && parseFloat(amount) > 0) {
+        try {
+          const result = await balanceCheckMutation.mutateAsync({
+            fromCurrency,
+            amount,
+          });
+          
+          if (!result.canMake) {
+            setBalanceWarning(result.reason);
+          } else {
+            setBalanceWarning(null);
+          }
+        } catch (error) {
+          // Silently handle errors - user will see them when they submit
+          setBalanceWarning(null);
+        }
+      } else {
+        setBalanceWarning(null);
+      }
+    };
+
+    const timeoutId = setTimeout(checkBalance, 500); // Debounce
+    return () => clearTimeout(timeoutId);
+  }, [fromCurrency, amount, balanceCheckMutation]);
 
   const createExchangeRequestMutation = useMutation({
     mutationFn: async (data: ExchangeFormData) => {
@@ -255,6 +296,20 @@ export default function QuickExchangeForm() {
                 );
               }}
             />
+
+            {/* Balance Warning */}
+            {balanceWarning && (
+              <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <p className="font-medium">Balance Requirements</p>
+                  <p>{balanceWarning}</p>
+                  <p className="mt-1 text-xs">
+                    Go to Settings → Bank Accounts to add a bank account and sync your balances.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <FormField
               control={form.control}

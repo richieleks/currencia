@@ -270,6 +270,16 @@ export interface IStorage {
   // Bank sync logs
   createBankSyncLog(data: InsertBankSyncLog): Promise<BankSyncLog>;
   getBankSyncLogsByUserId(userId: string): Promise<BankSyncLog[]>;
+  
+  // Bank account balance validation
+  hasActiveBankAccounts(userId: string): Promise<boolean>;
+  hasSufficientBalance(userId: string, currency: string, amount: number): Promise<boolean>;
+  getUserCurrencyBalance(userId: string, currency: string): Promise<number>;
+  canMakeExchangeRequest(userId: string, fromCurrency: string, amount: number): Promise<{ 
+    canMake: boolean; 
+    reason?: string;
+    missingAmount?: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2106,6 +2116,65 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBankAccount(id: number): Promise<void> {
     await db.delete(bankAccounts).where(eq(bankAccounts.id, id));
+  }
+
+  // Bank account balance validation
+  async hasActiveBankAccounts(userId: string): Promise<boolean> {
+    const accounts = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(bankAccounts)
+      .where(and(eq(bankAccounts.userId, userId), eq(bankAccounts.isActive, true)));
+    
+    return (accounts[0]?.count || 0) > 0;
+  }
+
+  async hasSufficientBalance(userId: string, currency: string, amount: number): Promise<boolean> {
+    const holdings = await db
+      .select()
+      .from(currencyHoldings)
+      .where(and(eq(currencyHoldings.userId, userId), eq(currencyHoldings.currency, currency)));
+    
+    if (holdings.length === 0) return false;
+    
+    const availableBalance = parseFloat(holdings[0].availableBalance || "0");
+    return availableBalance >= amount;
+  }
+
+  async getUserCurrencyBalance(userId: string, currency: string): Promise<number> {
+    const holdings = await db
+      .select()
+      .from(currencyHoldings)
+      .where(and(eq(currencyHoldings.userId, userId), eq(currencyHoldings.currency, currency)));
+    
+    if (holdings.length === 0) return 0;
+    return parseFloat(holdings[0].availableBalance || "0");
+  }
+
+  async canMakeExchangeRequest(userId: string, fromCurrency: string, amount: number): Promise<{ 
+    canMake: boolean; 
+    reason?: string;
+    missingAmount?: number;
+  }> {
+    // Check if user has any active bank accounts
+    const hasAccounts = await this.hasActiveBankAccounts(userId);
+    if (!hasAccounts) {
+      return { 
+        canMake: false, 
+        reason: "No active bank accounts found. Please add a bank account to make exchange requests." 
+      };
+    }
+
+    // Check if user has sufficient balance
+    const availableBalance = await this.getUserCurrencyBalance(userId, fromCurrency);
+    if (availableBalance < amount) {
+      return { 
+        canMake: false, 
+        reason: `Insufficient ${fromCurrency} balance. Available: ${availableBalance.toFixed(2)}, Required: ${amount.toFixed(2)}`,
+        missingAmount: amount - availableBalance
+      };
+    }
+
+    return { canMake: true };
   }
 
   async syncBankAccountBalance(accountId: number): Promise<BankAccount> {
