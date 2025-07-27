@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -93,7 +93,7 @@ export default function ChatRoom() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const [messageText, setMessageText] = useState("");
   const [messageType, setMessageType] = useState<"general" | "request" | "offer">("general");
   const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
@@ -171,9 +171,7 @@ export default function ChatRoom() {
     },
   });
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -339,7 +337,7 @@ export default function ChatRoom() {
                 );
               })
             )}
-            <div ref={messagesEndRef} />
+
           </div>
 
           {/* Send Message Form */}

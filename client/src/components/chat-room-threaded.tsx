@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -52,7 +52,7 @@ export default function ChatRoomThreaded() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+
 
   const { data: messages = [], isLoading } = useQuery<ChatMessageWithUser[]>({
     queryKey: ["/api/chat/messages"],
@@ -104,9 +104,7 @@ export default function ChatRoomThreaded() {
     },
   });
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -270,7 +268,7 @@ export default function ChatRoomThreaded() {
               </div>
             );
           })}
-          <div ref={messagesEndRef} />
+
         </div>
 
         {/* Message Input */}
