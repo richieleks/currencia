@@ -82,35 +82,17 @@ export default function CurrencyBalanceDashboard() {
   const aggregatedCurrencies = getAggregatedCurrencies();
   const activeCurrencies = user.activeCurrencies || ["UGX", "USD", "KES", "EUR", "GBP"];
   
-  // Filter aggregated currencies to only show active ones, or fallback to user balance fields if no bank accounts
-  const currencies: CurrencyData[] = aggregatedCurrencies.length > 0 
-    ? aggregatedCurrencies
-        .filter(curr => activeCurrencies.includes(curr.currency))
-        .map(curr => ({
-          code: curr.currency,
-          name: ALL_CURRENCIES[curr.currency as keyof typeof ALL_CURRENCIES]?.name || curr.currency,
-          balance: curr.totalBalance.toString(),
-          trend: "up" as const,
-          change: "+2.5%",
-          flag: ALL_CURRENCIES[curr.currency as keyof typeof ALL_CURRENCIES]?.flag || "💱"
-        }))
-    : activeCurrencies
-        .map(code => {
-          const currencyInfo = ALL_CURRENCIES[code as keyof typeof ALL_CURRENCIES];
-          if (!currencyInfo) return null;
-          
-          const balanceValue = user[currencyInfo.balanceField as keyof typeof user] as string || "0.00";
-          
-          return {
-            code,
-            name: currencyInfo.name,
-            balance: balanceValue,
-            trend: "up" as const,
-            change: "+2.5%",
-            flag: currencyInfo.flag
-          };
-        })
-        .filter(Boolean) as CurrencyData[];
+  // Only show currencies from bank accounts
+  const currencies: CurrencyData[] = aggregatedCurrencies
+    .filter(curr => activeCurrencies.includes(curr.currency))
+    .map(curr => ({
+      code: curr.currency,
+      name: ALL_CURRENCIES[curr.currency as keyof typeof ALL_CURRENCIES]?.name || curr.currency,
+      balance: curr.totalBalance.toString(),
+      trend: "up" as const,
+      change: "+2.5%",
+      flag: ALL_CURRENCIES[curr.currency as keyof typeof ALL_CURRENCIES]?.flag || "💱"
+    }));
 
   const formatBalance = (balance: string) => {
     const num = parseFloat(balance);
@@ -142,10 +124,12 @@ export default function CurrencyBalanceDashboard() {
             <h2 className="text-xl font-semibold text-black dark:text-white">Currency Portfolio</h2>
           </div>
           <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Portfolio Value</p>
-              <p className="text-lg font-bold text-black dark:text-white">UGX {getTotalPortfolioValue()}</p>
-            </div>
+            {currencies.length > 0 && (
+              <div className="text-right">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Portfolio Value</p>
+                <p className="text-lg font-bold text-black dark:text-white">UGX {getTotalPortfolioValue()}</p>
+              </div>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -158,47 +142,68 @@ export default function CurrencyBalanceDashboard() {
           </div>
         </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {currencies.map((currency) => (
-          <Card key={currency.code} className="hover:shadow-lg transition-shadow duration-200">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <span className="text-2xl">{currency.flag}</span>
-                  <div>
-                    <h3 className="font-semibold text-sm text-black dark:text-white">{currency.code}</h3>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{currency.name}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-1">
-                  {currency.trend === "up" && <TrendingUp className="w-4 h-4 text-green-500" />}
-                  {currency.trend === "down" && <TrendingDown className="w-4 h-4 text-red-500" />}
-                  <Badge 
-                    variant={currency.trend === "up" ? "default" : currency.trend === "down" ? "destructive" : "secondary"}
-                    className="text-xs"
-                  >
-                    {currency.change}
-                  </Badge>
-                </div>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="text-lg font-bold text-black dark:text-white">
-                  {formatBalance(currency.balance)}
-                </p>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${Math.min((parseFloat(currency.balance) / 50000) * 100, 100)}%` 
-                    }}
-                  ></div>
-                </div>
-              </div>
+        {currencies.length === 0 ? (
+          <Card className="p-8">
+            <CardContent className="flex flex-col items-center justify-center text-center">
+              <Wallet className="w-12 h-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                No currencies added yet
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Connect your bank accounts to start tracking your currency portfolio
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsPortfolioOpen(true)}
+              >
+                Get Started
+              </Button>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {currencies.map((currency) => (
+              <Card key={currency.code} className="hover:shadow-lg transition-shadow duration-200">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl">{currency.flag}</span>
+                      <div>
+                        <h3 className="font-semibold text-sm text-black dark:text-white">{currency.code}</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{currency.name}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      {currency.trend === "up" && <TrendingUp className="w-4 h-4 text-green-500" />}
+                      {currency.trend === "down" && <TrendingDown className="w-4 h-4 text-red-500" />}
+                      <Badge 
+                        variant={currency.trend === "up" ? "default" : currency.trend === "down" ? "destructive" : "secondary"}
+                        className="text-xs"
+                      >
+                        {currency.change}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <p className="text-lg font-bold text-black dark:text-white">
+                      {formatBalance(currency.balance)}
+                    </p>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                        style={{ 
+                          width: `${Math.min((parseFloat(currency.balance) / 50000) * 100, 100)}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
       
       <PortfolioManager 
