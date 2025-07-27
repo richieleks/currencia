@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Clock, TrendingUp, TrendingDown, ExternalLink, CreditCard, Receipt } from "lucide-react";
 import { format } from "date-fns";
+import { formatCurrency } from "@/lib/utils";
 
 interface Transaction {
   id: number;
@@ -115,14 +116,7 @@ export default function TradesHistory({ activeFilter = "all" }: TradesHistoryPro
     staleTime: 30000,
   });
 
-  const formatCurrency = (amount: string, currency: string) => {
-    const num = parseFloat(amount);
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency === 'UGX' ? 'USD' : currency,
-      minimumFractionDigits: currency === 'UGX' ? 0 : 2,
-    }).format(num);
-  };
+  // Remove local formatCurrency - we'll use the one from utils
 
   const getPriorityBadge = (priority: string) => {
     const colors = {
@@ -223,7 +217,7 @@ export default function TradesHistory({ activeFilter = "all" }: TradesHistoryPro
     const fromCurrency = trade.fromCurrency.toUpperCase();
     const toCurrency = trade.toCurrency.toUpperCase();
     const fromAmount = parseFloat(trade.amount || '0');
-    const toAmount = parseFloat(trade.finalAmount || trade.totalAmount || '0');
+    const toAmount = parseFloat(trade.finalAmount || (trade.type === 'offer' && 'totalAmount' in trade ? trade.totalAmount : '0') || '0');
     
     if (!isNaN(fromAmount)) {
       acc[fromCurrency] = (acc[fromCurrency] || 0) + fromAmount;

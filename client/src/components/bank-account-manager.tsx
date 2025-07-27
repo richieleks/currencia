@@ -27,6 +27,7 @@ import {
   EyeOff,
   Settings
 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 const bankAccountSchema = z.object({
   accountName: z.string().min(1, "Account name is required"),
@@ -217,12 +218,7 @@ export default function BankAccountManager() {
     createAccountMutation.mutate(data);
   };
 
-  const formatCurrency = (amount: string, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(parseFloat(amount));
-  };
+  // Remove local formatCurrency - we'll use the one from utils
 
   const formatLastSync = (dateString?: string) => {
     if (!dateString) return "Never";

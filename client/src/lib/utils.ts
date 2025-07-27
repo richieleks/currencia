@@ -5,17 +5,36 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// Major currencies with 2 decimal places
+const MAJOR_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'];
+
+// Minor currencies with 6 decimal places (typically African and developing market currencies)
+const MINOR_CURRENCIES = ['UGX', 'KES', 'NGN', 'EGP', 'MAD', 'TZS', 'GHS', 'RWF', 'ZAR', 'INR'];
+
+export function getCurrencyPrecision(currency: string): number {
+  if (MAJOR_CURRENCIES.includes(currency.toUpperCase())) {
+    return 2;
+  } else if (MINOR_CURRENCIES.includes(currency.toUpperCase())) {
+    return 6;
+  }
+  // Default to 2 for unknown currencies
+  return 2;
+}
+
 export function formatAmount(amount: string | number, currency?: string, options?: { 
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
 }): string {
   const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
   
-  if (isNaN(numericAmount)) return '0.00';
+  if (isNaN(numericAmount)) return currency ? `0.${'0'.repeat(getCurrencyPrecision(currency || ''))} ${currency}` : '0.00';
+  
+  // Use currency-specific precision if not overridden by options
+  const precision = currency ? getCurrencyPrecision(currency) : 2;
   
   const formatted = numericAmount.toLocaleString('en-US', {
-    minimumFractionDigits: options?.minimumFractionDigits ?? 2,
-    maximumFractionDigits: options?.maximumFractionDigits ?? 2,
+    minimumFractionDigits: options?.minimumFractionDigits ?? precision,
+    maximumFractionDigits: options?.maximumFractionDigits ?? precision,
   });
   
   return currency ? `${formatted} ${currency}` : formatted;
