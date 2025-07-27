@@ -13,6 +13,23 @@ import {
 } from "@shared/schema";
 import { AuditLogger, SecurityAuditLogger, BusinessAuditLogger, auditMiddleware } from "./auditLogger";
 
+// Activity tracking middleware
+const trackActivity = async (req: any, res: any, next: any) => {
+  try {
+    const userId = req.user?.claims?.sub;
+    if (userId) {
+      // Update user's last active timestamp asynchronously
+      storage.updateLastActiveAt(userId).catch(err => 
+        console.error("Error updating user activity:", err)
+      );
+    }
+    next();
+  } catch (error) {
+    console.error("Error in activity tracking middleware:", error);
+    next(); // Continue even if activity tracking fails
+  }
+};
+
 // Admin access middleware
 const isAdmin = async (req: any, res: any, next: any) => {
   try {
@@ -43,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, trackActivity, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -142,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Exchange request routes
-  app.post("/api/exchange-requests", isAuthenticated, async (req: any, res) => {
+  app.post("/api/exchange-requests", isAuthenticated, trackActivity, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -224,7 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/exchange-requests", isAuthenticated, async (req: any, res) => {
+  app.get("/api/exchange-requests", isAuthenticated, trackActivity, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -254,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Rate offer routes
-  app.post("/api/rate-offers", isAuthenticated, async (req: any, res) => {
+  app.post("/api/rate-offers", isAuthenticated, trackActivity, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -562,7 +579,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Chat routes
-  app.get("/api/chat/messages", isAuthenticated, async (req, res) => {
+  app.get("/api/chat/messages", isAuthenticated, trackActivity, async (req, res) => {
     try {
       const messages = await storage.getChatMessages();
       res.json(messages);
@@ -573,7 +590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Private messaging routes
-  app.post("/api/private-messages", isAuthenticated, async (req: any, res) => {
+  app.post("/api/private-messages", isAuthenticated, trackActivity, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { targetUserId, content, exchangeRequestId, rateOfferId } = req.body;
@@ -627,7 +644,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/chat/messages", isAuthenticated, async (req: any, res) => {
+  app.post("/api/chat/messages", isAuthenticated, trackActivity, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -645,13 +662,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Market stats
-  app.get("/api/market-stats", isAuthenticated, async (req, res) => {
+  app.get("/api/market-stats", isAuthenticated, trackActivity, async (req, res) => {
     try {
       const stats = await storage.getMarketStats();
       res.json(stats);
     } catch (error) {
       console.error("Error fetching market stats:", error);
       res.status(500).json({ message: "Failed to fetch market stats" });
+    }
+  });
+
+  // Session management endpoints
+  app.get("/api/session/activity", isAuthenticated, trackActivity, async (req, res) => {
+    try {
+      const activeUsers = await storage.getActiveUsersCount();
+      const activeSessions = await storage.getActiveSessions();
+      
+      res.json({
+        activeUsers,
+        activeSessions,
+        sessionTimeout: "5 minutes"
+      });
+    } catch (error) {
+      console.error("Error fetching session activity:", error);
+      res.status(500).json({ message: "Failed to fetch session activity" });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      // Destroy the session
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+          return res.status(500).json({ message: "Failed to logout" });
+        }
+        
+        // Clear the session cookie
+        res.clearCookie('connect.sid');
+        res.json({ message: "Logged out successfully" });
+      });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      res.status(500).json({ message: "Failed to logout" });
+    }
+  });
+
+  app.post("/api/session/cleanup", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.cleanupInactiveSessions();
+      const remainingActiveSessions = await storage.getActiveSessions();
+      
+      res.json({
+        message: "Session cleanup completed",
+        remainingActiveSessions
+      });
+    } catch (error) {
+      console.error("Error during session cleanup:", error);
+      res.status(500).json({ message: "Failed to cleanup inactive sessions" });
     }
   });
 

@@ -19,6 +19,7 @@ import RoleSelector from "@/components/role-selector";
 import Layout from "@/components/layout";
 import UnauthorizedAccess from "@/components/unauthorized-access";
 import { useState } from "react";
+import { SessionManager } from "@/components/session-manager";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -55,6 +56,7 @@ function Router() {
         <Route path="/" component={() => <RoleSelector onRoleSelected={() => setRoleSelected(true)} />} />
       ) : (
         <Layout user={user!}>
+          <SessionManager />
           <Route path="/" component={TradingRoom} />
           <Route path="/profile" component={BidderProfilePage} />
           <Route path="/trades" component={TradesHistoryPage} />
