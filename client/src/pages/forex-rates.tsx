@@ -44,21 +44,21 @@ export default function ForexRatesPage() {
 
   return (
     <Layout user={user}>
-      <div className="space-y-4 py-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">Forex Rates Management</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <h2 className="text-3xl font-bold tracking-tight">Forex Rates Management</h2>
+            <p className="text-muted-foreground">
               Manage your daily forex rates and view market insights
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-12 xl:col-span-9">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2">
             <ForexRatesManager />
           </div>
-          <div className="col-span-12 xl:col-span-3">
+          <div className="xl:col-span-1">
             <MarketRatesWidget />
           </div>
         </div>
