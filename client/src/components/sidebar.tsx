@@ -92,7 +92,7 @@ export default function Sidebar({ isOpen, onClose, user, collapsed = false, onTo
 
           {/* Navigation Menu */}
           <nav className={`space-y-2 flex-1 ${collapsed ? 'space-y-1' : 'space-y-2'}`}>
-            <NavLink href="/" icon={MessageSquare}>
+            <NavLink href="/trading" icon={MessageSquare}>
               Trading Room
             </NavLink>
             <NavLink href="/trades" icon={History}>

@@ -93,8 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
           title: "Welcome back!",
           description: "You have been logged in successfully",
         });
-        // Redirect to dashboard
-        window.location.href = "/";
+        // Redirect to trading page
+        window.location.href = "/trading";
       }
     },
     onError: (error: Error) => {
@@ -131,9 +131,9 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       });
       // Refetch user to update mustChangePassword status
       refetchUser();
-      // Redirect to dashboard
+      // Redirect to trading page
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = "/trading";
       }, 1000);
     },
     onError: (error: Error) => {
@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
         title: "Logged out",
         description: "You have been logged out successfully",
       });
-      window.location.href = "/auth";
+      window.location.href = "/";
     },
     onError: (error: Error) => {
       toast({

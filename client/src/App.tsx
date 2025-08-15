@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
+import Landing from "@/pages/landing";
 import TradingRoom from "@/pages/trading-room";
 import BidderProfilePage from "@/pages/bidder-profile";
 import TradesHistoryPage from "@/pages/trades-history";
@@ -24,8 +25,9 @@ function Router() {
   return (
     <Switch>
       <Route path="/auth" component={AuthPage} />
+      <Route path="/" component={Landing} />
       
-      <ProtectedRoute path="/" component={() => (
+      <ProtectedRoute path="/trading" component={() => (
         <Layout>
           <SessionManager />
           <TradingRoom />
