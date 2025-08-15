@@ -38,8 +38,12 @@ export function getSession() {
     ttl: sessionTtl,
     tableName: "sessions",
   });
+  
+  // Generate a session secret if not provided
+  const sessionSecret = process.env.SESSION_SECRET || 'replit-currency-exchange-secret-key-development-mode';
+  
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: sessionSecret,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
