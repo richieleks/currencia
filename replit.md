@@ -18,7 +18,7 @@ The backend is an Express.js server developed in TypeScript. It features a RESTf
 
 **Core Features & Design Patterns:**
 - **Unified Trader Role:** A core design decision is that all users are assigned a single "trader" role, enabling them to both request and provide currency exchange services.
-- **Authentication System:** Integrated with Replit Auth for seamless OAuth-based authentication, complemented by secure session management stored in PostgreSQL.
+- **Authentication System:** Email/password authentication system with bcrypt password hashing, secure session management stored in PostgreSQL, and automatic password change requirements for default accounts.
 - **Real-time Capabilities:** Extensive use of WebSockets for live updates on offers, messages, and market activity, including a global chat system and live market statistics.
 - **Trading Workflow:** A streamlined process for request creation, competitive bidding, offer management (acceptance/declining), and automated transaction completion.
 - **Financial Accuracy:** All decimal precision for financial figures is standardized to exactly 2 decimal places across the application for minor currencies and 6 for major currencies.
