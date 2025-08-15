@@ -2,198 +2,40 @@
 
 ## Overview
 
-Currencia is a modern web application that connects individuals and businesses needing currency exchange with verified forex bureau through a competitive bidding system. The platform operates as a real-time marketplace where users can post exchange requests and receive offers from licensed bidders.
-
-## System Architecture
-
-**Frontend Architecture:**
-- React 18 with TypeScript for type safety
-- Vite for fast development and optimized builds
-- Wouter for lightweight client-side routing
-- TanStack Query for server state management and caching
-- Tailwind CSS with shadcn/ui components for consistent design
-- Dark/light theme support
-
-**Backend Architecture:**
-- Express.js server with TypeScript
-- Session-based authentication using Replit Auth
-- RESTful API design with WebSocket support for real-time features
-- PostgreSQL database with Drizzle ORM for type-safe database operations
-- Neon serverless PostgreSQL for scalable data storage
-
-**Development Environment:**
-- Replit-optimized configuration with hot module replacement
-- Automatic database provisioning
-- Built-in deployment pipeline
-
-## Key Components
-
-### Authentication System
-- **Replit Auth Integration**: Seamless OAuth-based authentication
-- **Unified Role System**: All users have a single "trader" role with access to both requesting and providing exchange services
-- **Session Management**: Secure session storage in PostgreSQL using connect-pg-simple
-
-### Database Schema
-- **Users Table**: Stores user profiles with role-specific fields (company info, licenses, specializations for bidders)
-- **Exchange Requests**: Currency exchange requests with priority levels
-- **Rate Offers**: Competitive bids from traders
-- **Chat Messages**: Real-time communication system
-- **Transactions**: Completed exchange records
-- **Sessions**: Secure session storage
-
-### Real-time Features
-- **WebSocket Integration**: Live updates for new offers, messages, and market activity
-- **Chat System**: Global chat room for market communication
-- **Live Market Stats**: Real-time statistics on active requests and online bidders
-
-### Trading Workflow
-1. **Request Creation**: Users specify currency pair, amount, desired rate (optional), and priority
-2. **Bidding Process**: Any user can submit competitive rate offers on active requests
-3. **Offer Management**: Request creators can view all offers, accept or decline individual offers, and message bidders privately
-4. **Transaction Completion**: Automated balance updates and transaction records upon acceptance
-
-## Data Flow
-
-1. **User Authentication**: Replit Auth → Session Creation → Role Assignment
-2. **Exchange Request**: Form Submission → Database Storage → Real-time Broadcast
-3. **Rate Offers**: Bidder Submission → Validation → Notification to Requester
-4. **Transaction Flow**: Offer Acceptance → Balance Updates → Transaction Record → Completion Notification
-
-## External Dependencies
-
-### Core Framework Dependencies
-- React ecosystem (React, React DOM, React Hook Form)
-- TypeScript for type safety
-- Vite for build tooling
-- Express.js for server framework
-
-### UI and Styling
-- Tailwind CSS for utility-first styling
-- Radix UI primitives for accessible components
-- Lucide React for consistent iconography
-- Class Variance Authority for component variants
-
-### Database and ORM
-- Drizzle ORM for type-safe database operations
-- Neon serverless PostgreSQL driver
-- Drizzle Kit for migrations
-
-### Authentication and Session Management
-- OpenID Connect for Replit Auth
-- Passport.js for authentication strategies
-- Connect-pg-simple for PostgreSQL session storage
-
-### Real-time Communication
-- WebSocket (ws) for real-time features
-- TanStack Query for server state synchronization
-
-### Utilities
-- Zod for runtime type validation
-- Date-fns for date manipulation
-- Memoizee for function memoization
-
-## Deployment Strategy
-
-**Development:**
-- Replit development environment with hot reloading
-- Automatic database provisioning
-- Development-specific Vite plugins for enhanced debugging
-
-**Production:**
-- Autoscale deployment target for traffic handling
-- Build process: Frontend (Vite) + Backend (ESBuild)
-- Environment variable management for database and session secrets
-- Static asset serving from dist/public
-
-**Build Configuration:**
-- Frontend: Vite build to dist/public
-- Backend: ESBuild bundle to dist/index.js
-- Port configuration: Internal 5000 → External 80
-
-## Changelog
-
-Changelog:
-- June 19, 2025. Initial setup
-- June 19, 2025. Added currency balance dashboard with UGX, USD, KES, EUR, GBP
-- June 19, 2025. Added desired rate field to exchange requests
-- June 19, 2025. Unified roles - both bidders and subscribers can create requests and offers
-- June 19, 2025. Enhanced offers viewer with accept/decline functionality and private messaging hooks
-- June 19, 2025. Updated branding from ForexConnect to Currencia, removed account balance from sidebar
-- June 20, 2025. Added comprehensive trades and transaction history feature
-- June 20, 2025. Implemented currency portfolio management with 18 supported currencies
-- June 20, 2025. Added side menu to My Trading Activity page with filters and stats
-- June 20, 2025. Enhanced chat system with bid accept/reject actions and real-time notifications
-- June 20, 2025. Updated trading activity page to display volume per currency like dashboard
-- June 20, 2025. Added settings page with money transfer functionality between operational and wallet accounts
-- June 20, 2025. Created notifications dropdown with real-time updates and unread indicators
-- June 21, 2025. Updated branding from ForexConnect to Currencia across all components
-- June 21, 2025. Changed terminology from "forex traders" to "forex bureau" throughout the platform
-- June 21, 2025. Merged subscriber and bidder roles into unified "trader" role - all users can now both request and provide exchange services
-- June 21, 2025. Added comprehensive sidebar and navigation system across all pages with responsive design and centralized layout component
-- June 21, 2025. Removed navigation from My Trading Activity page per user request - now uses standalone header design
-- June 21, 2025. Removed navigation section from trading activity sidebar and fixed rate offers API query error
-- June 21, 2025. Implemented animated currency exchange rate comparison slider with real-time updates, smooth transitions, and interactive controls
-- June 24, 2025. Created comprehensive threaded comment system for exchange requests with nested replies and real-time updates
-- June 24, 2025. Designed and integrated professional Currencia logo system with multiple variations (full, icon, wordmark)
-- June 24, 2025. Enhanced notification system with bell shake animation and auto-closing demo components
-- June 24, 2025. Updated branding throughout application with new logo and improved visual identity
-- June 26, 2025. Fixed trades display issue by creating proper completed transaction data and ensuring proper database relationships
-- June 26, 2025. Added comprehensive dummy trading data with realistic completed exchanges for testing interface functionality
-- June 26, 2025. Added validation to prevent duplicate currency exchange requests for same currency pairs
-- June 26, 2025. Fixed exchange requests visibility in chat room with proper message creation and WebSocket broadcasting
-- June 26, 2025. Enhanced chat interface with rate offer and counter offer buttons in reply fields for streamlined trading
-- June 26, 2025. Fixed threaded chat system to prevent replies from appearing in main chat room - added "reply" message type and proper filtering
-- June 26, 2025. Implemented comprehensive user registration system with business details and profile completion workflow
-- June 26, 2025. Added automatic company name defaulting to first and last name for new users during authentication
-- June 26, 2025. Implemented automatic user logout after 15 minutes of inactivity with activity tracking and status management
-- June 26, 2025. Set light theme as default theme instead of system theme for better user experience
-- January 11, 2025. Updated default theme to light mode and changed storage key to currencia-ui-theme
-- June 26, 2025. Fixed navigation menu highlighting to show selected menu items with blue background
-- January 12, 2025. Implemented comprehensive RBAC (Role-Based Access Control) system with enterprise-level user management, role management, and permissions system
-- January 12, 2025. Created enhanced admin dashboard with User Management and Role Management tabs
-- January 12, 2025. Added RBAC API routes for user administration and role assignments with audit logging
-- January 12, 2025. Populated database with default roles (Administrator, Moderator, Trader, Viewer) and 23 different permission categories
-- January 12, 2025. Assigned admin rights to DENNIS LEKU (dennisleku@gmail.com) with audit trail logging
-- January 12, 2025. Developed comprehensive audit log module with professional viewer interface, filtering capabilities, and export functionality
-- January 12, 2025. Integrated audit logging service throughout the application tracking all user actions, admin operations, security events, and business activities
-- January 12, 2025. Enhanced admin dashboard with dedicated Audit Logs tab providing real-time monitoring and compliance tracking
-- January 12, 2025. Fixed authentication middleware and storage imports to resolve 403 Forbidden errors for admin functionality
-- January 12, 2025. Updated live trading demo widget to only appear automatically for first-time users, with on-demand access via Tutorial button in navigation
-- January 12, 2025. Added demo reset functionality for testing and development purposes
-- January 12, 2025. Fixed SelectItem components error in audit log viewer by replacing empty string values with proper "all" values
-- January 12, 2025. Created comprehensive real-time system activity monitor component with active sessions, WebSocket connections, and system metrics tracking
-- January 12, 2025. Integrated SystemActivityMonitor into admin dashboard with dedicated Activity Monitor tab showing live user sessions and system statistics
-- January 12, 2025. Implemented admin-only user registration system - modified authentication to prevent auto-registration and require admin approval
-- January 12, 2025. Created AdminUserCreation component for manual user account creation with comprehensive profile fields and role assignment
-- January 12, 2025. Added UnauthorizedAccess component to display helpful message for users who aren't registered in the system
-- January 12, 2025. Updated authentication flow to check for existing users and reject login attempts from unregistered users
-- January 12, 2025. Made sidebar scrollable with overflow-y-auto to handle content overflow properly
-- January 12, 2025. Updated all decimal precision to exactly 2 decimal places across entire application for consistent professional financial presentation
-- January 12, 2025. Enhanced layout settings system with dynamic decimal precision support and compact modal design
-- January 12, 2025. Fixed database schema to support NUMERIC types for precise layout calculations with decimal values
-- January 12, 2025. Added dynamic currency indication to quick exchange form amount field showing selected "from currency"
-- January 12, 2025. Implemented real-time total amount calculation in exchange form when desired rate is entered
-- January 12, 2025. Created professional currency converter widget with live exchange rates, swap functionality, and trend indicators
-- July 12, 2025. Fixed critical application startup errors: resolved SelectItem empty value validation errors in forex rates manager, portfolio manager, and quick exchange form components; stabilized WebSocket connections and resolved controlled/uncontrolled input warnings
-- July 26, 2025. Updated Node.js to v22 and resolved database connection timeout issues by improving Neon WebSocket configuration with secure connections and optimized pool settings
-- July 26, 2025. Updated core dependencies: @neondatabase/serverless@1.0.1, drizzle-orm@0.44.3, drizzle-kit@0.31.4, TypeScript@5.8.3, TanStack Query@5.83.0, framer-motion@12.23.9, and react-hook-form@7.61.1
-- July 26, 2025. Fixed authentication middleware TypeScript errors and improved error handling across routes
-- July 26, 2025. Implemented admin-only user profile editing restrictions: traders can now only view their profiles, while only admins can update user profile details through dedicated admin endpoints with comprehensive audit logging
-- July 26, 2025. Enhanced landing page with professional visual design including comprehensive footer, gradient backgrounds, animated feature cards, statistics section, and improved responsive design for better user experience
-- July 26, 2025. Improved authentication error handling for unregistered users with user-friendly messaging and proper redirection to informative access denied pages instead of technical JSON errors
-- July 26, 2025. Fixed critical application startup failures: resolved missing getUserByEmail method in storage interface, corrected database schema circular references, fixed transaction field mismatches, and resolved conditional query building errors - application now starts successfully
-- July 26, 2025. Implemented comprehensive trader verification system with multi-layered approach: created verification_requests, verification_documents, and verification_checks database tables with proper relations, added complete API endpoints for verification management, integrated verification page into navigation sidebar, and developed professional verification interface with document upload capabilities and admin management tools
-- July 26, 2025. Built comprehensive bank account integration system with real-time balance synchronization through mock API simulation: created 4 new database tables (bankAccounts, bankTransactions, currencyHoldings, bankSyncLogs), implemented complete CRUD operations in storage layer, added full API endpoints for bank account management with mock bank API simulation, developed professional bank account management UI with real-time sync capabilities, currency portfolio tracking, and transaction history - integrated into navigation sidebar as "Bank Accounts" page
-- July 26, 2025. Merged bank accounts functionality into settings page and removed money transfers component: consolidated bank account management as the default tab in settings, removed separate Bank Accounts navigation item for cleaner UI organization, eliminated money transfer functionality to streamline user experience, updated settings page to have 4 focused tabs (Bank Accounts, Profile, Appearance, Security)
-- July 26, 2025. Enhanced chatroom currency portfolio to display aggregated bank account balances: modified currency balance dashboard component to fetch and aggregate data from connected bank accounts, displays real-time balances from bank account system with fallback to user profile balance fields when no accounts are connected, maintains all existing portfolio functionality while providing unified data source across the application
-- July 27, 2025. Applied Reports page professional layout to Forex Rates Management page: implemented consistent header styling with text-3xl font and tracking-tight, added 4 quick stats cards (Active Rates, Currency Pairs, Average Spread, Last Updated) with standardized pb-2 headers and text-2xl values, restructured grid to 3 columns with better space utilization, applied space-y-6 for main sections
-- July 27, 2025. Updated Currency Portfolio to show empty state when no bank accounts exist: removed default currency balances from user profile display, added "No currencies added yet" message with helpful instructions, implemented "Get Started" and "Manage" buttons that redirect to Settings → Bank Accounts page for proper onboarding flow
-- July 27, 2025. Removed automatic scroll-to-bottom functionality from all chatroom components: eliminated useEffect auto-scroll behavior, removed messagesEndRef references, and cleaned up unused imports - users now have full control over chat scrolling behavior
-- July 27, 2025. Implemented enhanced currency precision system: major currencies (USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY) display 6 decimal places, minor currencies (UGX, KES, NGN, EGP, MAD, TZS, GHS, RWF, ZAR, INR) display 2 decimal places for improved financial accuracy - centralized formatCurrency function with getCurrencyPrecision utility
-- July 27, 2025. Enhanced quick exchange form with automatic live rate defaulting: desired rate field now auto-populates with live exchange rates when "to currency" changes, includes visual indicator showing "Live rate auto-filled" badge, improved step precision to 6 decimal places for accurate rate entry, and maintains real-time calculation of total amount desired
-- July 27, 2025. Implemented comprehensive bank account balance validation system: created balance checking functions in storage layer (hasActiveBankAccounts, hasSufficientBalance, canMakeExchangeRequest), added API endpoints for balance validation, updated exchange request creation to require active bank accounts with sufficient balance, enhanced quick exchange form with real-time balance warnings, implemented bank account requirement error handling in offers viewer and active offers components, restricted exchange request visibility to users with active bank accounts (admins exempt), and added comprehensive error messaging with guidance to settings page
-- July 27, 2025. Successfully implemented enhanced session management system with 5-minute auto-logout functionality: created comprehensive activity tracking middleware applied to all authenticated API routes, developed SessionManager component for client-side inactivity detection with warning notifications, updated market stats to display real active user count based on recent activity (5-minute window instead of static numbers), implemented periodic session cleanup task running every 2 minutes on server startup, added session management API endpoints for monitoring active users and manual cleanup, integrated complete logout functionality with session destruction and cookie clearing, and validated system functionality through comprehensive testing with accelerated timeouts
+Currencia is a modern web application designed to act as a real-time marketplace for currency exchange. It connects individuals and businesses with verified forex bureaus through a competitive bidding system. The platform allows users to post exchange requests and receive competitive offers from licensed bidders. The core vision is to provide a transparent, efficient, and secure environment for currency exchange, leveraging a unified "trader" role that allows all users to both request and provide exchange services.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+**Frontend:**
+The frontend is built with React 18 and TypeScript, utilizing Vite for fast development and optimized builds. Wouter provides lightweight client-side routing, and TanStack Query handles server state management and caching. Styling is managed with Tailwind CSS and shadcn/ui components, supporting both dark and light themes for a consistent design.
+
+**Backend:**
+The backend is an Express.js server developed in TypeScript. It features a RESTful API design with WebSocket support for real-time functionalities. Session-based authentication is integrated using Replit Auth. Data is persistently stored in a PostgreSQL database, with Drizzle ORM providing type-safe database operations, leveraging Neon serverless PostgreSQL for scalability.
+
+**Core Features & Design Patterns:**
+- **Unified Trader Role:** A core design decision is that all users are assigned a single "trader" role, enabling them to both request and provide currency exchange services.
+- **Authentication System:** Integrated with Replit Auth for seamless OAuth-based authentication, complemented by secure session management stored in PostgreSQL.
+- **Real-time Capabilities:** Extensive use of WebSockets for live updates on offers, messages, and market activity, including a global chat system and live market statistics.
+- **Trading Workflow:** A streamlined process for request creation, competitive bidding, offer management (acceptance/declining), and automated transaction completion.
+- **Financial Accuracy:** All decimal precision for financial figures is standardized to exactly 2 decimal places across the application for minor currencies and 6 for major currencies.
+- **Role-Based Access Control (RBAC):** A comprehensive RBAC system with enterprise-level user and role management, including a professional admin dashboard with user management, role management, and audit logging capabilities.
+- **Audit Logging:** A comprehensive audit log module tracks all user actions, admin operations, security events, and business activities, with a professional viewer interface.
+- **Trader Verification System:** A multi-layered verification system with dedicated database tables, API endpoints, and a UI for managing verification requests and documents.
+- **Bank Account Integration:** A system for managing bank accounts with real-time balance synchronization (via mock API), CRUD operations, and integration into the user's currency portfolio.
+- **Enhanced Session Management:** Includes activity tracking, a 5-minute auto-logout functionality with warnings, and real-time active user counts.
+
+## External Dependencies
+
+- **React Ecosystem:** React, React DOM, React Hook Form
+- **TypeScript:** For type safety across the application.
+- **Vite:** Build tool for frontend.
+- **Express.js:** Backend server framework.
+- **UI & Styling:** Tailwind CSS, Radix UI, Lucide React, Class Variance Authority.
+- **Database & ORM:** Drizzle ORM, Neon serverless PostgreSQL driver, Drizzle Kit.
+- **Authentication & Session Management:** OpenID Connect for Replit Auth, Passport.js, Connect-pg-simple.
+- **Real-time Communication:** `ws` (WebSocket), TanStack Query.
+- **Utilities:** Zod (runtime type validation), Date-fns (date manipulation), Memoizee (function memoization).

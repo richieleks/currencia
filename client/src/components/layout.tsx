@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Menu, Bell, TrendingUp, PanelLeftClose, PanelLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 import Sidebar from "@/components/sidebar";
 import NotificationsDropdown from "@/components/notifications-dropdown";
 
@@ -11,10 +11,10 @@ import DemoResetButton from "@/components/demo-reset-button";
 
 interface LayoutProps {
   children: React.ReactNode;
-  user: User;
 }
 
-export default function Layout({ children, user }: LayoutProps) {
+export default function Layout({ children }: LayoutProps) {
+  const { user, logoutMutation } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [location] = useLocation();
@@ -121,10 +121,11 @@ export default function Layout({ children, user }: LayoutProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                Sign Out
+                {logoutMutation.isPending ? "Signing out..." : "Sign Out"}
               </Button>
             </div>
           </div>
@@ -132,13 +133,15 @@ export default function Layout({ children, user }: LayoutProps) {
       </nav>
 
       {/* Sidebar */}
-      <Sidebar 
-        isOpen={sidebarOpen} 
-        onClose={() => setSidebarOpen(false)} 
-        user={user || { id: '', role: 'trader', email: '', firstName: '', lastName: '', companyName: '' }}
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-      />
+      {user && (
+        <Sidebar 
+          isOpen={sidebarOpen} 
+          onClose={() => setSidebarOpen(false)} 
+          user={user}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
+      )}
 
       {/* Main Content */}
       <div className={`pt-16 transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'}`}>

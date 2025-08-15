@@ -71,7 +71,7 @@ import { eq, desc, asc, and, or, sql, count, avg, sum, isNull, isNotNull, gte, l
 import { alias } from "drizzle-orm/pg-core";
 
 export interface IStorage {
-  // User operations (mandatory for Replit Auth)
+  // User operations (email/password auth)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   updateUserId(oldId: string, newId: string): Promise<void>;
@@ -80,6 +80,12 @@ export interface IStorage {
   updateUserActivity(id: string): Promise<void>;
   setUserInactive(id: string): Promise<void>;
   getActiveUsers(): Promise<User[]>;
+  
+  // Authentication operations
+  incrementLoginAttempts(userId: string): Promise<void>;
+  resetLoginAttempts(userId: string): Promise<void>;
+  updateLastLogin(userId: string): Promise<void>;
+  updatePassword(userId: string, hashedPassword: string): Promise<void>;
   
   // Exchange request operations
   createExchangeRequest(request: InsertExchangeRequest): Promise<ExchangeRequest>;
@@ -378,6 +384,51 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.status, "active"));
+  }
+
+  // Authentication operations
+  async incrementLoginAttempts(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        loginAttempts: sql`${users.loginAttempts} + 1`,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async resetLoginAttempts(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        loginAttempts: 0,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async updateLastLogin(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        lastLoginAt: new Date(),
+        lastActiveAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        password: hashedPassword,
+        isDefaultPassword: false,
+        mustChangePassword: false,
+        lastPasswordChange: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
   }
 
   // Exchange request operations
